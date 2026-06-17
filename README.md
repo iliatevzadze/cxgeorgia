@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 0 — Project Foundation** (Step 6 complete — full Docker Compose stack; app containers run as non-root users)
+**Phase 1 — SaaS Base** (Step 1: backend database foundation)
 
-The full Phase 0 foundation runs via [`docker-compose.yml`](docker-compose.yml): infrastructure (PostgreSQL, Redis, MinIO, Mailpit) plus app containers (backend, frontend, worker). Backend, frontend, and worker Docker images run as non-root users (`appuser` for Python apps, `node` for the frontend). Next.js telemetry is disabled in the Docker frontend container. Database models, authentication, API integration, and business logic are **not** implemented yet.
+The full stack runs via [`docker-compose.yml`](docker-compose.yml): infrastructure (PostgreSQL, Redis, MinIO, Mailpit) plus app containers (backend, frontend, worker). Backend has SQLAlchemy async + Alembic (baseline migration only — no business tables). Authentication, API integration, and business logic are **not** implemented yet.
 
-Phase 1 has **not started**.
+Phase 1 / Step 2 has **not started**.
 
 ## Confirmed stack
 
@@ -46,6 +46,24 @@ Phase 1 has **not started**.
 | Mailpit | Local email simulation |
 
 Docker Compose runs the full Phase 0 stack (infrastructure + apps). See [local Docker workflow](docs/development/local-docker.md) and `.env.example`.
+
+### Backend database foundation (Phase 1 / Step 1)
+
+SQLAlchemy async, Alembic, and PostgreSQL connectivity are configured in `apps/backend`. No business tables yet.
+
+```bash
+cd ~/cxgeorgia
+docker compose up -d postgres
+
+cd apps/backend
+source .venv/bin/activate
+alembic current
+alembic upgrade head
+python scripts/check_db_connection.py
+pytest
+```
+
+See [backend local development](docs/development/backend-local.md).
 
 ### Full stack via Docker Compose (Phase 0 / Step 6)
 
@@ -262,8 +280,9 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Celery worker skeleton with `debug.ping` and pytest tests
 - [x] Docker Compose app containers (backend, frontend, worker)
 - [x] App containers run as non-root users; Celery root-user warning fixed; Next.js telemetry disabled in Docker frontend
-- [ ] Founder manual verification of full Docker stack (next step)
-- [ ] Phase 1 scaffolding (not started)
+- [x] Backend SQLAlchemy async + Alembic baseline migration (Phase 1 / Step 1)
+- [ ] Founder manual verification of database foundation (next step)
+- [ ] Phase 1 / Step 2 (not started)
 
 ## License
 

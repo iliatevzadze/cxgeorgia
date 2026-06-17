@@ -1,34 +1,41 @@
 # Backend Local Development
 
-Guide for running the FastAPI backend skeleton locally (Phase 0 / Step 3).
+Guide for running the FastAPI backend locally.
 
 ## Scope
 
-This backend is a **minimal skeleton**:
+**Phase 1 / Step 1** adds the database foundation only:
 
-- Configuration via Pydantic Settings
-- `GET /health` endpoint
-- pytest tests
-- No database, Redis, MinIO, Mailpit, auth, or business logic
+- SQLAlchemy async engine + session factory
+- Alembic migrations (empty baseline)
+- Database connectivity check script
+- `GET /health` unchanged — no database dependency at startup
 
-The backend runs **without Docker**. Infrastructure services (PostgreSQL, etc.) are not required for this step.
+No authentication, ORM models, business tables, or `/api/v1/` routes yet.
 
 ## Folder structure
 
 ```text
 apps/backend/
+├── alembic/
+│   ├── env.py
+│   └── versions/
+│       └── 0001_baseline.py
+├── alembic.ini
 ├── app/
-│   ├── __init__.py
-│   ├── main.py             # create_app() + app instance
+│   ├── main.py
 │   ├── api/
-│   │   ├── __init__.py
-│   │   └── health.py       # GET /health
-│   └── core/
-│       ├── __init__.py
-│       └── config.py       # Settings (APP_ENV, APP_NAME, ...)
+│   │   └── health.py
+│   ├── core/
+│   │   └── config.py
+│   └── db/
+│       ├── base.py
+│       └── session.py
+├── scripts/
+│   └── check_db_connection.py
 ├── tests/
-│   ├── __init__.py
-│   └── test_health.py
+│   ├── test_health.py
+│   └── test_db_config.py
 ├── pyproject.toml
 └── README.md
 ```
@@ -36,7 +43,7 @@ apps/backend/
 ## Prerequisites
 
 - Python 3.12+
-- No Docker required for the backend skeleton
+- PostgreSQL via Docker Compose (for migrations and connectivity checks)
 
 ## Setup
 
@@ -51,23 +58,55 @@ python -m pip install -e ".[dev]"
 
 ### Environment variables
 
-Settings load from environment variables or an optional `apps/backend/.env` file. Defaults match the repository root [`.env.example`](../../.env.example):
+Copy the repository root `.env.example` to `.env` at the repo root (or `apps/backend/.env`). **Never commit `.env`.**
 
-| Variable | Default |
-|----------|---------|
-| `APP_ENV` | `local` |
-| `APP_NAME` | `Georgian CX Platform` |
-| `BACKEND_PORT` | `8000` |
-| `DEFAULT_LOCALE` | `ka` |
-| `SUPPORTED_LOCALES` | `ka,en` |
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `BACKEND_DATABASE_MODE` | `local` | Use `docker` inside Compose backend container |
+| `BACKEND_DATABASE_URL_LOCAL` | (see `.env.example`) | Host PostgreSQL URL |
+| `BACKEND_DATABASE_URL_DOCKER` | (see `.env.example`) | In-network PostgreSQL URL |
+| `POSTGRES_HOST_PORT` | `15432` | Host port for local mode |
+| `POSTGRES_*` | (see `.env.example`) | Used when explicit URLs are not set |
 
-Database, Redis, MinIO, and JWT variables are **not loaded** in this step.
+## Start PostgreSQL
+
+```bash
+cd ~/cxgeorgia
+docker compose up -d postgres
+docker compose ps
+```
+
+Do **not** use `docker compose down -v` unless you intentionally want to wipe local data.
+
+## Alembic migrations
+
+From `apps/backend` with venv active:
+
+```bash
+alembic current
+alembic upgrade head
+alembic current
+```
+
+The baseline migration (`0001_baseline`) creates no application tables. Alembic may create its own `alembic_version` tracking table.
+
+## Database connectivity check
+
+```bash
+python scripts/check_db_connection.py
+```
+
+Expected output: `Database connection successful.`
+
+This runs `SELECT 1` only — no data mutation.
 
 ## Run tests
 
 ```bash
 pytest
 ```
+
+Unit tests do not require PostgreSQL.
 
 ## Lint
 
@@ -81,51 +120,24 @@ ruff check .
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
+The server starts even if PostgreSQL is temporarily unavailable.
+
 ## Verify manually
 
 | URL | Purpose |
 |-----|---------|
 | [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) | Health check JSON |
 | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | Swagger UI |
-| [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json) | OpenAPI schema |
 
-### Health response envelope
-
-All future API responses will use:
-
-```json
-{
-  "data": { ... },
-  "meta": { ... },
-  "error": null
-}
-```
-
-Current health response:
-
-```json
-{
-  "data": {
-    "status": "ok",
-    "service": "backend",
-    "app_name": "Georgian CX Platform",
-    "environment": "local"
-  },
-  "meta": {},
-  "error": null
-}
-```
-
-The health endpoint does **not** check PostgreSQL, Redis, MinIO, or Mailpit connectivity.
+The health endpoint does **not** check PostgreSQL connectivity.
 
 ## What is intentionally not implemented
 
-- SQLAlchemy, Alembic, database models, migrations
-- PostgreSQL / Redis / MinIO / Mailpit connections
+- ORM models, business tables, seed data
 - Authentication, JWT, refresh tokens, RBAC
 - `/api/v1/` versioned routes
 - Universal Case, customer, workspace APIs
-- Backend Docker container
+- Worker database access
 - CORS configuration
 
 ## Related docs

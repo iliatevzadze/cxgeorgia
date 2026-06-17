@@ -84,6 +84,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      BACKEND_DATABASE_MODE: docker
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     networks:

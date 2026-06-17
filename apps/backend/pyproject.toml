@@ -1,13 +1,16 @@
 [project]
 name = "georgian-cx-backend"
 version = "0.1.0"
-description = "Georgian CX Platform — FastAPI backend (Phase 0 skeleton)"
+description = "Georgian CX Platform — FastAPI backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic",
+    "asyncpg",
     "fastapi",
-    "uvicorn[standard]",
     "pydantic-settings",
+    "sqlalchemy[asyncio]",
+    "uvicorn[standard]",
 ]
 
 [project.optional-dependencies]

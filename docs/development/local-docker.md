@@ -8,7 +8,7 @@ Seven services run via Docker Compose at the repository root:
 
 ```text
 docker-compose.yml
-├── postgres   → cx_postgres   (primary database — not used by apps yet)
+├── postgres   → cx_postgres   (primary database — backend Alembic/SQLAlchemy)
 ├── redis      → cx_redis      (Celery broker)
 ├── minio      → cx_minio      (object storage — not used yet)
 ├── mailpit    → cx_mailpit    (local email testing)
@@ -36,6 +36,24 @@ Key defaults:
 | `POSTGRES_HOST_PORT` | `15432` | Host → container `5432` |
 | `REDIS_HOST_PORT` | `16379` | Host → container `6379` |
 | `WORKER_REDIS_MODE` | `local` | Override to `docker` in Compose worker service |
+| `BACKEND_DATABASE_MODE` | `local` | Override to `docker` in Compose backend service |
+
+## Backend database (Phase 1 / Step 1)
+
+Backend uses SQLAlchemy async + Alembic. From repository root, start PostgreSQL then run migrations from `apps/backend`:
+
+```bash
+docker compose up -d postgres
+
+cd apps/backend
+source .venv/bin/activate
+alembic upgrade head
+python scripts/check_db_connection.py
+```
+
+Compose sets `BACKEND_DATABASE_MODE=docker` for `cx_backend`. Host development uses `local` mode with `localhost:15432`.
+
+Do **not** use `docker compose down -v` unless you intentionally want to wipe local data.
 
 ## Validate and start
 
@@ -65,8 +83,9 @@ Expected containers: `cx_postgres`, `cx_redis`, `cx_minio`, `cx_mailpit`, `cx_ba
 - **Dockerfile:** `apps/backend/Dockerfile`
 - **Runs as:** non-root `appuser`
 - **Internal port:** `8000`
-- **Health check:** `GET /health`
-- Does not require PostgreSQL or Redis to start
+- **Health check:** `GET /health` (no database check)
+- `BACKEND_DATABASE_MODE=docker` for PostgreSQL at `postgres:5432`
+- Does not require Redis to start
 
 ### Frontend (`frontend`)
 
@@ -119,7 +138,7 @@ You can still run apps directly on the host:
 
 ## What is not implemented
 
-- Database models, migrations, auth
+- ORM models, business tables, auth
 - Frontend–backend API integration
 - Real Celery jobs, Celery Beat
 - MinIO buckets, email sending
