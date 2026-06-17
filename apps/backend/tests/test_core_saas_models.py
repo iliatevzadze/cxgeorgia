@@ -30,6 +30,7 @@ def test_user_columns() -> None:
     assert _column_names("users") == {
         "id",
         "email",
+        "password_hash",
         "full_name",
         "status",
         "is_email_verified",

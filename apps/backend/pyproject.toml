@@ -8,6 +8,7 @@ dependencies = [
     "alembic",
     "asyncpg",
     "bcrypt",
+    "email-validator",
     "fastapi",
     "pydantic-settings",
     "python-jose[cryptography]",
@@ -18,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "ruff",
 ]
@@ -32,6 +34,8 @@ packages = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 88

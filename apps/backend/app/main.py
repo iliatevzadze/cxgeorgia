@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 
 
@@ -10,11 +11,11 @@ def create_app() -> FastAPI:
         title="Georgian CX Platform API",
         version="0.1.0",
         description=(
-            "Phase 0 backend skeleton. Health check only — "
-            "no database, auth, or business logic yet."
+            "Georgian CX Platform backend. Health check and Phase 1 auth API."
         ),
     )
     application.include_router(health_router)
+    application.include_router(auth_router)
     return application
 
 

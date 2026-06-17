@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class User(Base):
-    """Platform user (no authentication fields in Phase 1 / Step 2)."""
+    """Platform user."""
 
     __tablename__ = "users"
 
@@ -28,9 +28,14 @@ class User(Base):
         default=uuid4,
     )
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[UserStatus] = mapped_column(
-        Enum(UserStatus, name="user_status"),
+        Enum(
+            UserStatus,
+            name="user_status",
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
         default=UserStatus.ACTIVE,
         server_default=UserStatus.ACTIVE.value,
     )

@@ -4,95 +4,43 @@ Guide for running the FastAPI backend locally.
 
 ## Scope
 
-**Phase 1 / Step 3** adds auth foundation utilities only:
+**Phase 1 / Step 4** adds the backend auth API:
 
-- bcrypt password hashing (`hash_password`, `verify_password`)
-- JWT access token create/decode (`create_access_token`, `decode_access_token`)
-- Auth settings: `AUTH_SECRET_KEY`, `AUTH_ALGORITHM`, `AUTH_ACCESS_TOKEN_EXPIRE_MINUTES`
-- Pydantic schemas: `Token`, `TokenPayload`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+- Migration `0003` adds `users.password_hash`
 
-No login/register API, no `password_hash` column, no migrations. `GET /health` is unchanged.
-
-## Folder structure
-
-```text
-apps/backend/
-├── alembic/
-│   └── versions/
-│       ├── 0001_baseline.py
-│       └── 0002_core_saas_models.py
-├── app/
-│   ├── models/
-│   │   ├── enums.py
-│   │   ├── user.py
-│   │   ├── workspace.py
-│   │   └── workspace_membership.py
-│   └── db/
-├── scripts/
-│   └── check_db_connection.py
-└── tests/
-```
+No frontend auth UI, refresh tokens, email verification, or workspace creation on registration.
 
 ## Prerequisites
 
 - Python 3.12+
-- PostgreSQL via Docker Compose (for migrations and connectivity checks)
+- PostgreSQL via Docker Compose
 
 ## Setup
 
 ```bash
 cd apps/backend
-
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
 Copy repository root `.env.example` to `.env` — **never commit `.env`**.
 
-## Start PostgreSQL
+## Start PostgreSQL and migrate
 
 ```bash
 cd ~/cxgeorgia
 docker compose up -d postgres
-docker compose ps
+
+cd apps/backend
+source .venv/bin/activate
+alembic upgrade head
 ```
 
 Do **not** use `docker compose down -v` unless you intentionally want to wipe local data.
-
-## Alembic migrations
-
-```bash
-cd apps/backend
-source .venv/bin/activate
-alembic current
-alembic upgrade head
-alembic current
-```
-
-After Step 2, `alembic current` should show `0002 (head)`.
-
-## Inspect tables
-
-```bash
-docker exec -it cx_postgres psql -U georgian_cx_user -d georgian_cx_platform -c "\dt"
-```
-
-## Database connectivity check
-
-```bash
-python scripts/check_db_connection.py
-```
-
-## Run tests
-
-```bash
-pytest
-ruff check .
-```
-
-Unit tests do not require PostgreSQL.
 
 ## Run the server
 
@@ -100,24 +48,50 @@ Unit tests do not require PostgreSQL.
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-## Verify manually
+## Auth API examples
 
-| URL | Purpose |
-|-----|---------|
-| [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) | Health check (no DB check) |
-| [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | Swagger UI |
+Register:
 
-## What is intentionally not implemented
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"founder@example.com","password":"StrongPass123","full_name":"Founder"}'
+```
 
-- `password_hash` on `users` (Step 4+)
-- Login, registration, refresh tokens, protected routes
-- User/workspace/membership API routes
-- RBAC enforcement, permission engine
-- Universal Case, customer, ticket models
-- Seed data or admin users
+Login:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"founder@example.com","password":"StrongPass123"}'
+```
+
+Current user:
+
+```bash
+curl http://127.0.0.1:8000/api/v1/auth/me \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+OpenAPI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+## Tests
+
+```bash
+pytest
+ruff check .
+```
+
+Auth API integration tests require PostgreSQL to be running.
+
+## What is not implemented
+
+- Refresh tokens, logout, password reset, email verification
+- Workspace creation on registration
+- RBAC enforcement beyond authenticated `/me`
+- Frontend auth UI
 
 ## Related docs
 
 - [Backend README](../../apps/backend/README.md)
-- [Local Docker workflow](local-docker.md)
-- [RBAC](../security/rbac.md)
+- [Security baseline](../security/security-baseline.md)

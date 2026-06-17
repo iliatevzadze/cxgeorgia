@@ -19,17 +19,19 @@ Security principles and planned controls for the Georgian CX Platform.
 - Sequential integer IDs must never appear in URLs or API responses
 - Internal surrogate keys (if used) remain private to the database
 
-**Phase 1 / Step 3:** Password hashing and JWT access-token utilities exist in the backend (`app/core/security.py`). No login/register API, no `password_hash` column, and no refresh tokens yet.
+**Phase 1 / Step 4:** Registration, login, and `/me` API endpoints exist. Passwords are hashed with bcrypt; login returns a short-lived JWT access token. No refresh tokens, email verification, or password reset yet.
 
 ## Authentication (planned — Phase 1)
 
 | Control | Requirement | Status |
 |---------|-------------|--------|
-| Password hashing | bcrypt with minimum cost factor **12** | Utility ready (Step 3) |
-| Access tokens | Short-lived JWT | Utility ready (Step 3) |
+| Password hashing | bcrypt with minimum cost factor **12** | Implemented (Step 3–4) |
+| Access tokens | Short-lived JWT | Implemented (Step 3–4) |
+| Register / login / me API | Backend-only auth | Implemented (Step 4) |
 | Refresh tokens | Stored in **HttpOnly**, Secure, SameSite cookies — never in localStorage | Not implemented |
 | Token rotation | To be finalized in Phase 1 implementation | Not implemented |
-| Login / register API | Required for usable auth | Not implemented (Step 4+) |
+| Email verification | Required before production | Not implemented |
+| Password reset | Self-service reset flow | Not implemented |
 
 ## Authorization (planned — Phase 1)
 

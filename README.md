@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 3: auth foundation utilities)
+**Phase 1 — SaaS Base** (Step 4: backend auth API)
 
-The full stack runs via [`docker-compose.yml`](docker-compose.yml). Backend has core SaaS tables plus password hashing and JWT utility functions. **No login/register API exists yet.**
+Backend auth API: register, login, and `/me`. Passwords hashed; JWT access tokens issued. **No frontend auth UI yet.**
 
-Phase 1 / Step 4 has **not started**.
+Phase 1 / Step 5 has **not started**.
 
 ## Confirmed stack
 
@@ -282,8 +282,9 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Backend SQLAlchemy async + Alembic baseline migration (Phase 1 / Step 1)
 - [x] Core SaaS models: users, workspaces, workspace_memberships (Phase 1 / Step 2)
 - [x] Auth utilities: password hashing + JWT access tokens (Phase 1 / Step 3)
-- [ ] Founder manual verification of auth utilities (next step)
-- [ ] Phase 1 / Step 4 (not started)
+- [x] Backend auth API: register, login, /me (Phase 1 / Step 4)
+- [ ] Founder manual verification of auth API (next step)
+- [ ] Phase 1 / Step 5 (not started)
 
 ## License
 
