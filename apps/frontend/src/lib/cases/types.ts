@@ -38,6 +38,8 @@ export type UniversalCaseCreateRequest = {
 };
 
 export type UniversalCaseUpdateRequest = {
+  title?: string;
+  description?: string | null;
   status?: CaseStatus;
   priority?: CasePriority;
 };

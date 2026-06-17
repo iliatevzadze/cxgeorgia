@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 17: Universal Case title/description PATCH API)
+**Phase 1 — SaaS Base** (Step 18: Universal Case title/description update frontend UI)
 
-`PATCH /api/v1/workspaces/{workspace_id}/cases/{case_id}` updates title, description, status and/or priority. **Frontend title/description edit controls are not implemented yet.**
+Case detail page can update title, description, status and priority via `PATCH /api/v1/workspaces/{workspace_id}/cases/{case_id}`.
 
 Customer/source editing, assignment, delete, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 18 has **not started**.
+Phase 1 / Step 19 has **not started**.
 
 ## Confirmed stack
 
@@ -298,7 +298,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case status/priority PATCH API (Phase 1 / Step 15)
 - [x] Universal Case status/priority update frontend UI (Phase 1 / Step 16)
 - [x] Universal Case title/description PATCH API (Phase 1 / Step 17)
-- [ ] Phase 1 / Step 18 (not started)
+- [x] Universal Case title/description update frontend UI (Phase 1 / Step 18)
+- [ ] Phase 1 / Step 19 (not started)
 
 ## License
 

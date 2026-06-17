@@ -41,12 +41,29 @@ function formatOptional(value: string | null, fallback: string): string {
   return value ?? fallback;
 }
 
+function normalizeDescription(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
 function buildUpdatePayload(
   caseItem: UniversalCaseRead,
+  title: string,
+  description: string,
   status: CaseStatus,
   priority: CasePriority,
 ): UniversalCaseUpdateRequest | null {
   const payload: UniversalCaseUpdateRequest = {};
+  const trimmedTitle = title.trim();
+  const normalizedDescription = normalizeDescription(description);
+
+  if (trimmedTitle !== caseItem.title) {
+    payload.title = trimmedTitle;
+  }
+
+  if (normalizedDescription !== caseItem.description) {
+    payload.description = normalizedDescription;
+  }
 
   if (status !== caseItem.status) {
     payload.status = status;
@@ -68,6 +85,8 @@ export function WorkspaceCaseDetail({
   const locale = useLocale();
 
   const [caseItem, setCaseItem] = useState<UniversalCaseRead | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [status, setStatus] = useState<CaseStatus>("open");
   const [priority, setPriority] = useState<CasePriority>("normal");
   const [isLoading, setIsLoading] = useState(true);
@@ -99,6 +118,8 @@ export function WorkspaceCaseDetail({
         const item = await getCase(workspaceId, caseId, token);
         if (isMounted) {
           setCaseItem(item);
+          setTitle(item.title);
+          setDescription(item.description ?? "");
           setStatus(item.status);
           setPriority(item.priority);
         }
@@ -134,9 +155,13 @@ export function WorkspaceCaseDetail({
     };
   }, [workspaceId, caseId, t, tCommon]);
 
+  const normalizedDescription = normalizeDescription(description);
   const hasChanges =
     caseItem !== null &&
-    (status !== caseItem.status || priority !== caseItem.priority);
+    (title.trim() !== caseItem.title ||
+      normalizedDescription !== caseItem.description ||
+      status !== caseItem.status ||
+      priority !== caseItem.priority);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -149,7 +174,19 @@ export function WorkspaceCaseDetail({
     setUpdateErrorMessage(null);
     setSuccessMessage(null);
 
-    const payload = buildUpdatePayload(caseItem, status, priority);
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setValidationError(t("titleRequired"));
+      return;
+    }
+
+    const payload = buildUpdatePayload(
+      caseItem,
+      title,
+      description,
+      status,
+      priority,
+    );
     if (!payload) {
       setValidationError(t("noChanges"));
       return;
@@ -166,6 +203,8 @@ export function WorkspaceCaseDetail({
     try {
       const updated = await updateCase(workspaceId, caseId, payload, token);
       setCaseItem(updated);
+      setTitle(updated.title);
+      setDescription(updated.description ?? "");
       setStatus(updated.status);
       setPriority(updated.priority);
       setSuccessMessage(t("success"));
@@ -175,6 +214,8 @@ export function WorkspaceCaseDetail({
           setUpdateErrorMessage(tCommon("notFound"));
         } else if (error.status === 401 || error.status === 403) {
           setUpdateErrorMessage(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setValidationError(t("validationError"));
         } else {
           setUpdateErrorMessage(t("updateError"));
         }
@@ -213,12 +254,10 @@ export function WorkspaceCaseDetail({
       <p className="workspace-description">{t("description")}</p>
 
       <dl className="account-details">
-        {caseItem.description ? (
-          <div>
-            <dt>{t("descriptionLabel")}</dt>
-            <dd>{caseItem.description}</dd>
-          </div>
-        ) : null}
+        <div>
+          <dt>{t("descriptionLabel")}</dt>
+          <dd>{caseItem.description ?? noValue}</dd>
+        </div>
         <div>
           <dt>{t("statusLabel")}</dt>
           <dd>{t(`statusOptions.${caseItem.status}`)}</dd>
@@ -269,7 +308,10 @@ export function WorkspaceCaseDetail({
         </div>
       </dl>
 
-      <form className="workspace-form workspace-case-update-form" onSubmit={handleSubmit}>
+      <form
+        className="workspace-form workspace-case-update-form"
+        onSubmit={handleSubmit}
+      >
         <h2>{t("updateTitle")}</h2>
         <p className="workspace-description">{t("updateDescription")}</p>
 
@@ -290,6 +332,28 @@ export function WorkspaceCaseDetail({
             {successMessage}
           </p>
         ) : null}
+
+        <label className="auth-field">
+          <span>{t("titleLabel")}</span>
+          <input
+            type="text"
+            name="title"
+            required
+            maxLength={255}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
+        </label>
+
+        <label className="auth-field">
+          <span>{t("descriptionLabel")}</span>
+          <textarea
+            name="description"
+            rows={3}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+        </label>
 
         <label className="auth-field">
           <span>{t("statusLabel")}</span>
