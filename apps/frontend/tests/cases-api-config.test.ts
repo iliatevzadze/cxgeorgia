@@ -40,3 +40,9 @@ test("casePaths.detail includes workspace id and case id", () => {
 test("cases api exports getCase helper", () => {
   assert.match(apiSource, /export async function getCase/);
 });
+
+test("cases api exports updateCase helper using PATCH", () => {
+  assert.match(apiSource, /export async function updateCase/);
+  assert.match(apiSource, /method: "PATCH"/);
+  assert.match(apiSource, /casePaths\.detail\(workspaceId, caseId\)/);
+});

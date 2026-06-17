@@ -25,6 +25,17 @@ test("case types export UniversalCaseCreateRequest", () => {
   assert.match(typesSource, /external_reference\?: string/);
 });
 
+test("case types export UniversalCaseUpdateRequest with optional status and priority only", () => {
+  assert.match(typesSource, /export type UniversalCaseUpdateRequest/);
+  const updateBlock = typesSource.slice(
+    typesSource.indexOf("export type UniversalCaseUpdateRequest"),
+  );
+  assert.match(updateBlock, /status\?: CaseStatus/);
+  assert.match(updateBlock, /priority\?: CasePriority/);
+  assert.doesNotMatch(updateBlock, /title/);
+  assert.doesNotMatch(updateBlock, /workspace_id/);
+});
+
 test("case status, priority and source unions match backend enums", () => {
   assert.match(typesSource, /export type CaseStatus/);
   assert.match(typesSource, /"open" \| "pending" \| "resolved" \| "closed"/);

@@ -36,3 +36,8 @@ export type UniversalCaseCreateRequest = {
   customer_email?: string;
   external_reference?: string;
 };
+
+export type UniversalCaseUpdateRequest = {
+  status?: CaseStatus;
+  priority?: CasePriority;
+};

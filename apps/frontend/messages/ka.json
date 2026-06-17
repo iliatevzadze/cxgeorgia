@@ -208,7 +208,7 @@
           }
         },
         "detail": {
-          "description": "Universal Case-ის დეტალები (მხოლოდ ნახვა).",
+          "description": "Universal Case-ის დეტალები. სტატუსი და პრიორიტეტი შეგიძლიათ ქვემოთ განაახლოთ.",
           "loading": "ქეისი იტვირთება...",
           "error": "ქეისის ჩატვირთვა ვერ მოხერხდა.",
           "backToCases": "ქეისებზე დაბრუნება",
@@ -223,7 +223,26 @@
           "assignedToLabel": "მიმაგრებული",
           "createdAtLabel": "შექმნა",
           "updatedAtLabel": "განახლება",
-          "noValue": "—"
+          "noValue": "—",
+          "updateTitle": "სტატუსისა და პრიორიტეტის განახლება",
+          "updateDescription": "შეცვალეთ სტატუსი ან პრიორიტეტი და შეინახეთ.",
+          "submit": "ცვლილებების შენახვა",
+          "submitting": "ინახება...",
+          "success": "ქეისი წარმატებით განახლდა.",
+          "updateError": "ქეისის განახლება ვერ მოხერხდა.",
+          "noChanges": "შესანახი ცვლილებები არ არის.",
+          "statusOptions": {
+            "open": "ღია",
+            "pending": "მოლოდინში",
+            "resolved": "გადაწყვეტილი",
+            "closed": "დახურული"
+          },
+          "priorityOptions": {
+            "low": "დაბალი",
+            "normal": "ჩვეულებრივი",
+            "high": "მაღალი",
+            "urgent": "გადაუდებელი"
+          }
         }
       },
       "placeholders": {

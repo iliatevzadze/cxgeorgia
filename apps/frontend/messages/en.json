@@ -208,7 +208,7 @@
           }
         },
         "detail": {
-          "description": "Read-only Universal Case details.",
+          "description": "Universal Case details. Update status and priority below.",
           "loading": "Loading case...",
           "error": "Could not load case.",
           "backToCases": "Back to cases",
@@ -223,7 +223,26 @@
           "assignedToLabel": "Assigned to",
           "createdAtLabel": "Created",
           "updatedAtLabel": "Updated",
-          "noValue": "—"
+          "noValue": "—",
+          "updateTitle": "Update status and priority",
+          "updateDescription": "Change status or priority and save.",
+          "submit": "Save changes",
+          "submitting": "Saving...",
+          "success": "Case updated successfully.",
+          "updateError": "Could not update case.",
+          "noChanges": "No changes to save.",
+          "statusOptions": {
+            "open": "Open",
+            "pending": "Pending",
+            "resolved": "Resolved",
+            "closed": "Closed"
+          },
+          "priorityOptions": {
+            "low": "Low",
+            "normal": "Normal",
+            "high": "High",
+            "urgent": "Urgent"
+          }
         }
       },
       "placeholders": {

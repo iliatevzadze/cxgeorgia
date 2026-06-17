@@ -1,6 +1,10 @@
 import { apiRequest } from "@/lib/api/client";
 
-import type { UniversalCaseCreateRequest, UniversalCaseRead } from "./types";
+import type {
+  UniversalCaseCreateRequest,
+  UniversalCaseRead,
+  UniversalCaseUpdateRequest,
+} from "./types";
 
 export const casePaths = {
   list: (workspaceId: string) => `/api/v1/workspaces/${workspaceId}/cases`,
@@ -38,5 +42,21 @@ export async function getCase(
   return apiRequest<UniversalCaseRead>(
     casePaths.detail(workspaceId, caseId),
     { token },
+  );
+}
+
+export async function updateCase(
+  workspaceId: string,
+  caseId: string,
+  payload: UniversalCaseUpdateRequest,
+  token: string,
+): Promise<UniversalCaseRead> {
+  return apiRequest<UniversalCaseRead>(
+    casePaths.detail(workspaceId, caseId),
+    {
+      method: "PATCH",
+      body: payload,
+      token,
+    },
   );
 }
