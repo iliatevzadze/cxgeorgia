@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     backend_database_url_local: str | None = None
     backend_database_url_docker: str | None = None
 
+    auth_secret_key: str = "change-me-local-development-secret"
+    auth_algorithm: str = "HS256"
+    auth_access_token_expire_minutes: int = 30
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

@@ -4,13 +4,14 @@ Guide for running the FastAPI backend locally.
 
 ## Scope
 
-**Phase 1 / Step 2** adds core SaaS database models only:
+**Phase 1 / Step 3** adds auth foundation utilities only:
 
-- `users`, `workspaces`, `workspace_memberships` tables
-- Minimal enums and relationships
-- Alembic migration `0002_core_saas_models`
+- bcrypt password hashing (`hash_password`, `verify_password`)
+- JWT access token create/decode (`create_access_token`, `decode_access_token`)
+- Auth settings: `AUTH_SECRET_KEY`, `AUTH_ALGORITHM`, `AUTH_ACCESS_TOKEN_EXPIRE_MINUTES`
+- Pydantic schemas: `Token`, `TokenPayload`
 
-No authentication, password fields, API routes, or seed data yet. `GET /health` is unchanged.
+No login/register API, no `password_hash` column, no migrations. `GET /health` is unchanged.
 
 ## Folder structure
 
@@ -108,7 +109,8 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ## What is intentionally not implemented
 
-- Password hashing, login, registration, JWT
+- `password_hash` on `users` (Step 4+)
+- Login, registration, refresh tokens, protected routes
 - User/workspace/membership API routes
 - RBAC enforcement, permission engine
 - Universal Case, customer, ticket models

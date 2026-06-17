@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 2: core SaaS database models)
+**Phase 1 — SaaS Base** (Step 3: auth foundation utilities)
 
-The full stack runs via [`docker-compose.yml`](docker-compose.yml). Backend has SQLAlchemy async, Alembic, and core SaaS tables (`users`, `workspaces`, `workspace_memberships`). Authentication, API routes, and business logic are **not** implemented yet.
+The full stack runs via [`docker-compose.yml`](docker-compose.yml). Backend has core SaaS tables plus password hashing and JWT utility functions. **No login/register API exists yet.**
 
-Phase 1 / Step 3 has **not started**.
+Phase 1 / Step 4 has **not started**.
 
 ## Confirmed stack
 
@@ -281,8 +281,9 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] App containers run as non-root users; Celery root-user warning fixed; Next.js telemetry disabled in Docker frontend
 - [x] Backend SQLAlchemy async + Alembic baseline migration (Phase 1 / Step 1)
 - [x] Core SaaS models: users, workspaces, workspace_memberships (Phase 1 / Step 2)
-- [ ] Founder manual verification of core SaaS models (next step)
-- [ ] Phase 1 / Step 3 (not started)
+- [x] Auth utilities: password hashing + JWT access tokens (Phase 1 / Step 3)
+- [ ] Founder manual verification of auth utilities (next step)
+- [ ] Phase 1 / Step 4 (not started)
 
 ## License
 

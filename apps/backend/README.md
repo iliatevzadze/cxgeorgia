@@ -4,9 +4,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 2: core SaaS database models)
+**Phase 1 — SaaS Base** (Step 3: auth foundation utilities)
 
-Phase 1 / Step 3 has **not started**. No authentication, API routes, or business logic exists yet.
+Phase 1 / Step 4 has **not started**. No login/register API, password DB fields, or RBAC enforcement exists yet.
 
 ## What exists now
 
@@ -14,9 +14,11 @@ Phase 1 / Step 3 has **not started**. No authentication, API routes, or business
 - Pydantic Settings configuration (`app/core/config.py`)
 - SQLAlchemy async engine, session factory, declarative `Base`
 - Core SaaS ORM models: `User`, `Workspace`, `WorkspaceMembership`
+- Auth utilities: bcrypt password hashing, JWT access token create/decode (`app/core/security.py`)
+- Pydantic auth schemas: `Token`, `TokenPayload` (no API routes yet)
 - Alembic migrations: `0001` baseline, `0002` core SaaS tables
 - Database connectivity check script
-- pytest tests for health, database config, and model metadata
+- pytest tests for health, models, security utilities, and schemas
 - Docker container runs as non-root `appuser`
 
 ## Core SaaS tables (Phase 1 / Step 2)
@@ -29,11 +31,28 @@ Phase 1 / Step 3 has **not started**. No authentication, API routes, or business
 
 **Membership roles (minimal):** `owner`, `admin`, `member`
 
-No authentication, password hashing, JWT, API endpoints, or seed data exists yet.
+No login, registration, API endpoints, password hash column, or seed data exists yet.
+
+## Auth utilities (Phase 1 / Step 3)
+
+| Utility | Module | Notes |
+|---------|--------|-------|
+| `hash_password` / `verify_password` | `app/core/security.py` | bcrypt (cost 12) |
+| `create_access_token` / `decode_access_token` | `app/core/security.py` | HS256 JWT, `type=access` |
+| `Token`, `TokenPayload` | `app/schemas/auth.py` | For future auth endpoints |
+
+Settings (from `.env` / `.env.example` only — never commit `.env`):
+
+| Variable | Purpose |
+|----------|---------|
+| `AUTH_SECRET_KEY` | JWT signing secret (local placeholder only) |
+| `AUTH_ALGORITHM` | Default `HS256` |
+| `AUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | Default `30` |
 
 ## What does not exist yet
 
-- Password fields, login, registration, JWT
+- `password_hash` column on `users`
+- Login, registration, refresh token, or protected API routes
 - RBAC enforcement, permission checks
 - `/api/v1/` routes
 - Universal Case, customer, or ticket models
@@ -52,7 +71,10 @@ apps/backend/
 │   ├── api/
 │   │   └── health.py
 │   ├── core/
-│   │   └── config.py
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── schemas/
+│   │   └── auth.py
 │   ├── db/
 │   │   ├── base.py
 │   │   └── session.py
