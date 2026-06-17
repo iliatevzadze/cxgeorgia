@@ -2,6 +2,12 @@
 
 from app.schemas.auth import Token, TokenPayload
 from app.schemas.user import UserCreate, UserLogin, UserRead
+from app.schemas.workspace import (
+    WorkspaceCreate,
+    WorkspaceMembershipRead,
+    WorkspaceRead,
+    WorkspaceWithMembershipRead,
+)
 
 __all__ = [
     "Token",
@@ -9,4 +15,8 @@ __all__ = [
     "UserCreate",
     "UserLogin",
     "UserRead",
+    "WorkspaceCreate",
+    "WorkspaceMembershipRead",
+    "WorkspaceRead",
+    "WorkspaceWithMembershipRead",
 ]

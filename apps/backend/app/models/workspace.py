@@ -30,7 +30,11 @@ class Workspace(Base):
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     status: Mapped[WorkspaceStatus] = mapped_column(
-        Enum(WorkspaceStatus, name="workspace_status"),
+        Enum(
+            WorkspaceStatus,
+            name="workspace_status",
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
         default=WorkspaceStatus.ACTIVE,
         server_default=WorkspaceStatus.ACTIVE.value,
     )

@@ -4,14 +4,14 @@ Guide for running the FastAPI backend locally.
 
 ## Scope
 
-**Phase 1 / Step 4** adds the backend auth API:
+**Phase 1 / Step 5** adds workspace bootstrap API:
 
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/auth/me`
-- Migration `0003` adds `users.password_hash`
+- `POST /api/v1/workspaces` — create workspace (owner membership auto-created)
+- `GET /api/v1/workspaces` — list your active workspaces
+- `GET /api/v1/workspaces/{id}` — detail (members only, 404 otherwise)
+- `GET /api/v1/workspaces/{id}/memberships` — active memberships
 
-No frontend auth UI, refresh tokens, email verification, or workspace creation on registration.
+No frontend UI, invitations, or advanced RBAC yet.
 
 ## Prerequisites
 
@@ -27,53 +27,33 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
-Copy repository root `.env.example` to `.env` — **never commit `.env`**.
-
-## Start PostgreSQL and migrate
+## Start PostgreSQL
 
 ```bash
 cd ~/cxgeorgia
 docker compose up -d postgres
-
-cd apps/backend
-source .venv/bin/activate
-alembic upgrade head
+cd apps/backend && alembic upgrade head
 ```
 
 Do **not** use `docker compose down -v` unless you intentionally want to wipe local data.
 
-## Run the server
+## Workspace API examples
 
 ```bash
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-## Auth API examples
-
-Register:
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/auth/register \
+LOGIN_RESPONSE=$(curl -s -X POST http://127.0.0.1:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"founder@example.com","password":"StrongPass123","full_name":"Founder"}'
-```
+  -d '{"email":"founder@example.com","password":"StrongPass123"}')
 
-Login:
+TOKEN=$(python -c 'import json,sys; print(json.load(sys.stdin)["data"]["access_token"])' <<< "$LOGIN_RESPONSE")
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
+curl -X POST http://127.0.0.1:8000/api/v1/workspaces \
   -H "Content-Type: application/json" \
-  -d '{"email":"founder@example.com","password":"StrongPass123"}'
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name":"Acme Support"}'
+
+curl http://127.0.0.1:8000/api/v1/workspaces \
+  -H "Authorization: Bearer $TOKEN"
 ```
-
-Current user:
-
-```bash
-curl http://127.0.0.1:8000/api/v1/auth/me \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-OpenAPI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ## Tests
 
@@ -82,16 +62,6 @@ pytest
 ruff check .
 ```
 
-Auth API integration tests require PostgreSQL to be running.
-
-## What is not implemented
-
-- Refresh tokens, logout, password reset, email verification
-- Workspace creation on registration
-- RBAC enforcement beyond authenticated `/me`
-- Frontend auth UI
-
 ## Related docs
 
 - [Backend README](../../apps/backend/README.md)
-- [Security baseline](../security/security-baseline.md)

@@ -53,3 +53,37 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
 def response_data(response) -> dict:
     return response.json()["data"]
+
+
+async def register_user(
+    client: AsyncClient,
+    *,
+    email: str,
+    password: str = "StrongPass123",
+    full_name: str | None = "Test User",
+) -> None:
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": password, "full_name": full_name},
+    )
+    assert response.status_code == 201
+
+
+async def login_user(
+    client: AsyncClient,
+    *,
+    email: str,
+    password: str = "StrongPass123",
+) -> str:
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": password},
+    )
+    assert response.status_code == 200
+    return response_data(response)["access_token"]
+
+
+async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
+    await register_user(client, email=email)
+    token = await login_user(client, email=email)
+    return {"Authorization": f"Bearer {token}"}

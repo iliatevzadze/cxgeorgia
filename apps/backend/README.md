@@ -4,65 +4,60 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 4: backend auth API)
+**Phase 1 — SaaS Base** (Step 5: workspace bootstrap API)
 
-Phase 1 / Step 5 has **not started**. No refresh tokens, email verification, password reset, or frontend auth UI.
+Phase 1 / Step 6 has **not started**. No frontend workspace UI, invitations, or advanced RBAC.
 
-## What exists now
-
-- FastAPI application with `GET /health` (unchanged — no database check)
-- Auth API under `/api/v1/auth`: register, login, current user
-- `password_hash` on `users` (migration `0003`)
-- bcrypt password hashing and JWT access tokens
-- Core SaaS models: `User`, `Workspace`, `WorkspaceMembership`
-- Alembic migrations through `0003`
-
-## Auth API (Phase 1 / Step 4)
+## Auth API
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/v1/auth/register` | Create account (returns `UserRead`) |
-| POST | `/api/v1/auth/login` | Returns bearer `access_token` |
-| GET | `/api/v1/auth/me` | Current user (`Authorization: Bearer`) |
+| POST | `/api/v1/auth/register` | Create account |
+| POST | `/api/v1/auth/login` | Bearer access token |
+| GET | `/api/v1/auth/me` | Current user |
 
-Responses use the standard envelope: `{ "data", "meta", "error" }`.
+## Workspace API (Phase 1 / Step 5)
 
-No refresh tokens, logout, email verification, password reset, or workspace creation on registration.
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/workspaces` | Create workspace + owner membership |
+| GET | `/api/v1/workspaces` | List current user's active workspaces |
+| GET | `/api/v1/workspaces/{workspace_id}` | Workspace detail (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/memberships` | Active memberships (members only) |
+
+All workspace endpoints require `Authorization: Bearer <token>`.
+
+Creating a workspace automatically assigns the current user `owner` role. Slugs are generated from the workspace name (`acme-support`, `acme-support-2`, …).
+
+No invitation flow, workspace switcher UI, or advanced RBAC yet.
 
 ## Manual curl examples
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
+# Login first, then:
+curl -X POST http://localhost:8000/api/v1/workspaces \
   -H "Content-Type: application/json" \
-  -d '{"email":"founder@example.com","password":"StrongPass123","full_name":"Founder"}'
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name":"Acme Support"}'
 
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"founder@example.com","password":"StrongPass123"}'
-
-TOKEN="paste_access_token_here"
-curl http://localhost:8000/api/v1/auth/me \
+curl http://localhost:8000/api/v1/workspaces \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Migrations
 
-```bash
-docker compose up -d postgres
-cd apps/backend && source .venv/bin/activate
-alembic upgrade head
-```
+Alembic head: `0003` (no new migration in Step 5).
 
 ## Tests
-
-Auth API tests require PostgreSQL (Docker Compose). Unit tests for models/utilities do not.
 
 ```bash
 pytest
 ruff check .
 ```
 
+Workspace API tests require PostgreSQL (Docker Compose).
+
 ## Related docs
 
 - [Backend local development](../../docs/development/backend-local.md)
-- [Security baseline](../../docs/security/security-baseline.md)
+- [RBAC](../../docs/security/rbac.md)

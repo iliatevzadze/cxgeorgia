@@ -8,15 +8,7 @@ RBAC applies within a **workspace** (tenant). A user can belong to multiple work
 
 ## Roles
 
-Phase 1 / Step 2 stores minimal tenant roles on `workspace_memberships.role`:
-
-| Role | Planned purpose |
-|------|-----------------|
-| `owner` | Workspace creator; ultimate authority |
-| `admin` | Day-to-day administration |
-| `member` | Standard workspace member |
-
-Future phases may add `agent` and `viewer` (see below). **No RBAC enforcement code exists yet.**
+Phase 1 / Step 2 stores minimal tenant roles on `workspace_memberships.role`. Step 5 allows authenticated users to create workspaces and receive `owner` membership automatically. **No RBAC enforcement or invitation flow exists yet.**
 
 ### Owner (planned enforcement)
 

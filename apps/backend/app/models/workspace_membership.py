@@ -47,12 +47,20 @@ class WorkspaceMembership(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
     )
     role: Mapped[WorkspaceMemberRole] = mapped_column(
-        Enum(WorkspaceMemberRole, name="workspace_member_role"),
+        Enum(
+            WorkspaceMemberRole,
+            name="workspace_member_role",
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
         default=WorkspaceMemberRole.MEMBER,
         server_default=WorkspaceMemberRole.MEMBER.value,
     )
     status: Mapped[WorkspaceMemberStatus] = mapped_column(
-        Enum(WorkspaceMemberStatus, name="workspace_member_status"),
+        Enum(
+            WorkspaceMemberStatus,
+            name="workspace_member_status",
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
         default=WorkspaceMemberStatus.ACTIVE,
         server_default=WorkspaceMemberStatus.ACTIVE.value,
     )
