@@ -104,7 +104,7 @@ async def update_case(
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
-    """Update universal case title, description, status and/or priority."""
+    """Update universal case fields allowed by PATCH."""
     _ = membership
     case = await session.scalar(
         select(UniversalCase).where(
@@ -126,6 +126,14 @@ async def update_case(
         case.status = body.status
     if body.priority is not None:
         case.priority = body.priority
+    if body.source is not None:
+        case.source = body.source
+    if "customer_name" in body.model_fields_set:
+        case.customer_name = body.customer_name
+    if "customer_email" in body.model_fields_set:
+        case.customer_email = body.customer_email
+    if "external_reference" in body.model_fields_set:
+        case.external_reference = body.external_reference
 
     await session.commit()
     await session.refresh(case)

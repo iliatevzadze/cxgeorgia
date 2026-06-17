@@ -547,13 +547,12 @@ async def test_patch_case_forbidden_fields_return_422(client: AsyncClient) -> No
         f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
         json={
             "status": "pending",
-            "source": "email",
-            "customer_name": "Changed name",
-            "customer_email": "changed@example.com",
-            "external_reference": "EXT-1",
+            "id": str(uuid.uuid4()),
             "workspace_id": str(uuid.uuid4()),
             "created_by_user_id": str(uuid.uuid4()),
             "assigned_to_user_id": str(uuid.uuid4()),
+            "created_at": "2020-01-01T00:00:00+00:00",
+            "updated_at": "2020-01-01T00:00:00+00:00",
         },
         headers=headers,
     )
@@ -707,3 +706,368 @@ async def test_patch_case_title_description_status_and_priority_together(
     assert data["description"] == "Full update description"
     assert data["status"] == CaseStatus.RESOLVED.value
     assert data["priority"] == CasePriority.HIGH.value
+
+
+async def test_patch_case_source_only_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-source-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Source Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"source": "email"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["source"] == CaseSource.EMAIL.value
+
+
+async def test_patch_case_invalid_source_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-bad-source-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Bad Source")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"source": "not-a-source"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_source_null_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-null-source-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Null Source")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"source": None},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_customer_name_only_as_workspace_member(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-cust-name-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Customer Name")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_name": "Nino Beridze"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_name"] == "Nino Beridze"
+
+
+async def test_patch_case_customer_email_only_as_workspace_member(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-cust-email-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Customer Email")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_email": "nino@example.com"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_email"] == "nino@example.com"
+
+
+async def test_patch_case_external_reference_only_as_workspace_member(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-ext-ref-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch External Ref")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"external_reference": "EXT-42"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["external_reference"] == "EXT-42"
+
+
+async def test_patch_case_customer_name_is_trimmed(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-trim-name-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Trim Name")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_name": "  Trimmed Name  "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_name"] == "Trimmed Name"
+
+
+async def test_patch_case_customer_email_is_trimmed(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-trim-email-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Trim Email")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_email": "  trim@example.com  "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_email"] == "trim@example.com"
+
+
+async def test_patch_case_external_reference_is_trimmed(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-trim-ref-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Trim Ref")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"external_reference": "  EXT-99  "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["external_reference"] == "EXT-99"
+
+
+async def test_patch_case_empty_customer_name_clears_to_null(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-empty-name-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Empty Name")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "customer_name": "Existing name"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_name": "   "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_name"] is None
+
+
+async def test_patch_case_empty_customer_email_clears_to_null(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-empty-email-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Empty Email")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "customer_email": "keep@example.com"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_email": ""},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_email"] is None
+
+
+async def test_patch_case_empty_external_reference_clears_to_null(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-empty-ref-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Empty Ref")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "external_reference": "EXT-OLD"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"external_reference": "  "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["external_reference"] is None
+
+
+async def test_patch_case_clear_customer_name_with_null(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-null-name-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Null Name")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "customer_name": "Existing name"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_name": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_name"] is None
+
+
+async def test_patch_case_clear_customer_email_with_null(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-null-email-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Null Email")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "customer_email": "keep@example.com"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_email": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_email"] is None
+
+
+async def test_patch_case_clear_external_reference_with_null(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-null-ref-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Null Ref")
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case", "external_reference": "EXT-OLD"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"external_reference": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["external_reference"] is None
+
+
+async def test_patch_case_source_and_customer_metadata_together(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-source-customer-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Source Customer")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={
+            "source": "phone",
+            "customer_name": "Giorgi",
+            "customer_email": "giorgi@example.com",
+            "external_reference": "EXT-100",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["source"] == CaseSource.PHONE.value
+    assert data["customer_name"] == "Giorgi"
+    assert data["customer_email"] == "giorgi@example.com"
+    assert data["external_reference"] == "EXT-100"
+
+
+async def test_patch_case_all_allowed_fields_together(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-all-allowed-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch All Allowed")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={
+            "title": "Full case title",
+            "description": "Full case description",
+            "status": "pending",
+            "priority": "urgent",
+            "source": "web",
+            "customer_name": "Mariam",
+            "customer_email": "mariam@example.com",
+            "external_reference": "EXT-FULL",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["title"] == "Full case title"
+    assert data["description"] == "Full case description"
+    assert data["status"] == CaseStatus.PENDING.value
+    assert data["priority"] == CasePriority.URGENT.value
+    assert data["source"] == CaseSource.WEB.value
+    assert data["customer_name"] == "Mariam"
+    assert data["customer_email"] == "mariam@example.com"
+    assert data["external_reference"] == "EXT-FULL"

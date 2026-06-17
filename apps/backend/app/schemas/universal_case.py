@@ -30,7 +30,7 @@ class UniversalCaseCreate(BaseModel):
 
 
 class UniversalCaseUpdate(BaseModel):
-    """Update universal case title, description, status and/or priority."""
+    """Update universal case fields allowed by PATCH."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -38,6 +38,10 @@ class UniversalCaseUpdate(BaseModel):
     description: str | None = None
     status: CaseStatus | None = None
     priority: CasePriority | None = None
+    source: CaseSource | None = None
+    customer_name: str | None = Field(default=None, max_length=255)
+    customer_email: str | None = Field(default=None, max_length=320)
+    external_reference: str | None = Field(default=None, max_length=255)
 
     @field_validator("title", mode="before")
     @classmethod
@@ -64,15 +68,32 @@ class UniversalCaseUpdate(BaseModel):
             return value.strip()
         return value
 
+    @field_validator(
+        "customer_name",
+        "customer_email",
+        "external_reference",
+        mode="before",
+    )
+    @classmethod
+    def strip_optional_customer_text(cls, value: object) -> object:
+        if value is None:
+            return value
+        if isinstance(value, str):
+            trimmed = value.strip()
+            return trimmed or None
+        return value
+
     @model_validator(mode="after")
     def require_at_least_one_field(self) -> "UniversalCaseUpdate":
         if not self.model_fields_set:
             raise ValueError(
-                "At least one of title, description, status or priority "
-                "must be provided"
+                "At least one of title, description, status, priority, source, "
+                "customer_name, customer_email or external_reference must be provided"
             )
         if "title" in self.model_fields_set and self.title is None:
             raise ValueError("Title must not be null")
+        if "source" in self.model_fields_set and self.source is None:
+            raise ValueError("Source must not be null")
         return self
 
 
