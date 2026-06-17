@@ -9,7 +9,7 @@
     "subtitle": "Georgian-first customer experience platform",
     "description": "Frontend foundation for a local-first CX platform.",
     "statusLabel": "Current status",
-    "statusValue": "Frontend workspace foundation is ready",
+    "statusValue": "Workspace app shell foundation is ready",
     "backendLabel": "Backend",
     "backendValue": "Auth API and workspace API are ready",
     "infrastructureLabel": "Local services",
@@ -75,6 +75,12 @@
     }
   },
   "workspaces": {
+    "common": {
+      "loading": "Loading...",
+      "loadError": "Could not load workspace.",
+      "notFound": "Workspace not found.",
+      "accessDenied": "You do not have access to this workspace."
+    },
     "nav": {
       "myWorkspaces": "My workspaces",
       "createWorkspace": "New workspace"
@@ -110,6 +116,7 @@
       "statusLabel": "Status",
       "roleLabel": "Your role",
       "membershipsLink": "Memberships",
+      "openAppLink": "Open app",
       "backToList": "Back to list",
       "loading": "Loading...",
       "error": "Workspace not found or access denied."
@@ -124,6 +131,37 @@
       "error": "Could not load memberships.",
       "empty": "No active memberships found.",
       "backToWorkspace": "Back to workspace"
+    },
+    "app": {
+      "shell": {
+        "label": "Workspace app",
+        "statusLabel": "Status",
+        "roleLabel": "Role",
+        "accountNav": "Account",
+        "account": "Account",
+        "allWorkspaces": "All workspaces",
+        "logout": "Log out",
+        "workspaceDetail": "Workspace details",
+        "backToWorkspaces": "Back to workspaces"
+      },
+      "nav": {
+        "label": "Modules",
+        "home": "Home",
+        "dashboard": "Dashboard (soon)",
+        "cases": "Cases (soon)",
+        "customers": "Customers (soon)",
+        "settings": "Settings (soon)"
+      },
+      "home": {
+        "title": "Workspace app",
+        "description": "Workspace-scoped app foundation for this workspace.",
+        "ready": "The workspace app shell is ready.",
+        "notBuiltTitle": "Not built yet",
+        "notBuiltDashboard": "Dashboard",
+        "notBuiltCases": "Universal Case workflow",
+        "notBuiltCustomers": "Customers module",
+        "notBuiltIntegrations": "Integrations"
+      }
     }
   }
 }

@@ -9,7 +9,7 @@
     "subtitle": "ქართული მომხმარებელთა გამოცდილების პლატფორმა",
     "description": "ლოკალური, Georgian-first CX პლატფორმის frontend საფუძველი.",
     "statusLabel": "მიმდინარე სტატუსი",
-    "statusValue": "Frontend workspace საფუძველი მზადაა",
+    "statusValue": "Workspace app shell საფუძველი მზადაა",
     "backendLabel": "Backend",
     "backendValue": "Auth API და workspace API მზადაა",
     "infrastructureLabel": "Local services",
@@ -75,6 +75,12 @@
     }
   },
   "workspaces": {
+    "common": {
+      "loading": "იტვირთება...",
+      "loadError": "სივრცის ჩატვირთვა ვერ მოხერხდა.",
+      "notFound": "სივრცე ვერ მოიძებნა.",
+      "accessDenied": "ამ სივრცეზე წვდომა არ გაქვთ."
+    },
     "nav": {
       "myWorkspaces": "ჩემი სივრცეები",
       "createWorkspace": "ახალი სივრცე"
@@ -110,6 +116,7 @@
       "statusLabel": "სტატუსი",
       "roleLabel": "თქვენი როლი",
       "membershipsLink": "წევრობები",
+      "openAppLink": "აპის გახსნა",
       "backToList": "სიაზე დაბრუნება",
       "loading": "იტვირთება...",
       "error": "სივრცე ვერ მოიძებნა ან წვდომა არ გაქვთ."
@@ -124,6 +131,37 @@
       "error": "წევრობების ჩატვირთვა ვერ მოხერხდა.",
       "empty": "აქტიური წევრობები ვერ მოიძებნა.",
       "backToWorkspace": "სივრცეზე დაბრუნება"
+    },
+    "app": {
+      "shell": {
+        "label": "Workspace აპი",
+        "statusLabel": "სტატუსი",
+        "roleLabel": "როლი",
+        "accountNav": "ანგარიში",
+        "account": "ანგარიში",
+        "allWorkspaces": "ყველა სივრცე",
+        "logout": "გასვლა",
+        "workspaceDetail": "სივრცის დეტალები",
+        "backToWorkspaces": "სივრცეებზე დაბრუნება"
+      },
+      "nav": {
+        "label": "მოდულები",
+        "home": "მთავარი",
+        "dashboard": "დაფა (მალე)",
+        "cases": "ქეისები (მალე)",
+        "customers": "მომხმარებლები (მალე)",
+        "settings": "პარამეტრები (მალე)"
+      },
+      "home": {
+        "title": "Workspace აპი",
+        "description": "ამ სივრცისთვის workspace-scoped აპის საფუძველი.",
+        "ready": "Workspace აპის საფუძველი მზადაა.",
+        "notBuiltTitle": "ჯერ არ არის დამატებული",
+        "notBuiltDashboard": "სამუშაო დაფა",
+        "notBuiltCases": "Universal Case workflow",
+        "notBuiltCustomers": "მომხმარებლების მოდული",
+        "notBuiltIntegrations": "ინტეგრაციები"
+      }
     }
   }
 }

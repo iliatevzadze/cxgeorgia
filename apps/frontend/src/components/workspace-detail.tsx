@@ -1,23 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 
 import { RequireAuth } from "@/components/require-auth";
-import { useAuth } from "@/hooks/use-auth";
-import { ApiError } from "@/lib/api/errors";
-import { getAccessToken } from "@/lib/auth/token-storage";
-import {
-  getWorkspace,
-  listWorkspaceMemberships,
-} from "@/lib/workspaces/api";
-import type {
-  WorkspaceMembershipRead,
-  WorkspaceRead,
-} from "@/lib/workspaces/types";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceDetailProps = {
   workspaceId: string;
@@ -25,64 +14,8 @@ type WorkspaceDetailProps = {
 
 function WorkspaceDetailContent({ workspaceId }: WorkspaceDetailProps) {
   const t = useTranslations("workspaces.detail");
-  const { user } = useAuth();
-
-  const [workspace, setWorkspace] = useState<WorkspaceRead | null>(null);
-  const [membership, setMembership] = useState<WorkspaceMembershipRead | null>(
-    null,
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadWorkspace() {
-      const token = getAccessToken();
-      if (!token || !user) {
-        return;
-      }
-
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      try {
-        const [workspaceData, memberships] = await Promise.all([
-          getWorkspace(workspaceId, token),
-          listWorkspaceMemberships(workspaceId, token),
-        ]);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setWorkspace(workspaceData);
-        setMembership(
-          memberships.find((item) => item.user_id === user.id) ?? null,
-        );
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        if (error instanceof ApiError) {
-          setErrorMessage(error.message);
-        } else {
-          setErrorMessage(t("error"));
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadWorkspace();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [workspaceId, user, t]);
+  const { workspace, membership, isLoading, errorMessage } =
+    useWorkspace(workspaceId);
 
   if (isLoading) {
     return <p className="workspace-status">{t("loading")}</p>;
@@ -95,7 +28,7 @@ function WorkspaceDetailContent({ workspaceId }: WorkspaceDetailProps) {
           {errorMessage ?? t("error")}
         </p>
         <p className="auth-form-footer">
-          <Link href="/workspaces">{t("backToList")}</Link>
+          <Link href={workspaceRoutes.list()}>{t("backToList")}</Link>
         </p>
       </section>
     );
@@ -126,10 +59,16 @@ function WorkspaceDetailContent({ workspaceId }: WorkspaceDetailProps) {
       </dl>
 
       <p className="workspace-actions">
-        <Link href={`/workspaces/${workspace.id}/memberships`}>
+        <Link
+          href={workspaceRoutes.app(workspace.id)}
+          className="workspace-button-link"
+        >
+          {t("openAppLink")}
+        </Link>
+        <Link href={workspaceRoutes.memberships(workspace.id)}>
           {t("membershipsLink")}
         </Link>
-        <Link href="/workspaces">{t("backToList")}</Link>
+        <Link href={workspaceRoutes.list()}>{t("backToList")}</Link>
       </p>
     </section>
   );

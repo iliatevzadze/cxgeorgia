@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 7).
+Guide for running the Next.js frontend locally (Phase 1 / Step 8).
 
 ## Scope
 
@@ -10,10 +10,11 @@ This frontend includes:
 - `next-intl` for Georgian (`ka`) and English (`en`)
 - Auth foundation: login, register, account pages
 - Workspace foundation: list, create, detail, memberships pages
+- Workspace app shell at `/workspaces/{id}/app`
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
 
-It does **not** include dashboard, Universal Case UI, invitations, or advanced RBAC.
+It does **not** include dashboard, Universal Case UI, customers, billing, integrations, invitations, or advanced RBAC.
 
 ## Prerequisites
 
@@ -65,6 +66,7 @@ Use `--hostname localhost` (configured in `package.json`). Do **not** use `next 
 | [http://127.0.0.1:3000/ka/account](http://127.0.0.1:3000/ka/account) | Account (requires login) |
 | [http://127.0.0.1:3000/ka/workspaces](http://127.0.0.1:3000/ka/workspaces) | Workspace list (requires login) |
 | [http://127.0.0.1:3000/ka/workspaces/new](http://127.0.0.1:3000/ka/workspaces/new) | Create workspace |
+| `http://127.0.0.1:3000/ka/workspaces/{id}/app` | Workspace app shell (after login) |
 
 Visiting `/` redirects to `/ka` (default locale).
 
@@ -75,7 +77,8 @@ Visiting `/` redirects to `/ka` (default locale).
 3. Open `/ka/workspaces`.
 4. If empty, open `/ka/workspaces/new` and create a workspace.
 5. Confirm the workspace appears in the list.
-6. Open workspace detail and memberships pages.
+6. Open workspace detail and click **Open app**.
+7. Confirm `/ka/workspaces/{id}/app` shows the workspace app shell.
 
 ## Build and quality checks
 
@@ -92,8 +95,8 @@ Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` 
 
 ## What is intentionally not implemented
 
-- Product dashboard, workspace switcher, cases, customers
-- Invitation flow and advanced RBAC UI
+- Product dashboard, Universal Case, customers, billing, integrations
+- Workspace switcher, invitation flow and advanced RBAC UI
 - HttpOnly refresh tokens
 - React Query, SWR, Tailwind, shadcn, MUI
 - Playwright E2E tests

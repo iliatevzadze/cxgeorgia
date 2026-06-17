@@ -410,3 +410,142 @@ a {
   padding: 1rem 0;
   border-top: 1px solid #e2e8f0;
 }
+
+.workspace-app-page {
+  max-width: 64rem;
+}
+
+.workspace-app {
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+  overflow: hidden;
+}
+
+.workspace-app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.workspace-app-brand h1 {
+  margin: 0.25rem 0 0.35rem;
+  font-size: 1.35rem;
+}
+
+.workspace-app-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.workspace-app-meta {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.workspace-app-account-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.workspace-app-body {
+  display: grid;
+  gap: 0;
+}
+
+@media (min-width: 48rem) {
+  .workspace-app-body {
+    grid-template-columns: 14rem 1fr;
+  }
+}
+
+.workspace-app-sidebar {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+@media (min-width: 48rem) {
+  .workspace-app-sidebar {
+    border-bottom: 0;
+    border-right: 1px solid #e2e8f0;
+    min-height: 20rem;
+  }
+}
+
+.workspace-app-module-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.workspace-app-nav-item {
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.workspace-app-nav-item.is-active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.workspace-app-nav-item.is-disabled {
+  color: #94a3b8;
+}
+
+.workspace-app-sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.workspace-app-main {
+  padding: 1.5rem;
+}
+
+.workspace-app-home h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.workspace-app-home h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.workspace-app-ready {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.workspace-app-not-built {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #475569;
+}
+
+.workspace-app-error {
+  margin: 0;
+}

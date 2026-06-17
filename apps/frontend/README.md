@@ -4,9 +4,9 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 7: frontend workspace foundation)
+**Phase 1 — SaaS Base** (Step 8: workspace app shell foundation)
 
-Phase 1 / Step 8 has **not started**. No dashboard, Universal Case UI, or invitation flow yet.
+Phase 1 / Step 9 has **not started**. No dashboard, Universal Case UI, customers, billing, integrations, or invitation flow yet.
 
 ## What exists now
 
@@ -17,8 +17,10 @@ Phase 1 / Step 8 has **not started**. No dashboard, Universal Case UI, or invita
 - Same-origin `/api/v1` proxy via Next.js rewrites
 - Auth pages: login, register, account (`/me`)
 - Workspace pages: list, create, detail, memberships
+- Workspace app shell: `/workspaces/{id}/app` with placeholder module navigation
+- `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
-- `AuthProvider`, `useAuth`, and `useWorkspaces` hooks
+- `AuthProvider`, `useAuth`, `useWorkspaces`, and `useWorkspace` hooks
 - Protected workspace routes via `RequireAuth`
 - i18n key consistency and unit tests
 - Docker container runs as non-root `node`; Next.js telemetry disabled in Docker (`NEXT_TELEMETRY_DISABLED=1`)
@@ -51,6 +53,7 @@ All workspace routes require login.
 | `/ka/workspaces/new`, `/en/workspaces/new` | Create workspace (`POST /api/v1/workspaces`) |
 | `/ka/workspaces/{id}`, `/en/workspaces/{id}` | Workspace detail (`GET /api/v1/workspaces/{id}`) |
 | `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
+| `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app shell (foundation only) |
 
 ## API integration
 

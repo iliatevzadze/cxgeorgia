@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 7: frontend workspace foundation)
+**Phase 1 — SaaS Base** (Step 8: workspace app shell foundation)
 
-Frontend workspace list, create, detail, and memberships pages connect to the backend workspace API. **No dashboard yet.**
+Authenticated workspace-scoped app shell at `/workspaces/{id}/app`. **No dashboard, Universal Case, or product modules yet.**
 
-Phase 1 / Step 8 has **not started**.
+Phase 1 / Step 9 has **not started**.
 
 ## Confirmed stack
 
@@ -286,7 +286,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Workspace bootstrap API (Phase 1 / Step 5)
 - [x] Frontend auth foundation (Phase 1 / Step 6)
 - [x] Frontend workspace foundation (Phase 1 / Step 7)
-- [ ] Phase 1 / Step 8 (not started)
+- [x] Workspace app shell foundation (Phase 1 / Step 8)
+- [ ] Phase 1 / Step 9 (not started)
 
 ## License
 
