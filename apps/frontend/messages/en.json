@@ -4,18 +4,17 @@
     "description": "Initial frontend foundation for a Georgian-first customer experience platform"
   },
   "home": {
-    "phase": "Phase 0",
+    "phase": "Phase 1",
     "title": "Georgian CX Platform",
     "subtitle": "Georgian-first customer experience platform",
-    "description": "Initial frontend foundation for a local-first CX platform.",
+    "description": "Frontend foundation for a local-first CX platform.",
     "statusLabel": "Current status",
-    "statusValue": "Frontend skeleton and i18n are being prepared",
+    "statusValue": "Frontend auth foundation is ready",
     "backendLabel": "Backend",
-    "backendValue": "Health check is ready",
+    "backendValue": "Auth API and workspace API are ready",
     "infrastructureLabel": "Local services",
     "infrastructureValue": "PostgreSQL, Redis, MinIO and Mailpit are running",
     "notBuiltTitle": "Not built yet",
-    "notBuiltAuth": "Authentication",
     "notBuiltDashboard": "Dashboard",
     "notBuiltCases": "Universal Case workflow",
     "notBuiltIntegrations": "Real integrations",
@@ -24,5 +23,53 @@
   "locale": {
     "ka": "ქართული",
     "en": "English"
+  },
+  "auth": {
+    "common": {
+      "loading": "Loading..."
+    },
+    "nav": {
+      "label": "Authentication",
+      "login": "Log in",
+      "register": "Register",
+      "account": "Account",
+      "logout": "Log out"
+    },
+    "login": {
+      "title": "Log in",
+      "description": "Sign in to your account.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Log in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register",
+      "genericError": "Could not sign in. Please try again."
+    },
+    "register": {
+      "title": "Register",
+      "description": "Create a new account.",
+      "fullNameLabel": "Full name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 8 characters",
+      "submit": "Register",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "genericError": "Could not register. Please try again."
+    },
+    "account": {
+      "title": "My account",
+      "description": "Authenticated user profile.",
+      "emailLabel": "Email",
+      "fullNameLabel": "Full name",
+      "noFullName": "—",
+      "statusLabel": "Status",
+      "emailVerifiedLabel": "Email verified",
+      "yes": "Yes",
+      "no": "No",
+      "backHome": "Back to home"
+    }
   }
 }

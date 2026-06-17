@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { AuthProvider } from "@/components/auth-provider";
 import { routing } from "@/i18n/routing";
 
 function isSupportedLocale(locale: string): locale is (typeof routing.locales)[number] {
@@ -60,7 +61,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

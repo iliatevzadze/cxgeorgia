@@ -39,7 +39,7 @@ const en = JSON.parse(
 const kaKeys = collectKeys(ka).sort();
 const enKeys = collectKeys(en).sort();
 
-const requiredNamespaces = ["metadata", "home", "locale"];
+const requiredNamespaces = ["metadata", "home", "locale", "auth"];
 
 test("both locale files include required top-level namespaces", () => {
   for (const namespace of requiredNamespaces) {
@@ -69,7 +69,6 @@ test("required home keys exist in both locales", () => {
     "home.infrastructureLabel",
     "home.infrastructureValue",
     "home.notBuiltTitle",
-    "home.notBuiltAuth",
     "home.notBuiltDashboard",
     "home.notBuiltCases",
     "home.notBuiltIntegrations",

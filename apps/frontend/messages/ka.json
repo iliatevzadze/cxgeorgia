@@ -4,18 +4,17 @@
     "description": "ქართული მომხმარებელთა გამოცდილების პლატფორმის საწყისი ვერსია"
   },
   "home": {
-    "phase": "Phase 0",
+    "phase": "Phase 1",
     "title": "Georgian CX Platform",
     "subtitle": "ქართული მომხმარებელთა გამოცდილების პლატფორმა",
-    "description": "ლოკალური, Georgian-first CX პლატფორმის საწყისი frontend საფუძველი.",
+    "description": "ლოკალური, Georgian-first CX პლატფორმის frontend საფუძველი.",
     "statusLabel": "მიმდინარე სტატუსი",
-    "statusValue": "Frontend skeleton და i18n მზადდება",
+    "statusValue": "Frontend auth საფუძველი მზადაა",
     "backendLabel": "Backend",
-    "backendValue": "Health check მზად არის",
+    "backendValue": "Auth API და workspace API მზადაა",
     "infrastructureLabel": "Local services",
     "infrastructureValue": "PostgreSQL, Redis, MinIO და Mailpit გაშვებულია",
     "notBuiltTitle": "ჯერ არ არის დამატებული",
-    "notBuiltAuth": "ავტორიზაცია",
     "notBuiltDashboard": "სამუშაო დაფა",
     "notBuiltCases": "Universal Case workflow",
     "notBuiltIntegrations": "რეალური ინტეგრაციები",
@@ -24,5 +23,53 @@
   "locale": {
     "ka": "ქართული",
     "en": "English"
+  },
+  "auth": {
+    "common": {
+      "loading": "იტვირთება..."
+    },
+    "nav": {
+      "label": "ავტორიზაცია",
+      "login": "შესვლა",
+      "register": "რეგისტრაცია",
+      "account": "ანგარიში",
+      "logout": "გასვლა"
+    },
+    "login": {
+      "title": "შესვლა",
+      "description": "შედით თქვენს ანგარიშში.",
+      "emailLabel": "ელფოსტა",
+      "passwordLabel": "პაროლი",
+      "submit": "შესვლა",
+      "submitting": "მიმდინარეობს...",
+      "noAccount": "ანგარიში არ გაქვთ?",
+      "registerLink": "რეგისტრაცია",
+      "genericError": "შესვლა ვერ მოხერხდა. სცადეთ თავიდან."
+    },
+    "register": {
+      "title": "რეგისტრაცია",
+      "description": "შექმენით ახალი ანგარიში.",
+      "fullNameLabel": "სრული სახელი",
+      "emailLabel": "ელფოსტა",
+      "passwordLabel": "პაროლი",
+      "passwordHint": "მინიმუმ 8 სიმბოლო",
+      "submit": "რეგისტრაცია",
+      "submitting": "მიმდინარეობს...",
+      "hasAccount": "უკვე გაქვთ ანგარიში?",
+      "loginLink": "შესვლა",
+      "genericError": "რეგისტრაცია ვერ მოხერხდა. სცადეთ თავიდან."
+    },
+    "account": {
+      "title": "ჩემი ანგარიში",
+      "description": "ავტორიზებული მომხმარებლის ინფორმაცია.",
+      "emailLabel": "ელფოსტა",
+      "fullNameLabel": "სრული სახელი",
+      "noFullName": "—",
+      "statusLabel": "სტატუსი",
+      "emailVerifiedLabel": "ელფოსტა დადასტურებულია",
+      "yes": "კი",
+      "no": "არა",
+      "backHome": "მთავარ გვერდზე დაბრუნება"
+    }
   }
 }

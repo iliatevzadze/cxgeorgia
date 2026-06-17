@@ -4,27 +4,45 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 0 — Project Foundation** (Step 4: frontend skeleton + i18n)
+**Phase 1 — SaaS Base** (Step 6: frontend auth foundation)
 
-Phase 1 has **not started**. No auth, dashboard, API integration, or business logic exists yet.
+Phase 1 / Step 7 has **not started**. No dashboard, workspace UI, or business workflows yet.
 
 ## What exists now
 
 - Next.js App Router with TypeScript
 - `next-intl` with Georgian (`ka`) default and English (`en`)
 - Locale routes: `/ka`, `/en`
-- Phase 0 landing page (static, translation-driven)
-- Locale switcher
-- i18n key consistency test
+- API client with backend response envelope support
+- Same-origin `/api/v1` proxy via Next.js rewrites
+- Auth pages: login, register, account (`/me`)
+- JWT access token stored in `localStorage`
+- `AuthProvider` and `useAuth` hook
+- i18n key consistency and unit tests
 - Docker container runs as non-root `node`; Next.js telemetry disabled in Docker (`NEXT_TELEMETRY_DISABLED=1`)
 
 ## What does not exist yet
 
-- Authentication / login / registration UI
 - Dashboard, cases, customers, settings
-- Backend API integration (`GET /health` not called from frontend)
-- React Query, SWR, state management, component libraries
+- Workspace selection or workspace UI
+- React Query, SWR, or component libraries
 - Tailwind, shadcn/ui, Material UI
+- HttpOnly refresh token handling
+- Playwright E2E tests
+
+## Auth routes
+
+| Path | Description |
+|------|-------------|
+| `/ka/login`, `/en/login` | Sign in |
+| `/ka/register`, `/en/register` | Create account |
+| `/ka/account`, `/en/account` | Current user profile (`GET /api/v1/auth/me`) |
+
+## API integration
+
+Browser requests use same-origin paths such as `/api/v1/auth/login`. Next.js rewrites them to the backend (`BACKEND_URL`, default `http://localhost:8000`).
+
+Optional override: set `NEXT_PUBLIC_API_URL` to call the backend directly (requires backend CORS for browser use).
 
 ## Folder structure
 
@@ -32,6 +50,9 @@ Phase 1 has **not started**. No auth, dashboard, API integration, or business lo
 apps/frontend/
 ├── app/
 │   ├── [locale]/
+│   │   ├── account/page.tsx
+│   │   ├── login/page.tsx
+│   │   ├── register/page.tsx
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── globals.css
@@ -41,13 +62,34 @@ apps/frontend/
 │   ├── ka.json
 │   └── en.json
 ├── src/
+│   ├── components/
+│   │   ├── account-panel.tsx
+│   │   ├── auth-nav.tsx
+│   │   ├── auth-provider.tsx
+│   │   ├── login-form.tsx
+│   │   ├── locale-switcher.tsx
+│   │   ├── register-form.tsx
+│   │   └── require-auth.tsx
+│   ├── hooks/
+│   │   └── use-auth.ts
 │   ├── i18n/
 │   │   ├── routing.ts
 │   │   ├── request.ts
 │   │   └── navigation.ts
-│   └── components/
-│       └── locale-switcher.tsx
+│   └── lib/
+│       ├── api/
+│       │   ├── client.ts
+│       │   ├── config.ts
+│       │   ├── errors.ts
+│       │   └── types.ts
+│       └── auth/
+│           ├── api.ts
+│           ├── token-storage.ts
+│           └── types.ts
 ├── tests/
+│   ├── api-config.test.ts
+│   ├── api-errors.test.ts
+│   ├── auth-token-storage.test.ts
 │   └── i18n.test.ts
 ├── middleware.ts
 ├── next.config.ts
@@ -63,6 +105,8 @@ npm install
 ```
 
 ## Run dev server
+
+Requires the backend running at `http://localhost:8000` (or Docker Compose stack).
 
 ```bash
 npm run dev        # default port 3000
@@ -85,7 +129,7 @@ Root `/` redirects to `/ka` via middleware.
 From repository root:
 
 ```bash
-docker compose up -d --build frontend
+docker compose up -d --build frontend backend postgres
 ```
 
 | URL | Locale |
@@ -103,7 +147,7 @@ Dockerfile: `apps/frontend/Dockerfile` (runs as non-root `node`, telemetry disab
 npm run typecheck
 npm run lint
 npm run build
-npm run test:i18n
+npm run test
 ```
 
 ## Locales
@@ -113,8 +157,9 @@ npm run test:i18n
 | `ka` | Default — Georgian |
 | `en` | Secondary — English |
 
-All visible landing page strings come from `messages/ka.json` and `messages/en.json`.
+All visible UI strings come from `messages/ka.json` and `messages/en.json`.
 
 ## Related docs
 
 - [Frontend local development](../../docs/development/frontend-local.md)
+- [Backend local development](../../docs/development/backend-local.md)

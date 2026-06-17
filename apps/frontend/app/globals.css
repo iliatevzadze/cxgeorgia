@@ -173,3 +173,133 @@ a {
 .not-found main {
   text-align: center;
 }
+
+.auth-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.auth-nav a,
+.link-button {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-page {
+  max-width: 28rem;
+}
+
+.auth-form,
+.account-panel {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.auth-form h1,
+.account-panel h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.auth-form-description {
+  margin: 0 0 1.25rem;
+  color: #475569;
+}
+
+.auth-form-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.auth-field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.auth-field span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.auth-field input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font: inherit;
+}
+
+.auth-field small {
+  display: block;
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #1d4ed8;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-form-footer {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.account-details {
+  margin: 0;
+}
+
+.account-details div {
+  margin-bottom: 0.75rem;
+}
+
+.account-details dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.account-details dd {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+}
+
+.auth-status {
+  color: #64748b;
+}

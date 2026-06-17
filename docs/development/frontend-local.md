@@ -1,48 +1,24 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend skeleton locally (Phase 0 / Step 4).
+Guide for running the Next.js frontend locally (Phase 1 / Step 6).
 
 ## Scope
 
-This frontend is a **minimal skeleton**:
+This frontend includes:
 
 - Next.js App Router + TypeScript
 - `next-intl` for Georgian (`ka`) and English (`en`)
-- Static Phase 0 landing page
-- No backend API calls, auth, or business UI
+- Auth foundation: login, register, account pages
+- API client with same-origin `/api/v1` proxy to the backend
+- JWT access token in `localStorage`
 
-The frontend runs **without Docker** and does not require PostgreSQL, Redis, MinIO, or Mailpit.
-
-## Folder structure
-
-```text
-apps/frontend/
-├── app/
-│   ├── [locale]/           # Locale-prefixed routes (/ka, /en)
-│   ├── globals.css
-│   ├── layout.tsx          # Root passthrough layout
-│   └── not-found.tsx
-├── messages/
-│   ├── ka.json             # Georgian strings
-│   └── en.json             # English strings
-├── src/
-│   ├── i18n/
-│   │   ├── routing.ts      # Locale config (ka default, en secondary)
-│   │   ├── request.ts      # next-intl request config
-│   │   └── navigation.ts   # Localized Link helpers
-│   └── components/
-│       └── locale-switcher.tsx
-├── tests/
-│   └── i18n.test.ts        # Message key consistency
-├── middleware.ts           # Locale routing middleware
-├── next.config.ts
-└── package.json
-```
+It does **not** include dashboard, workspace UI, cases, or integrations.
 
 ## Prerequisites
 
 - Node.js 20+ (LTS recommended)
 - npm
+- Backend running at `http://localhost:8000` with PostgreSQL migrated
 
 ## Setup
 
@@ -51,11 +27,30 @@ cd apps/frontend
 npm install
 ```
 
-No `.env.local` is required for this step.
+From repository root, ensure `.env` exists (copy from `.env.example`). The frontend uses:
+
+| Variable | Purpose |
+|----------|---------|
+| `BACKEND_URL` | Next.js rewrite target (default `http://localhost:8000`) |
+| `NEXT_PUBLIC_API_URL` | Optional direct backend URL; leave empty for same-origin proxy |
+
+No `apps/frontend/.env.local` is required when using root `.env` with Docker Compose. For local `npm run dev`, defaults in `next.config.ts` point to `http://localhost:8000`.
 
 ## Development
 
+Start infrastructure and backend first:
+
 ```bash
+cd ~/cxgeorgia
+docker compose up -d postgres
+cd apps/backend && source .venv/bin/activate && alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+```
+
+Then start the frontend:
+
+```bash
+cd apps/frontend
 npm run dev        # port 3000
 npm run dev:3001   # port 3001
 ```
@@ -64,9 +59,10 @@ Use `--hostname localhost` (configured in `package.json`). Do **not** use `next 
 
 | URL | Content |
 |-----|---------|
-| [http://127.0.0.1:3000/ka](http://127.0.0.1:3000/ka) | Georgian landing page |
-| [http://127.0.0.1:3000/en](http://127.0.0.1:3000/en) | English landing page |
-| [http://127.0.0.1:3001/ka](http://127.0.0.1:3001/ka) | Georgian (when using `dev:3001`) |
+| [http://127.0.0.1:3000/ka](http://127.0.0.1:3000/ka) | Georgian home |
+| [http://127.0.0.1:3000/ka/login](http://127.0.0.1:3000/ka/login) | Login |
+| [http://127.0.0.1:3000/ka/register](http://127.0.0.1:3000/ka/register) | Register |
+| [http://127.0.0.1:3000/ka/account](http://127.0.0.1:3000/ka/account) | Account (requires login) |
 
 Visiting `/` redirects to `/ka` (default locale).
 
@@ -76,32 +72,19 @@ Visiting `/` redirects to `/ka` (default locale).
 npm run typecheck
 npm run lint
 npm run build
-npm run test:i18n
+npm run test
 ```
 
-## i18n structure
+## API proxy
 
-| File | Purpose |
-|------|---------|
-| `src/i18n/routing.ts` | `locales: ["ka", "en"]`, `defaultLocale: "ka"` |
-| `src/i18n/request.ts` | Loads messages from `messages/{locale}.json` |
-| `messages/ka.json` | Georgian UI strings |
-| `messages/en.json` | English UI strings |
-
-Visible landing page text must come from message files — not hardcoded in components.
-
-The locale switcher links between `/ka` and `/en` without persisting user preference yet.
+Client code calls relative paths such as `/api/v1/auth/login`. `next.config.ts` rewrites them to `BACKEND_URL/api/v1/...`, so the browser stays same-origin and CORS is not required for the default setup.
 
 ## What is intentionally not implemented
 
-- Login, registration, dashboard, cases, customers
-- Backend health check integration
-- API client, React Query, SWR
-- Auth tokens, cookies, localStorage
-- Server actions that mutate data
-- Component libraries (Tailwind, shadcn, MUI)
+- Dashboard, workspace switcher, cases, customers
+- HttpOnly refresh tokens
+- React Query, SWR, Tailwind, shadcn, MUI
 - Playwright E2E tests
-- Frontend Docker container
 
 ## Related docs
 

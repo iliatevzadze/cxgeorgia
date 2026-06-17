@@ -9,7 +9,9 @@
     "build": "next build",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:i18n": "tsx tests/i18n.test.ts"
+    "test:i18n": "tsx tests/i18n.test.ts",
+    "test:unit": "tsx tests/api-config.test.ts && tsx tests/api-errors.test.ts && tsx tests/auth-token-storage.test.ts",
+    "test": "npm run test:i18n && npm run test:unit"
   },
   "dependencies": {
     "next": "^15.2.0",

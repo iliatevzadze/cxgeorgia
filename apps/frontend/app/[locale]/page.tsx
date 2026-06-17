@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AuthNav } from "@/components/auth-nav";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 
 type HomePageProps = {
@@ -14,7 +15,6 @@ export default async function HomePage({ params }: HomePageProps) {
   const t = await getTranslations("home");
 
   const notBuiltItems = [
-    t("notBuiltAuth"),
     t("notBuiltDashboard"),
     t("notBuiltCases"),
     t("notBuiltIntegrations"),
@@ -54,6 +54,7 @@ export default async function HomePage({ params }: HomePageProps) {
       </section>
 
       <footer className="page-footer">
+        <AuthNav />
         <LocaleSwitcher languageLabel={t("language")} />
       </footer>
     </main>
