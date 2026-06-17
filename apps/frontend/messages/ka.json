@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "title": "Georgian CX Platform",
+    "description": "ქართული მომხმარებელთა გამოცდილების პლატფორმის საწყისი ვერსია"
+  },
+  "home": {
+    "phase": "Phase 0",
+    "title": "Georgian CX Platform",
+    "subtitle": "ქართული მომხმარებელთა გამოცდილების პლატფორმა",
+    "description": "ლოკალური, Georgian-first CX პლატფორმის საწყისი frontend საფუძველი.",
+    "statusLabel": "მიმდინარე სტატუსი",
+    "statusValue": "Frontend skeleton და i18n მზადდება",
+    "backendLabel": "Backend",
+    "backendValue": "Health check მზად არის",
+    "infrastructureLabel": "Local services",
+    "infrastructureValue": "PostgreSQL, Redis, MinIO და Mailpit გაშვებულია",
+    "notBuiltTitle": "ჯერ არ არის დამატებული",
+    "notBuiltAuth": "ავტორიზაცია",
+    "notBuiltDashboard": "სამუშაო დაფა",
+    "notBuiltCases": "Universal Case workflow",
+    "notBuiltIntegrations": "რეალური ინტეგრაციები",
+    "language": "ენა"
+  },
+  "locale": {
+    "ka": "ქართული",
+    "en": "English"
+  }
+}

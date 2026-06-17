@@ -1,0 +1,30 @@
+{
+  "name": "georgian-cx-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname localhost",
+    "dev:3000": "next dev --hostname localhost --port 3000",
+    "dev:3001": "next dev --hostname localhost --port 3001",
+    "build": "next build",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:i18n": "tsx tests/i18n.test.ts"
+  },
+  "dependencies": {
+    "next": "^15.2.0",
+    "next-intl": "^3.26.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.22.0",
+    "eslint-config-next": "^15.2.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
+coverage/
+htmlcov/
+.minio/
+
+# TypeScript build cache
+*.tsbuildinfo

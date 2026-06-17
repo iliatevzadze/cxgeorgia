@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "title": "Georgian CX Platform",
+    "description": "Initial frontend foundation for a Georgian-first customer experience platform"
+  },
+  "home": {
+    "phase": "Phase 0",
+    "title": "Georgian CX Platform",
+    "subtitle": "Georgian-first customer experience platform",
+    "description": "Initial frontend foundation for a local-first CX platform.",
+    "statusLabel": "Current status",
+    "statusValue": "Frontend skeleton and i18n are being prepared",
+    "backendLabel": "Backend",
+    "backendValue": "Health check is ready",
+    "infrastructureLabel": "Local services",
+    "infrastructureValue": "PostgreSQL, Redis, MinIO and Mailpit are running",
+    "notBuiltTitle": "Not built yet",
+    "notBuiltAuth": "Authentication",
+    "notBuiltDashboard": "Dashboard",
+    "notBuiltCases": "Universal Case workflow",
+    "notBuiltIntegrations": "Real integrations",
+    "language": "Language"
+  },
+  "locale": {
+    "ka": "ქართული",
+    "en": "English"
+  }
+}
