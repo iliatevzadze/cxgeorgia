@@ -206,6 +206,24 @@
             "web": "Web",
             "import": "Import"
           }
+        },
+        "detail": {
+          "description": "Read-only Universal Case details.",
+          "loading": "Loading case...",
+          "error": "Could not load case.",
+          "backToCases": "Back to cases",
+          "descriptionLabel": "Description",
+          "statusLabel": "Status",
+          "priorityLabel": "Priority",
+          "sourceLabel": "Source",
+          "customerNameLabel": "Customer name",
+          "customerEmailLabel": "Customer email",
+          "externalReferenceLabel": "External reference",
+          "createdByLabel": "Created by",
+          "assignedToLabel": "Assigned to",
+          "createdAtLabel": "Created",
+          "updatedAtLabel": "Updated",
+          "noValue": "—"
         }
       },
       "placeholders": {

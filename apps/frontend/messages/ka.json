@@ -206,6 +206,24 @@
             "web": "ვები",
             "import": "იმპორტი"
           }
+        },
+        "detail": {
+          "description": "Universal Case-ის დეტალები (მხოლოდ ნახვა).",
+          "loading": "ქეისი იტვირთება...",
+          "error": "ქეისის ჩატვირთვა ვერ მოხერხდა.",
+          "backToCases": "ქეისებზე დაბრუნება",
+          "descriptionLabel": "აღწერა",
+          "statusLabel": "სტატუსი",
+          "priorityLabel": "პრიორიტეტი",
+          "sourceLabel": "წყარო",
+          "customerNameLabel": "მომხმარებლის სახელი",
+          "customerEmailLabel": "მომხმარებლის ელფოსტა",
+          "externalReferenceLabel": "გარე მითითება",
+          "createdByLabel": "შემქმნელი",
+          "assignedToLabel": "მიმაგრებული",
+          "createdAtLabel": "შექმნა",
+          "updatedAtLabel": "განახლება",
+          "noValue": "—"
         }
       },
       "placeholders": {

@@ -4,13 +4,13 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 13: Universal Case create form UI)
+**Phase 1 — SaaS Base** (Step 14: Universal Case detail page UI)
 
-Cases page at `/workspaces/{id}/app/cases` can create (`POST`) and list (`GET`) Universal Cases. **Case detail page is not implemented.**
+Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail is read-only.**
 
 Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 14 has **not started**.
+Phase 1 / Step 15 has **not started**.
 
 ## What exists now
 
@@ -22,7 +22,7 @@ Phase 1 / Step 14 has **not started**.
 - Auth pages: login, register, account (`/me`)
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
-- Workspace app Cases page with create form and list (`/workspaces/{id}/app/cases`)
+- Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
 - Workspace app placeholder routes: dashboard, customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
@@ -33,7 +33,7 @@ Phase 1 / Step 14 has **not started**.
 
 ## What does not exist yet
 
-- Case detail page
+- Case update/delete
 - Product dashboard, customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
@@ -62,6 +62,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
+| `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail (read-only) |
 | `/ka/workspaces/{id}/app/dashboard`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration

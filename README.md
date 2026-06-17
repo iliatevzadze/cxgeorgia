@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 13: Universal Case create form UI)
+**Phase 1 — SaaS Base** (Step 14: Universal Case detail page UI)
 
-Cases page can create and list Universal Cases. **Case detail page is not implemented.**
+Cases page can create, list and open case details. **Case detail is read-only.**
 
 Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 14 has **not started**.
+Phase 1 / Step 15 has **not started**.
 
 ## Confirmed stack
 
@@ -294,7 +294,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case backend API foundation (Phase 1 / Step 11)
 - [x] Universal Case frontend read-only list (Phase 1 / Step 12)
 - [x] Universal Case create form UI (Phase 1 / Step 13)
-- [ ] Phase 1 / Step 14 (not started)
+- [x] Universal Case detail page UI (Phase 1 / Step 14)
+- [ ] Phase 1 / Step 15 (not started)
 
 ## License
 

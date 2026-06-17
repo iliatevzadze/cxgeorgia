@@ -33,6 +33,14 @@ test("workspaceRoutes.appCases builds cases path", () => {
   );
 });
 
+test("workspaceRoutes.appCaseDetail builds case detail path", () => {
+  const caseId = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
+  assert.equal(
+    workspaceRoutes.appCaseDetail(workspaceId, caseId),
+    `/workspaces/${workspaceId}/app/cases/${caseId}`,
+  );
+});
+
 test("workspaceRoutes.appCustomers builds customers path", () => {
   assert.equal(
     workspaceRoutes.appCustomers(workspaceId),

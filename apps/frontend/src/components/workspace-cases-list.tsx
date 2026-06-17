@@ -4,11 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
+
 import { WorkspaceCaseCreateForm } from "@/components/workspace-case-create-form";
 import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
 import type { UniversalCaseRead } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCasesListProps = {
   workspaceId: string;
@@ -108,7 +111,11 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
             <ul className="workspace-cases">
               {cases.map((item) => (
                 <li key={item.id} className="workspace-case-item">
-                  <h2>{item.title}</h2>
+                  <h2>
+                    <Link href={workspaceRoutes.appCaseDetail(workspaceId, item.id)}>
+                      {item.title}
+                    </Link>
+                  </h2>
                   <dl className="account-details">
                     <div>
                       <dt>{t("statusLabel")}</dt>

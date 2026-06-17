@@ -427,6 +427,15 @@ a {
   font-size: 1.125rem;
 }
 
+.workspace-case-item h2 a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.workspace-case-item h2 a:hover {
+  text-decoration: underline;
+}
+
 .workspace-cases-page {
   display: flex;
   flex-direction: column;

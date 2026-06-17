@@ -11,6 +11,8 @@ export const workspaceRoutes = {
   appDashboard: (workspaceId: string) =>
     `/workspaces/${workspaceId}/app/dashboard`,
   appCases: (workspaceId: string) => `/workspaces/${workspaceId}/app/cases`,
+  appCaseDetail: (workspaceId: string, caseId: string) =>
+    `/workspaces/${workspaceId}/app/cases/${caseId}`,
   appCustomers: (workspaceId: string) =>
     `/workspaces/${workspaceId}/app/customers`,
   appSettings: (workspaceId: string) =>
