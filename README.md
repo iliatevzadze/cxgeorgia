@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 1: backend database foundation)
+**Phase 1 — SaaS Base** (Step 2: core SaaS database models)
 
-The full stack runs via [`docker-compose.yml`](docker-compose.yml): infrastructure (PostgreSQL, Redis, MinIO, Mailpit) plus app containers (backend, frontend, worker). Backend has SQLAlchemy async + Alembic (baseline migration only — no business tables). Authentication, API integration, and business logic are **not** implemented yet.
+The full stack runs via [`docker-compose.yml`](docker-compose.yml). Backend has SQLAlchemy async, Alembic, and core SaaS tables (`users`, `workspaces`, `workspace_memberships`). Authentication, API routes, and business logic are **not** implemented yet.
 
-Phase 1 / Step 2 has **not started**.
+Phase 1 / Step 3 has **not started**.
 
 ## Confirmed stack
 
@@ -47,9 +47,9 @@ Phase 1 / Step 2 has **not started**.
 
 Docker Compose runs the full Phase 0 stack (infrastructure + apps). See [local Docker workflow](docs/development/local-docker.md) and `.env.example`.
 
-### Backend database foundation (Phase 1 / Step 1)
+### Backend database (Phase 1)
 
-SQLAlchemy async, Alembic, and PostgreSQL connectivity are configured in `apps/backend`. No business tables yet.
+Core SaaS tables: `users`, `workspaces`, `workspace_memberships`. No auth or API yet.
 
 ```bash
 cd ~/cxgeorgia
@@ -57,7 +57,6 @@ docker compose up -d postgres
 
 cd apps/backend
 source .venv/bin/activate
-alembic current
 alembic upgrade head
 python scripts/check_db_connection.py
 pytest
@@ -281,8 +280,9 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Docker Compose app containers (backend, frontend, worker)
 - [x] App containers run as non-root users; Celery root-user warning fixed; Next.js telemetry disabled in Docker frontend
 - [x] Backend SQLAlchemy async + Alembic baseline migration (Phase 1 / Step 1)
-- [ ] Founder manual verification of database foundation (next step)
-- [ ] Phase 1 / Step 2 (not started)
+- [x] Core SaaS models: users, workspaces, workspace_memberships (Phase 1 / Step 2)
+- [ ] Founder manual verification of core SaaS models (next step)
+- [ ] Phase 1 / Step 3 (not started)
 
 ## License
 

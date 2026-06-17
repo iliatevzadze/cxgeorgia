@@ -16,7 +16,11 @@ A chronological view of all interactions and events for a single customer, regar
 
 ## Workspace
 
-A tenant boundary — one business organization using the platform. Multi-tenancy design details are deferred to a later phase.
+A tenant boundary — one business organization using the platform. Phase 1 / Step 2 defines the `workspaces` table (name, slug, status). No API or settings UI exists yet.
+
+## Workspace membership
+
+Links a `user` to a `workspace` with a role (`owner`, `admin`, `member`). Stored in `workspace_memberships`. No invitation or permission enforcement exists yet.
 
 ## Channel
 

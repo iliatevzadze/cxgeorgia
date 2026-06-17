@@ -38,9 +38,9 @@ Key defaults:
 | `WORKER_REDIS_MODE` | `local` | Override to `docker` in Compose worker service |
 | `BACKEND_DATABASE_MODE` | `local` | Override to `docker` in Compose backend service |
 
-## Backend database (Phase 1 / Step 1)
+## Backend database (Phase 1)
 
-Backend uses SQLAlchemy async + Alembic. From repository root, start PostgreSQL then run migrations from `apps/backend`:
+Backend uses SQLAlchemy async + Alembic. Core SaaS tables (`users`, `workspaces`, `workspace_memberships`) are created by migration `0002`.
 
 ```bash
 docker compose up -d postgres
@@ -49,6 +49,12 @@ cd apps/backend
 source .venv/bin/activate
 alembic upgrade head
 python scripts/check_db_connection.py
+```
+
+Inspect tables:
+
+```bash
+docker exec -it cx_postgres psql -U georgian_cx_user -d georgian_cx_platform -c "\dt"
 ```
 
 Compose sets `BACKEND_DATABASE_MODE=docker` for `cx_backend`. Host development uses `local` mode with `localhost:15432`.

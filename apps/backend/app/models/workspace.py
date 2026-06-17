@@ -1,0 +1,50 @@
+"""Workspace model."""
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, Enum, String, func
+from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base
+from app.models.enums import WorkspaceStatus
+
+if TYPE_CHECKING:
+    from app.models.workspace_membership import WorkspaceMembership
+
+
+class Workspace(Base):
+    """Tenant workspace."""
+
+    __tablename__ = "workspaces"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    slug: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    status: Mapped[WorkspaceStatus] = mapped_column(
+        Enum(WorkspaceStatus, name="workspace_status"),
+        default=WorkspaceStatus.ACTIVE,
+        server_default=WorkspaceStatus.ACTIVE.value,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    memberships: Mapped[list[WorkspaceMembership]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )

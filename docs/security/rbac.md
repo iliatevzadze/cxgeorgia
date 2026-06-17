@@ -8,7 +8,17 @@ RBAC applies within a **workspace** (tenant). A user can belong to multiple work
 
 ## Roles
 
-### Owner
+Phase 1 / Step 2 stores minimal tenant roles on `workspace_memberships.role`:
+
+| Role | Planned purpose |
+|------|-----------------|
+| `owner` | Workspace creator; ultimate authority |
+| `admin` | Day-to-day administration |
+| `member` | Standard workspace member |
+
+Future phases may add `agent` and `viewer` (see below). **No RBAC enforcement code exists yet.**
+
+### Owner (planned enforcement)
 
 The workspace creator and ultimate authority.
 
@@ -88,7 +98,7 @@ JWT or session context must include the **active workspace** for each request. S
 
 ## Status
 
-RBAC tables, middleware, and permission decorators are not implemented. See Phase 1 in the [roadmap](../product/roadmap.md).
+`workspace_memberships` and core SaaS tables exist (Phase 1 / Step 2). RBAC middleware, permission decorators, and API enforcement are **not** implemented. See Phase 1 in the [roadmap](../product/roadmap.md).
 
 ## Related docs
 

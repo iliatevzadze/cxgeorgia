@@ -4,40 +4,32 @@ Guide for running the FastAPI backend locally.
 
 ## Scope
 
-**Phase 1 / Step 1** adds the database foundation only:
+**Phase 1 / Step 2** adds core SaaS database models only:
 
-- SQLAlchemy async engine + session factory
-- Alembic migrations (empty baseline)
-- Database connectivity check script
-- `GET /health` unchanged — no database dependency at startup
+- `users`, `workspaces`, `workspace_memberships` tables
+- Minimal enums and relationships
+- Alembic migration `0002_core_saas_models`
 
-No authentication, ORM models, business tables, or `/api/v1/` routes yet.
+No authentication, password fields, API routes, or seed data yet. `GET /health` is unchanged.
 
 ## Folder structure
 
 ```text
 apps/backend/
 ├── alembic/
-│   ├── env.py
 │   └── versions/
-│       └── 0001_baseline.py
-├── alembic.ini
+│       ├── 0001_baseline.py
+│       └── 0002_core_saas_models.py
 ├── app/
-│   ├── main.py
-│   ├── api/
-│   │   └── health.py
-│   ├── core/
-│   │   └── config.py
+│   ├── models/
+│   │   ├── enums.py
+│   │   ├── user.py
+│   │   ├── workspace.py
+│   │   └── workspace_membership.py
 │   └── db/
-│       ├── base.py
-│       └── session.py
 ├── scripts/
 │   └── check_db_connection.py
-├── tests/
-│   ├── test_health.py
-│   └── test_db_config.py
-├── pyproject.toml
-└── README.md
+└── tests/
 ```
 
 ## Prerequisites
@@ -56,17 +48,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-### Environment variables
-
-Copy the repository root `.env.example` to `.env` at the repo root (or `apps/backend/.env`). **Never commit `.env`.**
-
-| Variable | Default | Notes |
-|----------|---------|-------|
-| `BACKEND_DATABASE_MODE` | `local` | Use `docker` inside Compose backend container |
-| `BACKEND_DATABASE_URL_LOCAL` | (see `.env.example`) | Host PostgreSQL URL |
-| `BACKEND_DATABASE_URL_DOCKER` | (see `.env.example`) | In-network PostgreSQL URL |
-| `POSTGRES_HOST_PORT` | `15432` | Host port for local mode |
-| `POSTGRES_*` | (see `.env.example`) | Used when explicit URLs are not set |
+Copy repository root `.env.example` to `.env` — **never commit `.env`**.
 
 ## Start PostgreSQL
 
@@ -80,15 +62,21 @@ Do **not** use `docker compose down -v` unless you intentionally want to wipe lo
 
 ## Alembic migrations
 
-From `apps/backend` with venv active:
-
 ```bash
+cd apps/backend
+source .venv/bin/activate
 alembic current
 alembic upgrade head
 alembic current
 ```
 
-The baseline migration (`0001_baseline`) creates no application tables. Alembic may create its own `alembic_version` tracking table.
+After Step 2, `alembic current` should show `0002 (head)`.
+
+## Inspect tables
+
+```bash
+docker exec -it cx_postgres psql -U georgian_cx_user -d georgian_cx_platform -c "\dt"
+```
 
 ## Database connectivity check
 
@@ -96,23 +84,14 @@ The baseline migration (`0001_baseline`) creates no application tables. Alembic 
 python scripts/check_db_connection.py
 ```
 
-Expected output: `Database connection successful.`
-
-This runs `SELECT 1` only — no data mutation.
-
 ## Run tests
 
 ```bash
 pytest
+ruff check .
 ```
 
 Unit tests do not require PostgreSQL.
-
-## Lint
-
-```bash
-ruff check .
-```
 
 ## Run the server
 
@@ -120,28 +99,23 @@ ruff check .
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-The server starts even if PostgreSQL is temporarily unavailable.
-
 ## Verify manually
 
 | URL | Purpose |
 |-----|---------|
-| [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) | Health check JSON |
+| [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) | Health check (no DB check) |
 | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | Swagger UI |
-
-The health endpoint does **not** check PostgreSQL connectivity.
 
 ## What is intentionally not implemented
 
-- ORM models, business tables, seed data
-- Authentication, JWT, refresh tokens, RBAC
-- `/api/v1/` versioned routes
-- Universal Case, customer, workspace APIs
-- Worker database access
-- CORS configuration
+- Password hashing, login, registration, JWT
+- User/workspace/membership API routes
+- RBAC enforcement, permission engine
+- Universal Case, customer, ticket models
+- Seed data or admin users
 
 ## Related docs
 
 - [Backend README](../../apps/backend/README.md)
-- [Development rules](development-rules.md)
 - [Local Docker workflow](local-docker.md)
+- [RBAC](../security/rbac.md)
