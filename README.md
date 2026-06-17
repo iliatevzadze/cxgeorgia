@@ -10,11 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 10: Universal Case database foundation)
+**Phase 1 — SaaS Base** (Step 11: Universal Case backend API foundation)
 
-`universal_cases` table and Alembic migration `0004` are in place. **No Universal Case API or frontend UI yet.**
+Create, list, and detail endpoints exist for `universal_cases`. **Frontend Universal Case UI has not started.**
 
-Phase 1 / Step 11 has **not started**.
+Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
+
+Phase 1 / Step 12 has **not started**.
 
 ## Confirmed stack
 
@@ -289,7 +291,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Workspace app shell foundation (Phase 1 / Step 8)
 - [x] Workspace app route skeleton (Phase 1 / Step 9)
 - [x] Universal Case database foundation (Phase 1 / Step 10)
-- [ ] Phase 1 / Step 11 (not started)
+- [x] Universal Case backend API foundation (Phase 1 / Step 11)
+- [ ] Phase 1 / Step 12 (not started)
 
 ## License
 

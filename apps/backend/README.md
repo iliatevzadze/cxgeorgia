@@ -4,11 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 10: Universal Case database foundation)
+**Phase 1 — SaaS Base** (Step 11: Universal Case backend API foundation)
 
-Alembic head: `0004`. ORM model `UniversalCase` (`universal_cases` table) exists. **No Universal Case API, schemas, or service layer yet.**
+Alembic head: `0004`. Create, list, and detail endpoints exist for `universal_cases`. **Frontend Universal Case UI has not started.**
 
-Phase 1 / Step 11 has **not started**.
+Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
+
+Phase 1 / Step 12 has **not started**.
 
 ## Auth API
 
@@ -29,15 +31,17 @@ Phase 1 / Step 11 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case (Phase 1 / Step 10)
+## Universal Case API (Phase 1 / Step 11)
 
-Database only — no HTTP API yet.
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/workspaces/{workspace_id}/cases` | Create case (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first |
+| GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 
-| Table | Purpose |
-|-------|---------|
-| `universal_cases` | Workspace-scoped customer issues/work items |
+All case endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
-Enums: `case_status`, `case_priority`, `case_source`. All rows include `workspace_id` for tenant isolation.
+Database table: `universal_cases`. Enums: `case_status`, `case_priority`, `case_source`. All rows include `workspace_id` for tenant isolation.
 
 ## Migrations
 
@@ -53,7 +57,7 @@ pytest
 ruff check .
 ```
 
-Workspace API tests require PostgreSQL (Docker Compose).
+Workspace and Universal Case API tests require PostgreSQL (Docker Compose).
 
 ## Related docs
 

@@ -1,0 +1,92 @@
+"""Universal Case API routes."""
+
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.workspace_deps import get_active_workspace_membership
+from app.db.session import get_async_session
+from app.models.universal_case import UniversalCase
+from app.models.workspace_membership import WorkspaceMembership
+from app.schemas.universal_case import UniversalCaseCreate, UniversalCaseRead
+
+router = APIRouter(
+    prefix="/api/v1/workspaces/{workspace_id}/cases",
+    tags=["universal-cases"],
+)
+
+
+def _envelope(data: dict | list) -> dict:
+    return {"data": data, "meta": {}, "error": None}
+
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_case(
+    body: UniversalCaseCreate,
+    workspace_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Create a universal case in the workspace."""
+    case = UniversalCase(
+        workspace_id=workspace_id,
+        title=body.title,
+        description=body.description,
+        status=body.status,
+        priority=body.priority,
+        source=body.source,
+        customer_name=body.customer_name,
+        customer_email=body.customer_email,
+        external_reference=body.external_reference,
+        created_by_user_id=membership.user_id,
+        assigned_to_user_id=body.assigned_to_user_id,
+    )
+    session.add(case)
+    await session.commit()
+    await session.refresh(case)
+    return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
+
+
+@router.get("")
+async def list_cases(
+    workspace_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """List universal cases in the workspace, newest first."""
+    _ = membership
+    result = await session.scalars(
+        select(UniversalCase)
+        .where(UniversalCase.workspace_id == workspace_id)
+        .order_by(UniversalCase.created_at.desc())
+    )
+    items = [
+        UniversalCaseRead.model_validate(item).model_dump(mode="json")
+        for item in result.all()
+    ]
+    return _envelope(items)
+
+
+@router.get("/{case_id}")
+async def get_case(
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Return a universal case by id within the workspace."""
+    _ = membership
+    case = await session.scalar(
+        select(UniversalCase).where(
+            UniversalCase.id == case_id,
+            UniversalCase.workspace_id == workspace_id,
+        )
+    )
+    if case is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case not found",
+        )
+    return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
