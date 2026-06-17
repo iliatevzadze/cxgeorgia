@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 6).
+Guide for running the Next.js frontend locally (Phase 1 / Step 7).
 
 ## Scope
 
@@ -9,10 +9,11 @@ This frontend includes:
 - Next.js App Router + TypeScript
 - `next-intl` for Georgian (`ka`) and English (`en`)
 - Auth foundation: login, register, account pages
+- Workspace foundation: list, create, detail, memberships pages
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
 
-It does **not** include dashboard, workspace UI, cases, or integrations.
+It does **not** include dashboard, Universal Case UI, invitations, or advanced RBAC.
 
 ## Prerequisites
 
@@ -61,10 +62,20 @@ Use `--hostname localhost` (configured in `package.json`). Do **not** use `next 
 |-----|---------|
 | [http://127.0.0.1:3000/ka](http://127.0.0.1:3000/ka) | Georgian home |
 | [http://127.0.0.1:3000/ka/login](http://127.0.0.1:3000/ka/login) | Login |
-| [http://127.0.0.1:3000/ka/register](http://127.0.0.1:3000/ka/register) | Register |
 | [http://127.0.0.1:3000/ka/account](http://127.0.0.1:3000/ka/account) | Account (requires login) |
+| [http://127.0.0.1:3000/ka/workspaces](http://127.0.0.1:3000/ka/workspaces) | Workspace list (requires login) |
+| [http://127.0.0.1:3000/ka/workspaces/new](http://127.0.0.1:3000/ka/workspaces/new) | Create workspace |
 
 Visiting `/` redirects to `/ka` (default locale).
+
+## Manual workspace flow
+
+1. Start backend and frontend (or `docker compose up -d backend postgres frontend`).
+2. Register or log in at `/ka/register` or `/ka/login`.
+3. Open `/ka/workspaces`.
+4. If empty, open `/ka/workspaces/new` and create a workspace.
+5. Confirm the workspace appears in the list.
+6. Open workspace detail and memberships pages.
 
 ## Build and quality checks
 
@@ -77,11 +88,12 @@ npm run test
 
 ## API proxy
 
-Client code calls relative paths such as `/api/v1/auth/login`. `next.config.ts` rewrites them to `BACKEND_URL/api/v1/...`, so the browser stays same-origin and CORS is not required for the default setup.
+Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` rewrites them to `BACKEND_URL/api/v1/...`, so the browser stays same-origin and CORS is not required for the default setup.
 
 ## What is intentionally not implemented
 
-- Dashboard, workspace switcher, cases, customers
+- Product dashboard, workspace switcher, cases, customers
+- Invitation flow and advanced RBAC UI
 - HttpOnly refresh tokens
 - React Query, SWR, Tailwind, shadcn, MUI
 - Playwright E2E tests

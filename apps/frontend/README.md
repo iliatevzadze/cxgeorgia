@@ -4,9 +4,9 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 6: frontend auth foundation)
+**Phase 1 — SaaS Base** (Step 7: frontend workspace foundation)
 
-Phase 1 / Step 7 has **not started**. No dashboard, workspace UI, or business workflows yet.
+Phase 1 / Step 8 has **not started**. No dashboard, Universal Case UI, or invitation flow yet.
 
 ## What exists now
 
@@ -16,15 +16,18 @@ Phase 1 / Step 7 has **not started**. No dashboard, workspace UI, or business wo
 - API client with backend response envelope support
 - Same-origin `/api/v1` proxy via Next.js rewrites
 - Auth pages: login, register, account (`/me`)
+- Workspace pages: list, create, detail, memberships
 - JWT access token stored in `localStorage`
-- `AuthProvider` and `useAuth` hook
+- `AuthProvider`, `useAuth`, and `useWorkspaces` hooks
+- Protected workspace routes via `RequireAuth`
 - i18n key consistency and unit tests
 - Docker container runs as non-root `node`; Next.js telemetry disabled in Docker (`NEXT_TELEMETRY_DISABLED=1`)
 
 ## What does not exist yet
 
-- Dashboard, cases, customers, settings
-- Workspace selection or workspace UI
+- Product dashboard, cases, customers, settings
+- Workspace switcher or invitation UI
+- Advanced RBAC UI
 - React Query, SWR, or component libraries
 - Tailwind, shadcn/ui, Material UI
 - HttpOnly refresh token handling
@@ -37,6 +40,17 @@ Phase 1 / Step 7 has **not started**. No dashboard, workspace UI, or business wo
 | `/ka/login`, `/en/login` | Sign in |
 | `/ka/register`, `/en/register` | Create account |
 | `/ka/account`, `/en/account` | Current user profile (`GET /api/v1/auth/me`) |
+
+## Workspace routes
+
+All workspace routes require login.
+
+| Path | Description |
+|------|-------------|
+| `/ka/workspaces`, `/en/workspaces` | List workspaces (`GET /api/v1/workspaces`) |
+| `/ka/workspaces/new`, `/en/workspaces/new` | Create workspace (`POST /api/v1/workspaces`) |
+| `/ka/workspaces/{id}`, `/en/workspaces/{id}` | Workspace detail (`GET /api/v1/workspaces/{id}`) |
+| `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
 
 ## API integration
 
@@ -53,6 +67,12 @@ apps/frontend/
 │   │   ├── account/page.tsx
 │   │   ├── login/page.tsx
 │   │   ├── register/page.tsx
+│   │   ├── workspaces/
+│   │   │   ├── page.tsx
+│   │   │   ├── new/page.tsx
+│   │   │   └── [workspaceId]/
+│   │   │       ├── page.tsx
+│   │   │       └── memberships/page.tsx
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── globals.css
@@ -69,9 +89,14 @@ apps/frontend/
 │   │   ├── login-form.tsx
 │   │   ├── locale-switcher.tsx
 │   │   ├── register-form.tsx
-│   │   └── require-auth.tsx
+│   │   ├── require-auth.tsx
+│   │   ├── workspace-create-form.tsx
+│   │   ├── workspace-detail.tsx
+│   │   ├── workspace-list.tsx
+│   │   └── workspace-memberships.tsx
 │   ├── hooks/
-│   │   └── use-auth.ts
+│   │   ├── use-auth.ts
+│   │   └── use-workspaces.ts
 │   ├── i18n/
 │   │   ├── routing.ts
 │   │   ├── request.ts
@@ -82,15 +107,20 @@ apps/frontend/
 │       │   ├── config.ts
 │       │   ├── errors.ts
 │       │   └── types.ts
-│       └── auth/
+│       ├── auth/
+│       │   ├── api.ts
+│       │   ├── token-storage.ts
+│       │   └── types.ts
+│       └── workspaces/
 │           ├── api.ts
-│           ├── token-storage.ts
 │           └── types.ts
 ├── tests/
 │   ├── api-config.test.ts
 │   ├── api-errors.test.ts
 │   ├── auth-token-storage.test.ts
-│   └── i18n.test.ts
+│   ├── i18n.test.ts
+│   ├── workspace-api-config.test.ts
+│   └── workspace-types.test.ts
 ├── middleware.ts
 ├── next.config.ts
 ├── package.json

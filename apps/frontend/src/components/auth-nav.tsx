@@ -17,6 +17,7 @@ export function AuthNav() {
   if (isAuthenticated) {
     return (
       <nav className="auth-nav" aria-label={t("label")}>
+        <Link href="/workspaces">{t("workspaces")}</Link>
         <Link href="/account">{t("account")}</Link>
         <button type="button" className="link-button" onClick={logout}>
           {t("logout")}

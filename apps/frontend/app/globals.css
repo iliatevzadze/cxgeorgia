@@ -303,3 +303,110 @@ a {
 .auth-status {
   color: #64748b;
 }
+
+.workspace-page {
+  max-width: 40rem;
+}
+
+.workspace-panel,
+.workspace-form {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.workspace-panel h1,
+.workspace-form h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.workspace-description {
+  margin: 0 0 1.25rem;
+  color: #475569;
+}
+
+.workspace-status {
+  color: #64748b;
+}
+
+.workspace-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.workspace-success {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.workspace-empty {
+  margin: 0;
+  color: #475569;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 1rem;
+}
+
+.workspace-button-link {
+  display: inline-block;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  background: #1d4ed8;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.workspace-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.workspace-list-item h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.workspace-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.workspace-memberships {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-membership-item {
+  padding: 1rem 0;
+  border-top: 1px solid #e2e8f0;
+}

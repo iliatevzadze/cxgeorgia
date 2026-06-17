@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 6: frontend auth foundation)
+**Phase 1 — SaaS Base** (Step 7: frontend workspace foundation)
 
-Frontend login, register, and account pages connect to the backend auth API. **No dashboard or workspace UI yet.**
+Frontend workspace list, create, detail, and memberships pages connect to the backend workspace API. **No dashboard yet.**
 
-Phase 1 / Step 7 has **not started**.
+Phase 1 / Step 8 has **not started**.
 
 ## Confirmed stack
 
@@ -285,7 +285,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Backend auth API: register, login, /me (Phase 1 / Step 4)
 - [x] Workspace bootstrap API (Phase 1 / Step 5)
 - [x] Frontend auth foundation (Phase 1 / Step 6)
-- [ ] Phase 1 / Step 7 (not started)
+- [x] Frontend workspace foundation (Phase 1 / Step 7)
+- [ ] Phase 1 / Step 8 (not started)
 
 ## License
 

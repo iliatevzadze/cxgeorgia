@@ -40,6 +40,8 @@ function AccountDetails() {
       </dl>
 
       <p className="auth-form-footer">
+        <Link href="/workspaces">{t("myWorkspaces")}</Link>
+        {" · "}
         <Link href="/">{t("backHome")}</Link>
       </p>
     </section>

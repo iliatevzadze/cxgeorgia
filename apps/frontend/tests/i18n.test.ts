@@ -39,7 +39,7 @@ const en = JSON.parse(
 const kaKeys = collectKeys(ka).sort();
 const enKeys = collectKeys(en).sort();
 
-const requiredNamespaces = ["metadata", "home", "locale", "auth"];
+const requiredNamespaces = ["metadata", "home", "locale", "auth", "workspaces"];
 
 test("both locale files include required top-level namespaces", () => {
   for (const namespace of requiredNamespaces) {
@@ -76,6 +76,53 @@ test("required home keys exist in both locales", () => {
   ];
 
   for (const key of requiredHomeKeys) {
+    assert.ok(kaKeys.includes(key), `ka.json missing key: ${key}`);
+    assert.ok(enKeys.includes(key), `en.json missing key: ${key}`);
+  }
+});
+
+test("required workspace keys exist in both locales", () => {
+  const requiredWorkspaceKeys = [
+    "workspaces.nav.myWorkspaces",
+    "workspaces.nav.createWorkspace",
+    "workspaces.list.title",
+    "workspaces.list.description",
+    "workspaces.list.empty",
+    "workspaces.list.createLink",
+    "workspaces.list.loading",
+    "workspaces.list.error",
+    "workspaces.list.roleLabel",
+    "workspaces.list.statusLabel",
+    "workspaces.list.openLink",
+    "workspaces.create.title",
+    "workspaces.create.description",
+    "workspaces.create.nameLabel",
+    "workspaces.create.namePlaceholder",
+    "workspaces.create.submit",
+    "workspaces.create.success",
+    "workspaces.create.error",
+    "workspaces.create.backToList",
+    "workspaces.create.openWorkspace",
+    "workspaces.detail.title",
+    "workspaces.detail.description",
+    "workspaces.detail.slugLabel",
+    "workspaces.detail.statusLabel",
+    "workspaces.detail.roleLabel",
+    "workspaces.detail.membershipsLink",
+    "workspaces.detail.backToList",
+    "workspaces.detail.loading",
+    "workspaces.detail.error",
+    "workspaces.memberships.title",
+    "workspaces.memberships.description",
+    "workspaces.memberships.userId",
+    "workspaces.memberships.role",
+    "workspaces.memberships.status",
+    "workspaces.memberships.loading",
+    "workspaces.memberships.error",
+    "workspaces.memberships.backToWorkspace",
+  ];
+
+  for (const key of requiredWorkspaceKeys) {
     assert.ok(kaKeys.includes(key), `ka.json missing key: ${key}`);
     assert.ok(enKeys.includes(key), `en.json missing key: ${key}`);
   }

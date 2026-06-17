@@ -9,7 +9,7 @@
     "subtitle": "ქართული მომხმარებელთა გამოცდილების პლატფორმა",
     "description": "ლოკალური, Georgian-first CX პლატფორმის frontend საფუძველი.",
     "statusLabel": "მიმდინარე სტატუსი",
-    "statusValue": "Frontend auth საფუძველი მზადაა",
+    "statusValue": "Frontend workspace საფუძველი მზადაა",
     "backendLabel": "Backend",
     "backendValue": "Auth API და workspace API მზადაა",
     "infrastructureLabel": "Local services",
@@ -33,6 +33,7 @@
       "login": "შესვლა",
       "register": "რეგისტრაცია",
       "account": "ანგარიში",
+      "workspaces": "სივრცეები",
       "logout": "გასვლა"
     },
     "login": {
@@ -69,7 +70,60 @@
       "emailVerifiedLabel": "ელფოსტა დადასტურებულია",
       "yes": "კი",
       "no": "არა",
-      "backHome": "მთავარ გვერდზე დაბრუნება"
+      "backHome": "მთავარ გვერდზე დაბრუნება",
+      "myWorkspaces": "ჩემი სივრცეები"
+    }
+  },
+  "workspaces": {
+    "nav": {
+      "myWorkspaces": "ჩემი სივრცეები",
+      "createWorkspace": "ახალი სივრცე"
+    },
+    "list": {
+      "title": "ჩემი სივრცეები",
+      "description": "სივრცეები, სადაც თქვენ გაქვთ აქტიური წევრობა.",
+      "empty": "სივრცეები ჯერ არ გაქვთ.",
+      "createLink": "ახალი სივრცის შექმნა",
+      "loading": "იტვირთება...",
+      "error": "სივრცეების ჩატვირთვა ვერ მოხერხდა.",
+      "roleLabel": "როლი",
+      "statusLabel": "სტატუსი",
+      "openLink": "გახსნა"
+    },
+    "create": {
+      "title": "ახალი სივრცე",
+      "description": "შექმენით ახალი workspace.",
+      "nameLabel": "სახელი",
+      "namePlaceholder": "მაგ. Acme Support",
+      "submit": "შექმნა",
+      "submitting": "მიმდინარეობს...",
+      "success": "სივრცე „{name}“ შეიქმნა.",
+      "error": "სივრცის შექმნა ვერ მოხერხდა.",
+      "backToList": "სიაზე დაბრუნება",
+      "openWorkspace": "სივრცის გახსნა"
+    },
+    "detail": {
+      "title": "სივრცის დეტალები",
+      "description": "Workspace-ის ინფორმაცია და თქვენი როლი.",
+      "nameLabel": "სახელი",
+      "slugLabel": "Slug",
+      "statusLabel": "სტატუსი",
+      "roleLabel": "თქვენი როლი",
+      "membershipsLink": "წევრობები",
+      "backToList": "სიაზე დაბრუნება",
+      "loading": "იტვირთება...",
+      "error": "სივრცე ვერ მოიძებნა ან წვდომა არ გაქვთ."
+    },
+    "memberships": {
+      "title": "წევრობები",
+      "description": "ამ workspace-ის აქტიური წევრები.",
+      "userId": "მომხმარებლის ID",
+      "role": "როლი",
+      "status": "სტატუსი",
+      "loading": "იტვირთება...",
+      "error": "წევრობების ჩატვირთვა ვერ მოხერხდა.",
+      "empty": "აქტიური წევრობები ვერ მოიძებნა.",
+      "backToWorkspace": "სივრცეზე დაბრუნება"
     }
   }
 }

@@ -9,7 +9,7 @@
     "subtitle": "Georgian-first customer experience platform",
     "description": "Frontend foundation for a local-first CX platform.",
     "statusLabel": "Current status",
-    "statusValue": "Frontend auth foundation is ready",
+    "statusValue": "Frontend workspace foundation is ready",
     "backendLabel": "Backend",
     "backendValue": "Auth API and workspace API are ready",
     "infrastructureLabel": "Local services",
@@ -33,6 +33,7 @@
       "login": "Log in",
       "register": "Register",
       "account": "Account",
+      "workspaces": "Workspaces",
       "logout": "Log out"
     },
     "login": {
@@ -69,7 +70,60 @@
       "emailVerifiedLabel": "Email verified",
       "yes": "Yes",
       "no": "No",
-      "backHome": "Back to home"
+      "backHome": "Back to home",
+      "myWorkspaces": "My workspaces"
+    }
+  },
+  "workspaces": {
+    "nav": {
+      "myWorkspaces": "My workspaces",
+      "createWorkspace": "New workspace"
+    },
+    "list": {
+      "title": "My workspaces",
+      "description": "Workspaces where you have an active membership.",
+      "empty": "You do not have any workspaces yet.",
+      "createLink": "Create workspace",
+      "loading": "Loading...",
+      "error": "Could not load workspaces.",
+      "roleLabel": "Role",
+      "statusLabel": "Status",
+      "openLink": "Open"
+    },
+    "create": {
+      "title": "New workspace",
+      "description": "Create a new workspace.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Acme Support",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Workspace \"{name}\" was created.",
+      "error": "Could not create workspace.",
+      "backToList": "Back to list",
+      "openWorkspace": "Open workspace"
+    },
+    "detail": {
+      "title": "Workspace details",
+      "description": "Workspace information and your role.",
+      "nameLabel": "Name",
+      "slugLabel": "Slug",
+      "statusLabel": "Status",
+      "roleLabel": "Your role",
+      "membershipsLink": "Memberships",
+      "backToList": "Back to list",
+      "loading": "Loading...",
+      "error": "Workspace not found or access denied."
+    },
+    "memberships": {
+      "title": "Memberships",
+      "description": "Active members of this workspace.",
+      "userId": "User ID",
+      "role": "Role",
+      "status": "Status",
+      "loading": "Loading...",
+      "error": "Could not load memberships.",
+      "empty": "No active memberships found.",
+      "backToWorkspace": "Back to workspace"
     }
   }
 }
