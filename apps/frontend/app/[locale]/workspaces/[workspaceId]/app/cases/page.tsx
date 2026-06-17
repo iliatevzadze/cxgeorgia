@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { WorkspaceAppPlaceholder } from "@/components/workspace-app-placeholder";
 import { WorkspaceAppSectionPanel } from "@/components/workspace-app-section-panel";
+import { WorkspaceCasesList } from "@/components/workspace-cases-list";
 
 type WorkspaceAppCasesPageProps = {
   params: Promise<{ locale: string; workspaceId: string }>;
@@ -16,7 +16,7 @@ export default async function WorkspaceAppCasesPage({
   return (
     <main className="page workspace-app-page">
       <WorkspaceAppSectionPanel workspaceId={workspaceId} activeSection="cases">
-        <WorkspaceAppPlaceholder section="cases" />
+        <WorkspaceCasesList workspaceId={workspaceId} />
       </WorkspaceAppSectionPanel>
     </main>
   );

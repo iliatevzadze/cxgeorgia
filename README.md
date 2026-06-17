@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 11: Universal Case backend API foundation)
+**Phase 1 — SaaS Base** (Step 12: Universal Case frontend API client + read-only cases list)
 
-Create, list, and detail endpoints exist for `universal_cases`. **Frontend Universal Case UI has not started.**
+Read-only Cases list loads from `GET /api/v1/workspaces/{workspace_id}/cases`. **Create form and case detail page are not implemented.**
 
 Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 12 has **not started**.
+Phase 1 / Step 13 has **not started**.
 
 ## Confirmed stack
 
@@ -292,7 +292,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Workspace app route skeleton (Phase 1 / Step 9)
 - [x] Universal Case database foundation (Phase 1 / Step 10)
 - [x] Universal Case backend API foundation (Phase 1 / Step 11)
-- [ ] Phase 1 / Step 12 (not started)
+- [x] Universal Case frontend read-only list (Phase 1 / Step 12)
+- [ ] Phase 1 / Step 13 (not started)
 
 ## License
 

@@ -411,6 +411,22 @@ a {
   border-top: 1px solid #e2e8f0;
 }
 
+.workspace-cases {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-case-item {
+  padding: 1rem 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.workspace-case-item h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
 .workspace-app-page {
   max-width: 64rem;
 }
