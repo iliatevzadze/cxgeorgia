@@ -30,17 +30,49 @@ class UniversalCaseCreate(BaseModel):
 
 
 class UniversalCaseUpdate(BaseModel):
-    """Update universal case status and/or priority."""
+    """Update universal case title, description, status and/or priority."""
 
     model_config = ConfigDict(extra="forbid")
 
+    title: str | None = Field(default=None, max_length=255)
+    description: str | None = None
     status: CaseStatus | None = None
     priority: CasePriority | None = None
 
+    @field_validator("title", mode="before")
+    @classmethod
+    def strip_title(cls, value: object) -> object:
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+    @field_validator("title")
+    @classmethod
+    def title_not_empty(cls, value: str | None) -> str | None:
+        if value is not None and not value:
+            raise ValueError("Title must not be empty")
+        return value
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def strip_description(cls, value: object) -> object:
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
     @model_validator(mode="after")
-    def require_status_or_priority(self) -> "UniversalCaseUpdate":
-        if self.status is None and self.priority is None:
-            raise ValueError("At least one of status or priority must be provided")
+    def require_at_least_one_field(self) -> "UniversalCaseUpdate":
+        if not self.model_fields_set:
+            raise ValueError(
+                "At least one of title, description, status or priority "
+                "must be provided"
+            )
+        if "title" in self.model_fields_set and self.title is None:
+            raise ValueError("Title must not be null")
         return self
 
 

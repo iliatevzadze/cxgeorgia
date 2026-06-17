@@ -547,14 +547,13 @@ async def test_patch_case_forbidden_fields_return_422(client: AsyncClient) -> No
         f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
         json={
             "status": "pending",
-            "title": "Changed title",
-            "description": "Changed description",
             "source": "email",
             "customer_name": "Changed name",
             "customer_email": "changed@example.com",
             "external_reference": "EXT-1",
             "workspace_id": str(uuid.uuid4()),
             "created_by_user_id": str(uuid.uuid4()),
+            "assigned_to_user_id": str(uuid.uuid4()),
         },
         headers=headers,
     )
@@ -566,3 +565,145 @@ async def test_patch_case_forbidden_fields_return_422(client: AsyncClient) -> No
     )
     assert response_data(detail_response)["title"] == "Original title"
     assert response_data(detail_response)["status"] == CaseStatus.OPEN.value
+
+
+async def test_patch_case_title_only_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-title-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Patch Title Workspace")
+    case_id = await _create_case(client, headers, workspace_id, title="Old title")
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"title": "New title"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["title"] == "New title"
+
+
+async def test_patch_case_title_is_trimmed(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-trim-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Patch Trim Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"title": "  Trimmed title  "},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["title"] == "Trimmed title"
+
+
+async def test_patch_case_whitespace_only_title_returns_422(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-blank-title-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Blank Title")
+    case_id = await _create_case(client, headers, workspace_id, title="Keep title")
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"title": "   "},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+    detail_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert response_data(detail_response)["title"] == "Keep title"
+
+
+async def test_patch_case_description_only_as_workspace_member(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-desc-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Desc Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"description": "Updated description"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["description"] == "Updated description"
+
+
+async def test_patch_case_clear_description_with_null(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-null-desc-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Null Desc")
+
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case with description", "description": "Initial text"},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"description": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["description"] is None
+
+
+async def test_patch_case_title_and_description_together(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-title-desc-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Title Desc")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"title": "Combined title", "description": "Combined description"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["title"] == "Combined title"
+    assert data["description"] == "Combined description"
+
+
+async def test_patch_case_title_description_status_and_priority_together(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-all-fields-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch All Fields")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={
+            "title": "Full update title",
+            "description": "Full update description",
+            "status": "resolved",
+            "priority": "high",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["title"] == "Full update title"
+    assert data["description"] == "Full update description"
+    assert data["status"] == CaseStatus.RESOLVED.value
+    assert data["priority"] == CasePriority.HIGH.value

@@ -104,7 +104,7 @@ async def update_case(
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
-    """Update universal case status and/or priority."""
+    """Update universal case title, description, status and/or priority."""
     _ = membership
     case = await session.scalar(
         select(UniversalCase).where(
@@ -118,6 +118,10 @@ async def update_case(
             detail="Case not found",
         )
 
+    if "title" in body.model_fields_set and body.title is not None:
+        case.title = body.title
+    if "description" in body.model_fields_set:
+        case.description = body.description
     if body.status is not None:
         case.status = body.status
     if body.priority is not None:
