@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 8: workspace app shell foundation)
+**Phase 1 — SaaS Base** (Step 9: workspace app route skeleton)
 
-Authenticated workspace-scoped app shell at `/workspaces/{id}/app`. **No dashboard, Universal Case, or product modules yet.**
+Workspace app internal routes (dashboard, cases, customers, settings) exist as placeholders inside the app shell. **No real product modules yet.**
 
-Phase 1 / Step 9 has **not started**.
+Phase 1 / Step 10 has **not started**.
 
 ## Confirmed stack
 
@@ -287,7 +287,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Frontend auth foundation (Phase 1 / Step 6)
 - [x] Frontend workspace foundation (Phase 1 / Step 7)
 - [x] Workspace app shell foundation (Phase 1 / Step 8)
-- [ ] Phase 1 / Step 9 (not started)
+- [x] Workspace app route skeleton (Phase 1 / Step 9)
+- [ ] Phase 1 / Step 10 (not started)
 
 ## License
 

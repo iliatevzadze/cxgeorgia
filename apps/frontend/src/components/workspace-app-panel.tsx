@@ -1,8 +1,7 @@
 "use client";
 
-import { RequireAuth } from "@/components/require-auth";
 import { WorkspaceAppHome } from "@/components/workspace-app-home";
-import { WorkspaceAppShell } from "@/components/workspace-app-shell";
+import { WorkspaceAppSectionPanel } from "@/components/workspace-app-section-panel";
 
 type WorkspaceAppPanelProps = {
   workspaceId: string;
@@ -10,10 +9,8 @@ type WorkspaceAppPanelProps = {
 
 export function WorkspaceAppPanel({ workspaceId }: WorkspaceAppPanelProps) {
   return (
-    <RequireAuth>
-      <WorkspaceAppShell workspaceId={workspaceId}>
-        <WorkspaceAppHome />
-      </WorkspaceAppShell>
-    </RequireAuth>
+    <WorkspaceAppSectionPanel workspaceId={workspaceId} activeSection="home">
+      <WorkspaceAppHome />
+    </WorkspaceAppSectionPanel>
   );
 }

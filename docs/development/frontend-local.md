@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 8).
+Guide for running the Next.js frontend locally (Phase 1 / Step 9).
 
 ## Scope
 
@@ -11,10 +11,11 @@ This frontend includes:
 - Auth foundation: login, register, account pages
 - Workspace foundation: list, create, detail, memberships pages
 - Workspace app shell at `/workspaces/{id}/app`
+- Workspace app placeholder routes: dashboard, cases, customers, settings
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
 
-It does **not** include dashboard, Universal Case UI, customers, billing, integrations, invitations, or advanced RBAC.
+It does **not** include functional dashboard, Universal Case workflow, customer CRUD, settings forms, billing, integrations, invitations, or advanced RBAC.
 
 ## Prerequisites
 
@@ -79,6 +80,7 @@ Visiting `/` redirects to `/ka` (default locale).
 5. Confirm the workspace appears in the list.
 6. Open workspace detail and click **Open app**.
 7. Confirm `/ka/workspaces/{id}/app` shows the workspace app shell.
+8. Click Home, Dashboard, Cases, Customers, and Settings in the sidebar.
 
 ## Build and quality checks
 

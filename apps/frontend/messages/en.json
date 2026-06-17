@@ -9,7 +9,7 @@
     "subtitle": "Georgian-first customer experience platform",
     "description": "Frontend foundation for a local-first CX platform.",
     "statusLabel": "Current status",
-    "statusValue": "Workspace app shell foundation is ready",
+    "statusValue": "Workspace app route skeleton is ready",
     "backendLabel": "Backend",
     "backendValue": "Auth API and workspace API are ready",
     "infrastructureLabel": "Local services",
@@ -147,10 +147,10 @@
       "nav": {
         "label": "Modules",
         "home": "Home",
-        "dashboard": "Dashboard (soon)",
-        "cases": "Cases (soon)",
-        "customers": "Customers (soon)",
-        "settings": "Settings (soon)"
+        "dashboard": "Dashboard",
+        "cases": "Cases",
+        "customers": "Customers",
+        "settings": "Settings"
       },
       "home": {
         "title": "Workspace app",
@@ -161,6 +161,32 @@
         "notBuiltCases": "Universal Case workflow",
         "notBuiltCustomers": "Customers module",
         "notBuiltIntegrations": "Integrations"
+      },
+      "placeholders": {
+        "dashboard": {
+          "title": "Dashboard",
+          "description": "Workspace overview and activity summaries.",
+          "notImplemented": "Not implemented yet.",
+          "future": "This page will show workspace metrics, volume trends and team activity."
+        },
+        "cases": {
+          "title": "Cases",
+          "description": "Universal Case workflow for this workspace.",
+          "notImplemented": "Not implemented yet.",
+          "future": "This page will list, filter and manage Universal Cases."
+        },
+        "customers": {
+          "title": "Customers",
+          "description": "Customer profiles and timelines.",
+          "notImplemented": "Not implemented yet.",
+          "future": "This page will show customer profiles and interaction history."
+        },
+        "settings": {
+          "title": "Settings",
+          "description": "Workspace configuration.",
+          "notImplemented": "Not implemented yet.",
+          "future": "This page will manage workspace preferences, members and channels."
+        }
       }
     }
   }

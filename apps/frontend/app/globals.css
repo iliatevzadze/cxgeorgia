@@ -499,6 +499,12 @@ a {
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: #334155;
+  text-decoration: none;
+  display: block;
+}
+
+.workspace-app-nav-item:hover {
+  background: #f1f5f9;
 }
 
 .workspace-app-nav-item.is-active {
@@ -543,6 +549,24 @@ a {
 .workspace-app-not-built {
   margin: 0;
   padding-left: 1.25rem;
+  color: #475569;
+}
+
+.workspace-app-placeholder h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.workspace-app-not-implemented {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.workspace-app-future {
+  margin: 0;
   color: #475569;
 }
 

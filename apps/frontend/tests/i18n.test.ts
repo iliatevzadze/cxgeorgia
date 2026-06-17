@@ -148,6 +148,22 @@ test("required workspace keys exist in both locales", () => {
     "workspaces.app.home.notBuiltCases",
     "workspaces.app.home.notBuiltCustomers",
     "workspaces.app.home.notBuiltIntegrations",
+    "workspaces.app.placeholders.dashboard.title",
+    "workspaces.app.placeholders.dashboard.description",
+    "workspaces.app.placeholders.dashboard.notImplemented",
+    "workspaces.app.placeholders.dashboard.future",
+    "workspaces.app.placeholders.cases.title",
+    "workspaces.app.placeholders.cases.description",
+    "workspaces.app.placeholders.cases.notImplemented",
+    "workspaces.app.placeholders.cases.future",
+    "workspaces.app.placeholders.customers.title",
+    "workspaces.app.placeholders.customers.description",
+    "workspaces.app.placeholders.customers.notImplemented",
+    "workspaces.app.placeholders.customers.future",
+    "workspaces.app.placeholders.settings.title",
+    "workspaces.app.placeholders.settings.description",
+    "workspaces.app.placeholders.settings.notImplemented",
+    "workspaces.app.placeholders.settings.future",
   ];
 
   for (const key of requiredWorkspaceKeys) {

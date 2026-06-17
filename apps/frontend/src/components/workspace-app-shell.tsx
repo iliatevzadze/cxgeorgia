@@ -7,15 +7,36 @@ import { Link } from "@/i18n/navigation";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useWorkspace } from "@/hooks/use-workspace";
+import type { WorkspaceAppSection } from "@/lib/workspaces/app-sections";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceAppShellProps = {
   workspaceId: string;
+  activeSection: WorkspaceAppSection;
   children: ReactNode;
 };
 
+type AppNavItemProps = {
+  href: string;
+  active: boolean;
+  children: ReactNode;
+};
+
+function AppNavItem({ href, active, children }: AppNavItemProps) {
+  return (
+    <Link
+      href={href}
+      className={`workspace-app-nav-item${active ? " is-active" : ""}`}
+      aria-current={active ? "page" : undefined}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export function WorkspaceAppShell({
   workspaceId,
+  activeSection,
   children,
 }: WorkspaceAppShellProps) {
   const t = useTranslations("workspaces.app.shell");
@@ -65,21 +86,36 @@ export function WorkspaceAppShell({
       <div className="workspace-app-body">
         <aside className="workspace-app-sidebar">
           <nav className="workspace-app-module-nav" aria-label={tNav("label")}>
-            <span className="workspace-app-nav-item is-active">
+            <AppNavItem
+              href={workspaceRoutes.appHome(workspaceId)}
+              active={activeSection === "home"}
+            >
               {tNav("home")}
-            </span>
-            <span className="workspace-app-nav-item is-disabled">
+            </AppNavItem>
+            <AppNavItem
+              href={workspaceRoutes.appDashboard(workspaceId)}
+              active={activeSection === "dashboard"}
+            >
               {tNav("dashboard")}
-            </span>
-            <span className="workspace-app-nav-item is-disabled">
+            </AppNavItem>
+            <AppNavItem
+              href={workspaceRoutes.appCases(workspaceId)}
+              active={activeSection === "cases"}
+            >
               {tNav("cases")}
-            </span>
-            <span className="workspace-app-nav-item is-disabled">
+            </AppNavItem>
+            <AppNavItem
+              href={workspaceRoutes.appCustomers(workspaceId)}
+              active={activeSection === "customers"}
+            >
               {tNav("customers")}
-            </span>
-            <span className="workspace-app-nav-item is-disabled">
+            </AppNavItem>
+            <AppNavItem
+              href={workspaceRoutes.appSettings(workspaceId)}
+              active={activeSection === "settings"}
+            >
               {tNav("settings")}
-            </span>
+            </AppNavItem>
           </nav>
 
           <div className="workspace-app-sidebar-links">

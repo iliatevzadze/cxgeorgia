@@ -9,7 +9,7 @@
     "subtitle": "ქართული მომხმარებელთა გამოცდილების პლატფორმა",
     "description": "ლოკალური, Georgian-first CX პლატფორმის frontend საფუძველი.",
     "statusLabel": "მიმდინარე სტატუსი",
-    "statusValue": "Workspace app shell საფუძველი მზადაა",
+    "statusValue": "Workspace app route skeleton მზადაა",
     "backendLabel": "Backend",
     "backendValue": "Auth API და workspace API მზადაა",
     "infrastructureLabel": "Local services",
@@ -147,10 +147,10 @@
       "nav": {
         "label": "მოდულები",
         "home": "მთავარი",
-        "dashboard": "დაფა (მალე)",
-        "cases": "ქეისები (მალე)",
-        "customers": "მომხმარებლები (მალე)",
-        "settings": "პარამეტრები (მალე)"
+        "dashboard": "დაფა",
+        "cases": "ქეისები",
+        "customers": "მომხმარებლები",
+        "settings": "პარამეტრები"
       },
       "home": {
         "title": "Workspace აპი",
@@ -161,6 +161,32 @@
         "notBuiltCases": "Universal Case workflow",
         "notBuiltCustomers": "მომხმარებლების მოდული",
         "notBuiltIntegrations": "ინტეგრაციები"
+      },
+      "placeholders": {
+        "dashboard": {
+          "title": "დაფა",
+          "description": "Workspace-ის მიმოხილვა და აქტივობის შეჯამება.",
+          "notImplemented": "ჯერ არ არის განხორციელებული.",
+          "future": "აქ გამოჩნდება მეტრიკები, მოცულობის ტენდენციები და გუნდის აქტივობა."
+        },
+        "cases": {
+          "title": "ქეისები",
+          "description": "ამ workspace-ის Universal Case workflow.",
+          "notImplemented": "ჯერ არ არის განხორციელებული.",
+          "future": "აქ გამოჩნდება Universal Case-ების სია, ფილტრაცია და მართვა."
+        },
+        "customers": {
+          "title": "მომხმარებლები",
+          "description": "მომხმარებლის პროფილები და ტაიმლაინი.",
+          "notImplemented": "ჯერ არ არის განხორციელებული.",
+          "future": "აქ გამოჩნდება მომხმარებლის პროფილები და ურთიერთობის ისტორია."
+        },
+        "settings": {
+          "title": "პარამეტრები",
+          "description": "Workspace-ის კონფიგურაცია.",
+          "notImplemented": "ჯერ არ არის განხორციელებული.",
+          "future": "აქ მართავთ პარამეტრებს, წევრებს და არხებს."
+        }
       }
     }
   }
