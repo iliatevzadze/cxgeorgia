@@ -10,7 +10,11 @@ from app.api.workspace_deps import get_active_workspace_membership
 from app.db.session import get_async_session
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
-from app.schemas.universal_case import UniversalCaseCreate, UniversalCaseRead
+from app.schemas.universal_case import (
+    UniversalCaseCreate,
+    UniversalCaseRead,
+    UniversalCaseUpdate,
+)
 
 router = APIRouter(
     prefix="/api/v1/workspaces/{workspace_id}/cases",
@@ -89,4 +93,36 @@ async def get_case(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Case not found",
         )
+    return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
+
+
+@router.patch("/{case_id}")
+async def update_case(
+    body: UniversalCaseUpdate,
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Update universal case status and/or priority."""
+    _ = membership
+    case = await session.scalar(
+        select(UniversalCase).where(
+            UniversalCase.id == case_id,
+            UniversalCase.workspace_id == workspace_id,
+        )
+    )
+    if case is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case not found",
+        )
+
+    if body.status is not None:
+        case.status = body.status
+    if body.priority is not None:
+        case.priority = body.priority
+
+    await session.commit()
+    await session.refresh(case)
     return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))

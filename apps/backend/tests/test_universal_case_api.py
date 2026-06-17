@@ -29,6 +29,22 @@ async def _create_workspace(
     return response_data(response)["workspace"]["id"]
 
 
+async def _create_case(
+    client: AsyncClient,
+    headers: dict[str, str],
+    workspace_id: str,
+    *,
+    title: str = "Patch test case",
+) -> str:
+    response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": title},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    return response_data(response)["id"]
+
+
 async def test_create_case_unauthenticated_returns_401(client: AsyncClient) -> None:
     response = await client.post(
         f"/api/v1/workspaces/{uuid.uuid4()}/cases",
@@ -357,3 +373,196 @@ async def test_get_case_non_member_returns_404(client: AsyncClient) -> None:
         headers=other_headers,
     )
     assert response.status_code == 404
+
+
+async def test_patch_case_unauthenticated_returns_401(client: AsyncClient) -> None:
+    response = await client.patch(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases/{uuid.uuid4()}",
+        json={"status": "pending"},
+    )
+    assert response.status_code == 401
+
+
+async def test_patch_case_status_as_workspace_member(client: AsyncClient) -> None:
+    email = f"case-patch-status-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Patch Status Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"status": "pending"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["status"] == CaseStatus.PENDING.value
+
+
+async def test_patch_case_priority_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-priority-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Priority Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"priority": "high"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["priority"] == CasePriority.HIGH.value
+
+
+async def test_patch_case_status_and_priority_together(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-both-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Patch Both Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"status": "resolved", "priority": "urgent"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["status"] == CaseStatus.RESOLVED.value
+    assert data["priority"] == CasePriority.URGENT.value
+
+
+async def test_patch_case_persists_changes(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    email = f"case-patch-persist-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Patch Persist Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"status": "closed"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    case = await db_session.get(UniversalCase, UUID(case_id))
+    assert case is not None
+    assert case.status == CaseStatus.CLOSED
+
+
+async def test_patch_case_cross_workspace_returns_404(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-cross-{uuid.uuid4()}@example.com")
+    workspace_a = await _create_workspace(client, headers, "Patch Cross A")
+    workspace_b = await _create_workspace(client, headers, "Patch Cross B")
+    case_id = await _create_case(client, headers, workspace_a)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_b}/cases/{case_id}",
+        json={"status": "pending"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_patch_case_non_member_returns_404(client: AsyncClient) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-patch-owner-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Patch Private")
+    case_id = await _create_case(client, owner_headers, workspace_id)
+
+    other_email = f"case-patch-nonmember-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"status": "pending"},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_patch_case_invalid_status_returns_422(client: AsyncClient) -> None:
+    email = f"case-patch-bad-status-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Patch Bad Status")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"status": "not-a-status"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_invalid_priority_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-bad-priority-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Bad Priority")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"priority": "not-a-priority"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_empty_body_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-empty-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Patch Empty Body")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_forbidden_fields_return_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-forbidden-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Forbidden")
+    case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Original title",
+    )
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={
+            "status": "pending",
+            "title": "Changed title",
+            "description": "Changed description",
+            "source": "email",
+            "customer_name": "Changed name",
+            "customer_email": "changed@example.com",
+            "external_reference": "EXT-1",
+            "workspace_id": str(uuid.uuid4()),
+            "created_by_user_id": str(uuid.uuid4()),
+        },
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+    detail_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert response_data(detail_response)["title"] == "Original title"
+    assert response_data(detail_response)["status"] == CaseStatus.OPEN.value
