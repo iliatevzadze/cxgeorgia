@@ -14,3 +14,7 @@ def test_workspaces_table_in_metadata() -> None:
 
 def test_workspace_memberships_table_in_metadata() -> None:
     assert "workspace_memberships" in Base.metadata.tables
+
+
+def test_universal_cases_table_in_metadata() -> None:
+    assert "universal_cases" in Base.metadata.tables

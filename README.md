@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 9: workspace app route skeleton)
+**Phase 1 — SaaS Base** (Step 10: Universal Case database foundation)
 
-Workspace app internal routes (dashboard, cases, customers, settings) exist as placeholders inside the app shell. **No real product modules yet.**
+`universal_cases` table and Alembic migration `0004` are in place. **No Universal Case API or frontend UI yet.**
 
-Phase 1 / Step 10 has **not started**.
+Phase 1 / Step 11 has **not started**.
 
 ## Confirmed stack
 
@@ -288,7 +288,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Frontend workspace foundation (Phase 1 / Step 7)
 - [x] Workspace app shell foundation (Phase 1 / Step 8)
 - [x] Workspace app route skeleton (Phase 1 / Step 9)
-- [ ] Phase 1 / Step 10 (not started)
+- [x] Universal Case database foundation (Phase 1 / Step 10)
+- [ ] Phase 1 / Step 11 (not started)
 
 ## License
 

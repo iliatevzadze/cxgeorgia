@@ -22,3 +22,26 @@ class WorkspaceMemberRole(StrEnum):
 class WorkspaceMemberStatus(StrEnum):
     ACTIVE = "active"
     REMOVED = "removed"
+
+
+class CaseStatus(StrEnum):
+    OPEN = "open"
+    PENDING = "pending"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+
+
+class CasePriority(StrEnum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+class CaseSource(StrEnum):
+    MANUAL = "manual"
+    EMAIL = "email"
+    CHAT = "chat"
+    PHONE = "phone"
+    WEB = "web"
+    IMPORT = "import"

@@ -4,9 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 5: workspace bootstrap API)
+**Phase 1 — SaaS Base** (Step 10: Universal Case database foundation)
 
-Phase 1 / Step 6 has **not started**. No frontend workspace UI, invitations, or advanced RBAC.
+Alembic head: `0004`. ORM model `UniversalCase` (`universal_cases` table) exists. **No Universal Case API, schemas, or service layer yet.**
+
+Phase 1 / Step 11 has **not started**.
 
 ## Auth API
 
@@ -27,26 +29,22 @@ Phase 1 / Step 6 has **not started**. No frontend workspace UI, invitations, or 
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-Creating a workspace automatically assigns the current user `owner` role. Slugs are generated from the workspace name (`acme-support`, `acme-support-2`, …).
+## Universal Case (Phase 1 / Step 10)
 
-No invitation flow, workspace switcher UI, or advanced RBAC yet.
+Database only — no HTTP API yet.
 
-## Manual curl examples
+| Table | Purpose |
+|-------|---------|
+| `universal_cases` | Workspace-scoped customer issues/work items |
 
-```bash
-# Login first, then:
-curl -X POST http://localhost:8000/api/v1/workspaces \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"name":"Acme Support"}'
-
-curl http://localhost:8000/api/v1/workspaces \
-  -H "Authorization: Bearer $TOKEN"
-```
+Enums: `case_status`, `case_priority`, `case_source`. All rows include `workspace_id` for tenant isolation.
 
 ## Migrations
 
-Alembic head: `0003` (no new migration in Step 5).
+```bash
+alembic upgrade head   # applies through 0004
+alembic current
+```
 
 ## Tests
 

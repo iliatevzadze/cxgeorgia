@@ -14,6 +14,7 @@ from app.db.base import Base
 from app.models.enums import WorkspaceStatus
 
 if TYPE_CHECKING:
+    from app.models.universal_case import UniversalCase
     from app.models.workspace_membership import WorkspaceMembership
 
 
@@ -49,6 +50,10 @@ class Workspace(Base):
     )
 
     memberships: Mapped[list[WorkspaceMembership]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    universal_cases: Mapped[list[UniversalCase]] = relationship(
         back_populates="workspace",
         cascade="all, delete-orphan",
     )
