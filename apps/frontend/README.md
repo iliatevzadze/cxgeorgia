@@ -4,13 +4,13 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 12: Universal Case frontend API client + read-only cases list)
+**Phase 1 — SaaS Base** (Step 13: Universal Case create form UI)
 
-Read-only Cases list at `/workspaces/{id}/app/cases` loads from `GET /api/v1/workspaces/{id}/cases`. **Create form and case detail page are not implemented.**
+Cases page at `/workspaces/{id}/app/cases` can create (`POST`) and list (`GET`) Universal Cases. **Case detail page is not implemented.**
 
 Update, delete, comments, SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 13 has **not started**.
+Phase 1 / Step 14 has **not started**.
 
 ## What exists now
 
@@ -22,7 +22,7 @@ Phase 1 / Step 13 has **not started**.
 - Auth pages: login, register, account (`/me`)
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
-- Workspace app read-only Cases list (`/workspaces/{id}/app/cases`)
+- Workspace app Cases page with create form and list (`/workspaces/{id}/app/cases`)
 - Workspace app placeholder routes: dashboard, customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
@@ -33,7 +33,7 @@ Phase 1 / Step 13 has **not started**.
 
 ## What does not exist yet
 
-- Case create form and case detail page
+- Case detail page
 - Product dashboard, customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
@@ -61,7 +61,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}`, `/en/workspaces/{id}` | Workspace detail (`GET /api/v1/workspaces/{id}`) |
 | `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
-| `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Read-only Universal Cases list (`GET /api/v1/workspaces/{id}/cases`) |
+| `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
 | `/ka/workspaces/{id}/app/dashboard`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration

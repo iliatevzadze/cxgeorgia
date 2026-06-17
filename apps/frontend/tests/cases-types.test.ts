@@ -14,6 +14,17 @@ test("case types export UniversalCaseRead", () => {
   assert.match(typesSource, /export type UniversalCaseRead/);
 });
 
+test("case types export UniversalCaseCreateRequest", () => {
+  assert.match(typesSource, /export type UniversalCaseCreateRequest/);
+  assert.match(typesSource, /title: string/);
+  assert.match(typesSource, /description\?: string/);
+  assert.match(typesSource, /priority\?: CasePriority/);
+  assert.match(typesSource, /source\?: CaseSource/);
+  assert.match(typesSource, /customer_name\?: string/);
+  assert.match(typesSource, /customer_email\?: string/);
+  assert.match(typesSource, /external_reference\?: string/);
+});
+
 test("case status, priority and source unions match backend enums", () => {
   assert.match(typesSource, /export type CaseStatus/);
   assert.match(typesSource, /"open" \| "pending" \| "resolved" \| "closed"/);

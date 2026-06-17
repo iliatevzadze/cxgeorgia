@@ -164,19 +164,49 @@
       },
       "cases": {
         "title": "ქეისები",
-        "description": "ამ workspace-ის Universal Case-ები (მხოლოდ ნახვა).",
+        "description": "შექმენით და ნახეთ Universal Case-ები ამ workspace-ში.",
         "loading": "ქეისები იტვირთება...",
         "error": "ქეისების ჩატვირთვა ვერ მოხერხდა.",
         "emptyTitle": "ქეისები ჯერ არ არის",
         "emptyMessage": "ამ workspace-ში Universal Case-ები ჯერ არ გაქვთ.",
-        "readOnlyNote": "მხოლოდ სიის ნახვა. UI-დან ქეისის შექმნა ჯერ არ არის ხელმისაწვდომი.",
         "titleLabel": "სათაური",
         "statusLabel": "სტატუსი",
         "priorityLabel": "პრიორიტეტი",
         "sourceLabel": "წყარო",
         "customerLabel": "მომხმარებელი",
         "createdAtLabel": "შექმნის თარიღი",
-        "noCustomer": "—"
+        "noCustomer": "—",
+        "create": {
+          "title": "ახალი ქეისი",
+          "description": "შექმენით Universal Case ამ workspace-ში.",
+          "titleLabel": "სათაური",
+          "titlePlaceholder": "მაგ. მომხმარებლის მოთხოვნა",
+          "descriptionLabel": "აღწერა",
+          "priorityLabel": "პრიორიტეტი",
+          "sourceLabel": "წყარო",
+          "customerNameLabel": "მომხმარებლის სახელი",
+          "customerEmailLabel": "მომხმარებლის ელფოსტა",
+          "externalReferenceLabel": "გარე მითითება",
+          "submit": "ქეისის შექმნა",
+          "submitting": "მიმდინარეობს...",
+          "success": "ქეისი შეიქმნა.",
+          "error": "ქეისის შექმნა ვერ მოხერხდა.",
+          "titleRequired": "სათაური სავალდებულოა.",
+          "priorityOptions": {
+            "low": "დაბალი",
+            "normal": "ჩვეულებრივი",
+            "high": "მაღალი",
+            "urgent": "გადაუდებელი"
+          },
+          "sourceOptions": {
+            "manual": "ხელით",
+            "email": "ელფოსტა",
+            "chat": "ჩატი",
+            "phone": "ტელეფონი",
+            "web": "ვები",
+            "import": "იმპორტი"
+          }
+        }
       },
       "placeholders": {
         "dashboard": {

@@ -26,3 +26,13 @@ export type UniversalCaseRead = {
   created_at: string;
   updated_at: string;
 };
+
+export type UniversalCaseCreateRequest = {
+  title: string;
+  description?: string;
+  priority?: CasePriority;
+  source?: CaseSource;
+  customer_name?: string;
+  customer_email?: string;
+  external_reference?: string;
+};

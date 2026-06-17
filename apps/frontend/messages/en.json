@@ -164,19 +164,49 @@
       },
       "cases": {
         "title": "Cases",
-        "description": "Universal Cases in this workspace (read-only).",
+        "description": "Create and view Universal Cases in this workspace.",
         "loading": "Loading cases...",
         "error": "Could not load cases.",
         "emptyTitle": "No cases yet",
         "emptyMessage": "There are no Universal Cases in this workspace.",
-        "readOnlyNote": "Read-only list. Creating cases from the UI is not available yet.",
         "titleLabel": "Title",
         "statusLabel": "Status",
         "priorityLabel": "Priority",
         "sourceLabel": "Source",
         "customerLabel": "Customer",
         "createdAtLabel": "Created",
-        "noCustomer": "—"
+        "noCustomer": "—",
+        "create": {
+          "title": "New case",
+          "description": "Create a Universal Case in this workspace.",
+          "titleLabel": "Title",
+          "titlePlaceholder": "e.g. Customer inquiry",
+          "descriptionLabel": "Description",
+          "priorityLabel": "Priority",
+          "sourceLabel": "Source",
+          "customerNameLabel": "Customer name",
+          "customerEmailLabel": "Customer email",
+          "externalReferenceLabel": "External reference",
+          "submit": "Create case",
+          "submitting": "Creating...",
+          "success": "Case created.",
+          "error": "Could not create case.",
+          "titleRequired": "Title is required.",
+          "priorityOptions": {
+            "low": "Low",
+            "normal": "Normal",
+            "high": "High",
+            "urgent": "Urgent"
+          },
+          "sourceOptions": {
+            "manual": "Manual",
+            "email": "Email",
+            "chat": "Chat",
+            "phone": "Phone",
+            "web": "Web",
+            "import": "Import"
+          }
+        }
       },
       "placeholders": {
         "dashboard": {

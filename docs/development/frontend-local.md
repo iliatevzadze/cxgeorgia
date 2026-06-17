@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 12).
+Guide for running the Next.js frontend locally (Phase 1 / Step 13).
 
 ## Scope
 
@@ -11,12 +11,12 @@ This frontend includes:
 - Auth foundation: login, register, account pages
 - Workspace foundation: list, create, detail, memberships pages
 - Workspace app shell at `/workspaces/{id}/app`
-- Read-only Universal Cases list at `/workspaces/{id}/app/cases`
+- Universal Cases create form and list at `/workspaces/{id}/app/cases`
 - Workspace app placeholder routes: dashboard, customers, settings
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
 
-It does **not** include case create form, case detail page, functional dashboard, customer CRUD, settings forms, billing, integrations, invitations, or advanced RBAC.
+It does **not** include case detail page, functional dashboard, customer CRUD, settings forms, billing, integrations, invitations, or advanced RBAC.
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ Use `--hostname localhost` (configured in `package.json`). Do **not** use `next 
 | [http://127.0.0.1:3000/ka/workspaces](http://127.0.0.1:3000/ka/workspaces) | Workspace list (requires login) |
 | [http://127.0.0.1:3000/ka/workspaces/new](http://127.0.0.1:3000/ka/workspaces/new) | Create workspace |
 | `http://127.0.0.1:3000/ka/workspaces/{id}/app` | Workspace app shell (after login) |
-| `http://127.0.0.1:3000/ka/workspaces/{id}/app/cases` | Read-only Cases list |
+| `http://127.0.0.1:3000/ka/workspaces/{id}/app/cases` | Cases create form + list |
 
 Visiting `/` redirects to `/ka` (default locale).
 
@@ -82,9 +82,9 @@ Visiting `/` redirects to `/ka` (default locale).
 5. Confirm the workspace appears in the list.
 6. Open workspace detail and click **Open app**.
 7. Confirm `/ka/workspaces/{id}/app` shows the workspace app shell.
-8. Click **Cases** in the sidebar — confirm loading, empty, or list states.
-9. Optional: create a case via backend API (`POST /api/v1/workspaces/{id}/cases`), refresh Cases page, confirm it appears.
-10. Confirm `/en/workspaces/{id}/app/cases` works with English UI.
+8. Click **Cases** in the sidebar — create a case from the form and confirm it appears in the list.
+9. Confirm `/en/workspaces/{id}/app/cases` works with English UI.
+10. Confirm empty title is rejected client-side.
 
 ## Build and quality checks
 
@@ -101,7 +101,7 @@ Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` 
 
 ## What is intentionally not implemented
 
-- Case create form and case detail page
+- Case detail page
 - Product dashboard, customers, billing, integrations
 - Workspace switcher, invitation flow and advanced RBAC UI
 - HttpOnly refresh tokens

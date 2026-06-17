@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { WorkspaceCaseCreateForm } from "@/components/workspace-case-create-form";
 import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
 import type { UniversalCaseRead } from "@/lib/cases/types";
@@ -37,114 +38,105 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [cases, setCases] = useState<UniversalCaseRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadCases = useCallback(async () => {
+    const token = getAccessToken();
+    if (!token) {
+      setErrorMessage(tCommon("accessDenied"));
+      setIsLoading(false);
+      return;
+    }
 
-    async function loadCases() {
-      const token = getAccessToken();
-      if (!token) {
-        if (isMounted) {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const items = await listCases(workspaceId, token);
+      setCases(items);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setErrorMessage(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
           setErrorMessage(tCommon("accessDenied"));
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      try {
-        const items = await listCases(workspaceId, token);
-        if (isMounted) {
-          setCases(items);
-        }
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        if (error instanceof ApiError) {
-          if (error.status === 404) {
-            setErrorMessage(tCommon("notFound"));
-          } else if (error.status === 401 || error.status === 403) {
-            setErrorMessage(tCommon("accessDenied"));
-          } else {
-            setErrorMessage(t("error"));
-          }
         } else {
           setErrorMessage(t("error"));
         }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      } else {
+        setErrorMessage(t("error"));
       }
+    } finally {
+      setIsLoading(false);
     }
-
-    void loadCases();
-
-    return () => {
-      isMounted = false;
-    };
   }, [workspaceId, t, tCommon]);
 
-  if (isLoading) {
-    return <p className="workspace-status">{t("loading")}</p>;
-  }
+  useEffect(() => {
+    void loadCases();
+  }, [loadCases, refreshToken]);
 
-  if (errorMessage) {
-    return (
-      <section className="workspace-panel">
-        <p className="workspace-error" role="alert">
-          {errorMessage}
-        </p>
-      </section>
-    );
+  function handleCaseCreated() {
+    setRefreshToken((current) => current + 1);
   }
 
   return (
-    <section className="workspace-panel">
-      <h1>{t("title")}</h1>
-      <p className="workspace-description">{t("description")}</p>
-      <p className="workspace-app-not-implemented">{t("readOnlyNote")}</p>
+    <div className="workspace-cases-page">
+      <WorkspaceCaseCreateForm
+        workspaceId={workspaceId}
+        onCreated={handleCaseCreated}
+      />
 
-      {cases.length === 0 ? (
-        <div className="workspace-empty">
-          <p>{t("emptyTitle")}</p>
-          <p>{t("emptyMessage")}</p>
-        </div>
+      {isLoading ? (
+        <p className="workspace-status">{t("loading")}</p>
+      ) : errorMessage ? (
+        <section className="workspace-panel">
+          <p className="workspace-error" role="alert">
+            {errorMessage}
+          </p>
+        </section>
       ) : (
-        <ul className="workspace-cases">
-          {cases.map((item) => (
-            <li key={item.id} className="workspace-case-item">
-              <h2>{item.title}</h2>
-              <dl className="account-details">
-                <div>
-                  <dt>{t("statusLabel")}</dt>
-                  <dd>{item.status}</dd>
-                </div>
-                <div>
-                  <dt>{t("priorityLabel")}</dt>
-                  <dd>{item.priority}</dd>
-                </div>
-                <div>
-                  <dt>{t("sourceLabel")}</dt>
-                  <dd>{item.source}</dd>
-                </div>
-                <div>
-                  <dt>{t("customerLabel")}</dt>
-                  <dd>{formatCustomer(item, t("noCustomer"))}</dd>
-                </div>
-                <div>
-                  <dt>{t("createdAtLabel")}</dt>
-                  <dd>{formatCreatedAt(item.created_at, locale)}</dd>
-                </div>
-              </dl>
-            </li>
-          ))}
-        </ul>
+        <section className="workspace-panel">
+          <h1>{t("title")}</h1>
+          <p className="workspace-description">{t("description")}</p>
+
+          {cases.length === 0 ? (
+            <div className="workspace-empty">
+              <p>{t("emptyTitle")}</p>
+              <p>{t("emptyMessage")}</p>
+            </div>
+          ) : (
+            <ul className="workspace-cases">
+              {cases.map((item) => (
+                <li key={item.id} className="workspace-case-item">
+                  <h2>{item.title}</h2>
+                  <dl className="account-details">
+                    <div>
+                      <dt>{t("statusLabel")}</dt>
+                      <dd>{item.status}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("priorityLabel")}</dt>
+                      <dd>{item.priority}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("sourceLabel")}</dt>
+                      <dd>{item.source}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("customerLabel")}</dt>
+                      <dd>{formatCustomer(item, t("noCustomer"))}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("createdAtLabel")}</dt>
+                      <dd>{formatCreatedAt(item.created_at, locale)}</dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
-    </section>
+    </div>
   );
 }

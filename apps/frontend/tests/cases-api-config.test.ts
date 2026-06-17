@@ -10,3 +10,11 @@ test("casePaths.list includes workspace id", () => {
     `/api/v1/workspaces/${workspaceId}/cases`,
   );
 });
+
+test("casePaths.create includes workspace id", () => {
+  const workspaceId = "550e8400-e29b-41d4-a716-446655440000";
+  assert.equal(
+    casePaths.create(workspaceId),
+    `/api/v1/workspaces/${workspaceId}/cases`,
+  );
+});
