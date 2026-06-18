@@ -4,15 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 35: Universal Case comment edit frontend UI)
+**Phase 1 — SaaS Base** (Step 36: Universal Case tags database foundation)
 
-Comment body and `is_internal` can be updated via PATCH on case comments. The case detail frontend supports editing comments.
+`case_tags` and `universal_case_tags` tables exist for workspace-scoped Universal Case tags. **Tag API is not implemented yet.**
 
-Comment edits record a read-only `case_updated` activity with message `"Comment edited"`.
+Comment edit frontend UI exists. Tag frontend UI is **not implemented**.
 
-SLA, attachments, tags, and customer module are **not implemented**.
+SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 36 has **not started**.
+Phase 1 / Step 37 has **not started**.
 
 ## Auth API
 
@@ -50,14 +50,14 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 
 All case, comment and activity endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
-Database tables: `universal_cases`, `case_comments`, `case_activities`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
+Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
 
 Case create, update, assignment changes, comment create/edit/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0006
+alembic upgrade head   # applies through 0007
 alembic current
 ```
 

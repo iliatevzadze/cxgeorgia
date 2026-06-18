@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 35: Universal Case comment edit frontend UI)
+**Phase 1 — SaaS Base** (Step 36: Universal Case tags database foundation)
 
-Comments can be edited from the case detail page. Comment edit activity appears in the read-only activity timeline.
+`case_tags` and `universal_case_tags` tables exist for workspace-scoped tags on Universal Cases. **Tag API and frontend UI are not implemented yet.**
 
-SLA, attachments, tags, and customer module are **not implemented**.
+SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 36 has **not started**.
+Phase 1 / Step 37 has **not started**.
 
 ## Confirmed stack
 
@@ -316,7 +316,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case activity timeline frontend UI (Phase 1 / Step 33)
 - [x] Universal Case comment edit backend API (Phase 1 / Step 34)
 - [x] Universal Case comment edit frontend UI (Phase 1 / Step 35)
-- [ ] Phase 1 / Step 36 (not started)
+- [x] Universal Case tags database foundation (Phase 1 / Step 36)
+- [ ] Phase 1 / Step 37 (not started)
 
 ## License
 
