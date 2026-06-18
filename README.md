@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 20: Universal Case customer/source update frontend UI)
+**Phase 1 — SaaS Base** (Step 21: Universal Case DELETE backend API)
 
-Case detail page can update title, description, status, priority, source and customer metadata via `PATCH /api/v1/workspaces/{workspace_id}/cases/{case_id}`.
+`DELETE /api/v1/workspaces/{workspace_id}/cases/{case_id}` removes a case from the workspace. **Frontend delete controls are not implemented yet.**
 
-Assignment, delete, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Assignment, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 21 has **not started**.
+Phase 1 / Step 22 has **not started**.
 
 ## Confirmed stack
 
@@ -301,7 +301,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case title/description update frontend UI (Phase 1 / Step 18)
 - [x] Universal Case customer/source PATCH API (Phase 1 / Step 19)
 - [x] Universal Case customer/source update frontend UI (Phase 1 / Step 20)
-- [ ] Phase 1 / Step 21 (not started)
+- [x] Universal Case DELETE backend API (Phase 1 / Step 21)
+- [ ] Phase 1 / Step 22 (not started)
 
 ## License
 

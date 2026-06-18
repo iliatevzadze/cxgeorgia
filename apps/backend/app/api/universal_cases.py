@@ -12,6 +12,7 @@ from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
 from app.schemas.universal_case import (
     UniversalCaseCreate,
+    UniversalCaseDeleteRead,
     UniversalCaseRead,
     UniversalCaseUpdate,
 )
@@ -138,3 +139,31 @@ async def update_case(
     await session.commit()
     await session.refresh(case)
     return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
+
+
+@router.delete("/{case_id}")
+async def delete_case(
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Delete a universal case from the workspace."""
+    _ = membership
+    case = await session.scalar(
+        select(UniversalCase).where(
+            UniversalCase.id == case_id,
+            UniversalCase.workspace_id == workspace_id,
+        )
+    )
+    if case is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case not found",
+        )
+
+    await session.delete(case)
+    await session.commit()
+    return _envelope(
+        UniversalCaseDeleteRead(id=case_id, deleted=True).model_dump(mode="json")
+    )

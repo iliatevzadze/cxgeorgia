@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 19: Universal Case customer/source PATCH API)
+**Phase 1 — SaaS Base** (Step 21: Universal Case DELETE backend API)
 
-Alembic head: `0004`. Create, list, detail, and PATCH endpoints exist for `universal_cases`. PATCH updates title, description, status, priority, source and customer metadata. **Frontend customer/source edit controls are not implemented yet.**
+Alembic head: `0004`. Create, list, detail, PATCH and DELETE endpoints exist for `universal_cases`. **Frontend delete controls are not implemented yet.**
 
-Assignment, delete, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Assignment, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 20 has **not started**.
+Phase 1 / Step 22 has **not started**.
 
 ## Auth API
 
@@ -31,7 +31,7 @@ Phase 1 / Step 20 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case API (Phase 1 / Steps 11–19)
+## Universal Case API (Phase 1 / Steps 11–21)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -39,6 +39,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source and customer metadata |
+| DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |
 
 All case endpoints require `Authorization: Bearer <token>` and active workspace membership.
 

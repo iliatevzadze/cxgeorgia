@@ -3,6 +3,7 @@
 from app.schemas.auth import Token, TokenPayload
 from app.schemas.universal_case import (
     UniversalCaseCreate,
+    UniversalCaseDeleteRead,
     UniversalCaseRead,
     UniversalCaseUpdate,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "Token",
     "TokenPayload",
     "UniversalCaseCreate",
+    "UniversalCaseDeleteRead",
     "UniversalCaseRead",
     "UniversalCaseUpdate",
     "UserCreate",

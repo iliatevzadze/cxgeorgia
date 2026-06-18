@@ -1071,3 +1071,167 @@ async def test_patch_case_all_allowed_fields_together(client: AsyncClient) -> No
     assert data["customer_name"] == "Mariam"
     assert data["customer_email"] == "mariam@example.com"
     assert data["external_reference"] == "EXT-FULL"
+
+
+async def test_delete_case_unauthenticated_returns_401(client: AsyncClient) -> None:
+    response = await client.delete(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases/{uuid.uuid4()}",
+    )
+    assert response.status_code == 401
+
+
+async def test_delete_case_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-delete-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Delete Case Workspace")
+    case_id = await _create_case(client, headers, workspace_id, title="Delete me")
+
+    response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["id"] == case_id
+    assert data["deleted"] is True
+
+
+async def test_delete_case_get_detail_returns_404_after_delete(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-delete-detail-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Delete Detail Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    delete_response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert delete_response.status_code == 200
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_case_list_excludes_deleted_case(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-delete-list-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Delete List Workspace")
+    case_id = await _create_case(client, headers, workspace_id, title="Listed case")
+    other_case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Remaining case",
+    )
+
+    delete_response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=headers,
+    )
+    assert delete_response.status_code == 200
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = response_data(response)
+    ids = {item["id"] for item in items}
+    assert case_id not in ids
+    assert other_case_id in ids
+
+
+async def test_delete_case_not_found_returns_404(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-delete-missing-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Delete Missing Workspace")
+
+    response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{uuid.uuid4()}",
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_case_cross_workspace_returns_404(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-delete-cross-{uuid.uuid4()}@example.com",
+    )
+    workspace_a = await _create_workspace(client, headers, "Delete Cross A")
+    workspace_b = await _create_workspace(client, headers, "Delete Cross B")
+    case_id = await _create_case(client, headers, workspace_a)
+
+    response = await client.delete(
+        f"/api/v1/workspaces/{workspace_b}/cases/{case_id}",
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+    detail_response = await client.get(
+        f"/api/v1/workspaces/{workspace_a}/cases/{case_id}",
+        headers=headers,
+    )
+    assert detail_response.status_code == 200
+
+
+async def test_delete_case_non_member_returns_404(client: AsyncClient) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-delete-owner-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Delete Private")
+    case_id = await _create_case(client, owner_headers, workspace_id)
+
+    other_email = f"case-delete-nonmember-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_case_does_not_delete_other_case_in_workspace(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-delete-other-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Delete Other Workspace")
+    case_to_delete = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Delete this",
+    )
+    remaining_case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Keep this",
+    )
+
+    response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_to_delete}",
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    detail_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases/{remaining_case_id}",
+        headers=headers,
+    )
+    assert detail_response.status_code == 200
+    assert response_data(detail_response)["title"] == "Keep this"

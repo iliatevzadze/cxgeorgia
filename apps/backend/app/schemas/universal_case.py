@@ -116,3 +116,10 @@ class UniversalCaseRead(BaseModel):
     assigned_to_user_id: UUID | None
     created_at: datetime
     updated_at: datetime
+
+
+class UniversalCaseDeleteRead(BaseModel):
+    """Delete universal case response."""
+
+    id: UUID
+    deleted: bool
