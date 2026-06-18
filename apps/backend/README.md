@@ -4,15 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 33: Universal Case activity timeline frontend UI)
+**Phase 1 — SaaS Base** (Step 34: Universal Case comment edit backend API)
 
-Activity timeline is visible on the case detail page in the frontend. Activity records remain **read-only** in the UI.
+Comment body and `is_internal` can be updated via PATCH on case comments. **Comment edit frontend UI is not implemented yet.**
 
-Comments can be created, listed and deleted through case-scoped backend endpoints. **Comment edit is not implemented yet.**
+Comment edits record a read-only `case_updated` activity with message `"Comment edited"`.
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 34 has **not started**.
+Phase 1 / Step 35 has **not started**.
 
 ## Auth API
 
@@ -33,7 +33,7 @@ Phase 1 / Step 34 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case API (Phase 1 / Steps 11–32)
+## Universal Case API (Phase 1 / Steps 11–34)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -44,6 +44,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | Create comment on case (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | List case comments, oldest first |
+| PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments/{comment_id}` | Update comment body and/or internal visibility (active members only) |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments/{comment_id}` | Delete comment (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/activities` | List case activity timeline, newest first (active members only) |
 
@@ -51,7 +52,7 @@ All case, comment and activity endpoints require `Authorization: Bearer <token>`
 
 Database tables: `universal_cases`, `case_comments`, `case_activities`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
 
-Case create, update, assignment changes, and comment create/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
+Case create, update, assignment changes, comment create/edit/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 
 ## Migrations
 

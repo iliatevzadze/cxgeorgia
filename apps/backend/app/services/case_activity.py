@@ -256,3 +256,26 @@ def record_comment_deleted_activity(
             "is_internal": is_internal,
         },
     )
+
+
+def record_comment_edited_activity(
+    session: AsyncSession,
+    *,
+    workspace_id: UUID,
+    case_id: UUID,
+    actor_user_id: UUID,
+    comment_id: UUID,
+    changed_fields: list[str],
+) -> CaseActivity:
+    return record_case_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=actor_user_id,
+        activity_type=CaseActivityType.CASE_UPDATED,
+        message="Comment edited",
+        metadata={
+            "comment_id": str(comment_id),
+            "changed_fields": changed_fields,
+        },
+    )

@@ -6,6 +6,7 @@ from app.schemas.case_comment import (
     CaseCommentCreate,
     CaseCommentDeleteRead,
     CaseCommentRead,
+    CaseCommentUpdate,
 )
 from app.schemas.universal_case import (
     UniversalCaseCreate,
@@ -26,6 +27,7 @@ __all__ = [
     "CaseCommentCreate",
     "CaseCommentDeleteRead",
     "CaseCommentRead",
+    "CaseCommentUpdate",
     "Token",
     "TokenPayload",
     "UniversalCaseCreate",

@@ -18,6 +18,7 @@ from app.schemas.case_comment import (
     CaseCommentCreate,
     CaseCommentDeleteRead,
     CaseCommentRead,
+    CaseCommentUpdate,
 )
 from app.schemas.universal_case import (
     UniversalCaseCreate,
@@ -30,6 +31,7 @@ from app.services.case_activity import (
     record_case_patch_activities,
     record_comment_created_activity,
     record_comment_deleted_activity,
+    record_comment_edited_activity,
     snapshot_case,
 )
 
@@ -351,6 +353,52 @@ async def list_case_activities(
         for item in result.all()
     ]
     return _envelope(items)
+
+
+@router.patch("/{case_id}/comments/{comment_id}")
+async def update_case_comment(
+    body: CaseCommentUpdate,
+    workspace_id: UUID,
+    case_id: UUID,
+    comment_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Update a comment on a universal case in the workspace."""
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+    comment = await _get_workspace_case_comment_or_404(
+        session,
+        workspace_id,
+        case_id,
+        comment_id,
+    )
+
+    changed_fields: list[str] = []
+
+    if "body" in body.model_fields_set and body.body != comment.body:
+        comment.body = body.body
+        changed_fields.append("body")
+
+    if (
+        "is_internal" in body.model_fields_set
+        and body.is_internal != comment.is_internal
+    ):
+        comment.is_internal = body.is_internal
+        changed_fields.append("is_internal")
+
+    if changed_fields:
+        record_comment_edited_activity(
+            session,
+            workspace_id=workspace_id,
+            case_id=case_id,
+            actor_user_id=membership.user_id,
+            comment_id=comment.id,
+            changed_fields=changed_fields,
+        )
+        await session.commit()
+        await session.refresh(comment)
+
+    return _envelope(CaseCommentRead.model_validate(comment).model_dump(mode="json"))
 
 
 @router.delete("/{case_id}/comments/{comment_id}")

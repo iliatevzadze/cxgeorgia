@@ -6,10 +6,12 @@ from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.case_activity import CaseActivity
 from app.models.case_comment import CaseComment
-from app.models.enums import CaseStatus
+from app.models.enums import CaseActivityType, CaseStatus
 from app.models.universal_case import UniversalCase
 from tests.conftest import auth_headers, login_user, register_user, response_data
 
@@ -746,3 +748,559 @@ async def test_delete_comment_repeated_delete_returns_404(client: AsyncClient) -
         headers=headers,
     )
     assert second_delete.status_code == 404
+
+
+def _activities_path(workspace_id: str, case_id: str) -> str:
+    return f"/api/v1/workspaces/{workspace_id}/cases/{case_id}/activities"
+
+
+async def _comment_edit_activity_count(
+    db_session: AsyncSession,
+    workspace_id: str,
+    case_id: str,
+) -> int:
+    count = await db_session.scalar(
+        select(func.count())
+        .select_from(CaseActivity)
+        .where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.activity_type == CaseActivityType.CASE_UPDATED,
+            CaseActivity.message == "Comment edited",
+        )
+    )
+    return int(count or 0)
+
+
+async def test_patch_comment_unauthenticated_returns_401(client: AsyncClient) -> None:
+    response = await client.patch(
+        _comment_detail_path(
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+        ),
+        json={"body": "Updated"},
+    )
+    assert response.status_code == 401
+
+
+async def test_patch_comment_body_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client, f"comment-patch-body-{uuid.uuid4()}@example.com"
+    )
+    workspace_id = await _create_workspace(
+        client, headers, "Comment Patch Body Workspace"
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Original body",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Updated body"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["body"] == "Updated body"
+    assert data["is_internal"] is True
+    assert data["updated_at"]
+
+
+async def test_patch_comment_is_internal_as_workspace_member(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-internal-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Internal Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Visibility test",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"is_internal": False},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["body"] == "Visibility test"
+    assert data["is_internal"] is False
+
+
+async def test_patch_comment_body_and_is_internal_together(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-both-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Both Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Before edit",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "After edit", "is_internal": False},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response_data(response)
+    assert data["body"] == "After edit"
+    assert data["is_internal"] is False
+
+
+async def test_patch_comment_whitespace_only_body_returns_422(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-blank-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Blank Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(client, headers, workspace_id, case_id)
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "   "},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_comment_null_body_returns_422_without_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-null-body-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Null Body Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(client, headers, workspace_id, case_id)
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_id)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": None},
+        headers=headers,
+    )
+    assert response.status_code == 422
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_identical_values_returns_200_without_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-noop-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Noop Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Same body",
+        is_internal=True,
+    )
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_id)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Same body", "is_internal": True},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["body"] == "Same body"
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_body_records_comment_edited_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-activity-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Activity Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Needs edit",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Edited body"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    activities = await db_session.scalars(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.message == "Comment edited",
+        )
+    )
+    edit_activities = list(activities.all())
+    assert len(edit_activities) == 1
+    activity = edit_activities[0]
+    assert activity.activity_type == CaseActivityType.CASE_UPDATED
+    assert activity.message == "Comment edited"
+    assert activity.activity_metadata == {
+        "comment_id": comment_id,
+        "changed_fields": ["body"],
+    }
+
+
+async def test_patch_comment_body_and_is_internal_records_both_changed_fields(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-fields-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Fields Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Original",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Changed", "is_internal": False},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    activity = await db_session.scalar(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.message == "Comment edited",
+        )
+    )
+    assert activity is not None
+    assert activity.activity_metadata["changed_fields"] == ["body", "is_internal"]
+
+
+async def test_patch_comment_updates_updated_at_on_real_change(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-updated-at-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Updated At Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Timestamp test",
+    )
+    comment_id = UUID(response_data(create_response)["id"])
+    comment = await db_session.get(CaseComment, comment_id)
+    assert comment is not None
+    comment.updated_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+    previous_updated_at = comment.updated_at
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, str(case_id), str(comment_id)),
+        json={"body": "Timestamp changed"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    await db_session.refresh(comment)
+    assert comment.updated_at > previous_updated_at
+
+
+async def test_patch_comment_non_member_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    owner_email = f"comment-patch-owner-{uuid.uuid4()}@example.com"
+    other_email = f"comment-patch-other-{uuid.uuid4()}@example.com"
+    owner_headers = await auth_headers(client, owner_email)
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Comment Patch Private",
+    )
+    case_id = await _create_case(client, owner_headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        owner_headers,
+        workspace_id,
+        case_id,
+    )
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_id)
+
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Should not apply"},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_cross_workspace_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-cross-{uuid.uuid4()}@example.com",
+    )
+    workspace_a = await _create_workspace(client, headers, "Comment Patch Cross A")
+    workspace_b = await _create_workspace(client, headers, "Comment Patch Cross B")
+    case_id = await _create_case(client, headers, workspace_a)
+    create_response = await _create_comment(client, headers, workspace_a, case_id)
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_a, case_id)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_b, case_id, comment_id),
+        json={"body": "Cross workspace"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert await _comment_edit_activity_count(db_session, workspace_a, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_nonexistent_case_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-missing-case-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Missing Case",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(client, headers, workspace_id, case_id)
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_id)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, str(uuid.uuid4()), comment_id),
+        json={"body": "Missing case"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_nonexistent_comment_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-missing-comment-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Missing Comment",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_id)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, str(uuid.uuid4())),
+        json={"body": "Missing comment"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_id) == (
+        before_count
+    )
+
+
+async def test_patch_comment_from_other_case_in_same_workspace_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-other-case-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Other Case",
+    )
+    case_a = await _create_case(client, headers, workspace_id, title="Case A")
+    case_b = await _create_case(client, headers, workspace_id, title="Case B")
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_b,
+        body="On case B",
+    )
+    comment_id = response_data(create_response)["id"]
+    before_count = await _comment_edit_activity_count(db_session, workspace_id, case_a)
+
+    response = await client.patch(
+        _comment_detail_path(workspace_id, case_a, comment_id),
+        json={"body": "Wrong case"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_b) == 0
+    assert await _comment_edit_activity_count(db_session, workspace_id, case_a) == (
+        before_count
+    )
+
+
+async def test_patch_comment_appears_in_activity_list_newest_first(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-patch-timeline-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Patch Timeline Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Timeline comment",
+    )
+    comment_id = response_data(create_response)["id"]
+
+    existing_activities = await db_session.scalars(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+        )
+    )
+    for activity in existing_activities.all():
+        activity.created_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    patch_response = await client.patch(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        json={"body": "Timeline edited"},
+        headers=headers,
+    )
+    assert patch_response.status_code == 200
+
+    activities_response = await client.get(
+        _activities_path(workspace_id, case_id),
+        headers=headers,
+    )
+    assert activities_response.status_code == 200
+    activities = response_data(activities_response)
+    assert activities[0]["message"] == "Comment edited"
+    assert activities[0]["activity_type"] == CaseActivityType.CASE_UPDATED.value
+    assert activities[0]["metadata"] == {
+        "comment_id": comment_id,
+        "changed_fields": ["body"],
+    }
