@@ -38,10 +38,10 @@ test("case types export UniversalCaseUpdateRequest with allowed optional fields"
   assert.match(updateBlock, /customer_name\?: string \| null/);
   assert.match(updateBlock, /customer_email\?: string \| null/);
   assert.match(updateBlock, /external_reference\?: string \| null/);
+  assert.match(updateBlock, /assigned_to_user_id\?: string \| null/);
   assert.doesNotMatch(updateBlock, /\bid\?:/);
   assert.doesNotMatch(updateBlock, /workspace_id/);
   assert.doesNotMatch(updateBlock, /created_by_user_id/);
-  assert.doesNotMatch(updateBlock, /assigned_to_user_id/);
   assert.doesNotMatch(updateBlock, /created_at/);
   assert.doesNotMatch(updateBlock, /updated_at/);
 });

@@ -352,6 +352,10 @@ a {
   margin-top: 1.5rem;
 }
 
+.workspace-case-assignment-panel {
+  margin-top: 1.5rem;
+}
+
 .workspace-case-delete-actions {
   display: flex;
   flex-direction: column;

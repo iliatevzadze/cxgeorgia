@@ -16,7 +16,9 @@ import type {
   UniversalCaseUpdateRequest,
 } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { listWorkspaceMemberships } from "@/lib/workspaces/api";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
+import type { WorkspaceMembershipRead } from "@/lib/workspaces/types";
 
 const STATUS_OPTIONS: CaseStatus[] = ["open", "pending", "resolved", "closed"];
 const PRIORITY_OPTIONS: CasePriority[] = ["low", "normal", "high", "urgent"];
@@ -53,6 +55,25 @@ function formatOptional(value: string | null, fallback: string): string {
 function normalizeOptionalText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed || null;
+}
+
+function formatMemberLabel(membership: WorkspaceMembershipRead): string {
+  return `${membership.user_id} (${membership.role})`;
+}
+
+function formatAssignmentDisplay(
+  assignedToUserId: string | null,
+  memberships: WorkspaceMembershipRead[],
+  noValue: string,
+): string {
+  if (!assignedToUserId) {
+    return noValue;
+  }
+
+  const member = memberships.find(
+    (item) => item.user_id === assignedToUserId,
+  );
+  return member ? formatMemberLabel(member) : assignedToUserId;
 }
 
 function buildUpdatePayload(
@@ -139,6 +160,24 @@ export function WorkspaceCaseDetail({
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(
     null,
   );
+  const [memberships, setMemberships] = useState<WorkspaceMembershipRead[]>(
+    [],
+  );
+  const [isMembershipsLoading, setIsMembershipsLoading] = useState(true);
+  const [membershipsLoadError, setMembershipsLoadError] = useState<string | null>(
+    null,
+  );
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [assignmentValidationError, setAssignmentValidationError] = useState<
+    string | null
+  >(null);
+  const [assignmentErrorMessage, setAssignmentErrorMessage] = useState<
+    string | null
+  >(null);
+  const [assignmentSuccessMessage, setAssignmentSuccessMessage] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -149,6 +188,7 @@ export function WorkspaceCaseDetail({
         if (isMounted) {
           setErrorMessage(tCommon("accessDenied"));
           setIsLoading(false);
+          setIsMembershipsLoading(false);
         }
         return;
       }
@@ -168,6 +208,7 @@ export function WorkspaceCaseDetail({
           setCustomerName(item.customer_name ?? "");
           setCustomerEmail(item.customer_email ?? "");
           setExternalReference(item.external_reference ?? "");
+          setSelectedAssigneeId(item.assigned_to_user_id ?? "");
         }
       } catch (error) {
         if (!isMounted) {
@@ -194,7 +235,48 @@ export function WorkspaceCaseDetail({
       }
     }
 
+    async function loadMemberships() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setIsMembershipsLoading(false);
+        }
+        return;
+      }
+
+      setIsMembershipsLoading(true);
+      setMembershipsLoadError(null);
+
+      try {
+        const items = await listWorkspaceMemberships(workspaceId, token);
+        if (isMounted) {
+          setMemberships(items.filter((item) => item.status === "active"));
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setMembershipsLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setMembershipsLoadError(tCommon("notFound"));
+          } else {
+            setMembershipsLoadError(t("membershipsLoadError"));
+          }
+        } else {
+          setMembershipsLoadError(t("membershipsLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsMembershipsLoading(false);
+        }
+      }
+    }
+
     void loadCase();
+    void loadMemberships();
 
     return () => {
       isMounted = false;
@@ -215,6 +297,10 @@ export function WorkspaceCaseDetail({
       normalizedCustomerName !== caseItem.customer_name ||
       normalizedCustomerEmail !== caseItem.customer_email ||
       normalizedExternalReference !== caseItem.external_reference);
+  const normalizedSelectedAssignee = selectedAssigneeId || null;
+  const hasAssignmentChanges =
+    caseItem !== null &&
+    normalizedSelectedAssignee !== caseItem.assigned_to_user_id;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -285,6 +371,57 @@ export function WorkspaceCaseDetail({
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleAssignmentSubmit() {
+    if (!caseItem) {
+      return;
+    }
+
+    setAssignmentValidationError(null);
+    setAssignmentErrorMessage(null);
+    setAssignmentSuccessMessage(null);
+
+    if (!hasAssignmentChanges) {
+      setAssignmentValidationError(t("assignmentNoChanges"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setAssignmentErrorMessage(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsAssigning(true);
+
+    try {
+      const updated = await updateCase(
+        workspaceId,
+        caseId,
+        { assigned_to_user_id: normalizedSelectedAssignee },
+        token,
+      );
+      setCaseItem(updated);
+      setSelectedAssigneeId(updated.assigned_to_user_id ?? "");
+      setAssignmentSuccessMessage(t("assignmentSuccess"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setAssignmentErrorMessage(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setAssignmentErrorMessage(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setAssignmentValidationError(t("assignmentValidationError"));
+        } else {
+          setAssignmentErrorMessage(t("assignmentError"));
+        }
+      } else {
+        setAssignmentErrorMessage(t("assignmentError"));
+      }
+    } finally {
+      setIsAssigning(false);
     }
   }
 
@@ -387,12 +524,16 @@ export function WorkspaceCaseDetail({
           <dt>{t("createdByLabel")}</dt>
           <dd>{formatOptional(caseItem.created_by_user_id, noValue)}</dd>
         </div>
-        {caseItem.assigned_to_user_id ? (
-          <div>
-            <dt>{t("assignedToLabel")}</dt>
-            <dd>{caseItem.assigned_to_user_id}</dd>
-          </div>
-        ) : null}
+        <div>
+          <dt>{t("assignedToLabel")}</dt>
+          <dd>
+            {formatAssignmentDisplay(
+              caseItem.assigned_to_user_id,
+              memberships,
+              noValue,
+            )}
+          </dd>
+        </div>
         <div>
           <dt>{t("createdAtLabel")}</dt>
           <dd>{formatDateTime(caseItem.created_at, locale)}</dd>
@@ -543,6 +684,82 @@ export function WorkspaceCaseDetail({
         </button>
       </form>
 
+      <section className="workspace-panel workspace-case-assignment-panel">
+        <h2>{t("assignmentTitle")}</h2>
+        <p className="workspace-description">{t("assignmentDescription")}</p>
+
+        {assignmentValidationError ? (
+          <p className="workspace-error" role="alert">
+            {assignmentValidationError}
+          </p>
+        ) : null}
+
+        {assignmentErrorMessage ? (
+          <p className="workspace-error" role="alert">
+            {assignmentErrorMessage}
+          </p>
+        ) : null}
+
+        {assignmentSuccessMessage ? (
+          <p className="workspace-success" role="status">
+            {assignmentSuccessMessage}
+          </p>
+        ) : null}
+
+        {membershipsLoadError ? (
+          <p className="workspace-error" role="alert">
+            {membershipsLoadError}
+          </p>
+        ) : null}
+
+        {isMembershipsLoading ? (
+          <p className="workspace-status">{t("assignmentLoading")}</p>
+        ) : (
+          <>
+            {!membershipsLoadError && memberships.length === 0 ? (
+              <p className="workspace-empty">{t("assignmentMembersEmpty")}</p>
+            ) : null}
+
+            <label className="auth-field">
+              <span>{t("assignmentLabel")}</span>
+              <select
+                name="assignedToUserId"
+                value={selectedAssigneeId}
+                disabled={
+                  isAssigning ||
+                  isSubmitting ||
+                  isDeleting ||
+                  Boolean(membershipsLoadError)
+                }
+                onChange={(event) => setSelectedAssigneeId(event.target.value)}
+              >
+                <option value="">{t("assignmentUnassigned")}</option>
+                {memberships.map((membership) => (
+                  <option key={membership.id} value={membership.user_id}>
+                    {formatMemberLabel(membership)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={
+                isAssigning ||
+                isSubmitting ||
+                isDeleting ||
+                Boolean(membershipsLoadError) ||
+                !hasAssignmentChanges
+              }
+              onClick={() => void handleAssignmentSubmit()}
+            >
+              {isAssigning ? t("assignmentSaving") : t("assignmentSave")}
+            </button>
+          </>
+        )}
+      </section>
+
       <section className="workspace-panel workspace-case-delete-panel">
         <h2>{t("deleteTitle")}</h2>
         <p className="workspace-description">{t("deleteWarning")}</p>
@@ -576,7 +793,7 @@ export function WorkspaceCaseDetail({
           <button
             type="button"
             className="auth-submit workspace-case-delete-trigger"
-            disabled={isDeleting || isSubmitting}
+            disabled={isDeleting || isSubmitting || isAssigning}
             onClick={() => {
               setDeleteErrorMessage(null);
               setShowDeleteConfirm(true);

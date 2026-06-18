@@ -46,6 +46,7 @@ export type UniversalCaseUpdateRequest = {
   customer_name?: string | null;
   customer_email?: string | null;
   external_reference?: string | null;
+  assigned_to_user_id?: string | null;
 };
 
 export type UniversalCaseDeleteResponse = {
