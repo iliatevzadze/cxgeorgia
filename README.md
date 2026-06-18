@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 25: Universal Case comments database foundation)
+**Phase 1 — SaaS Base** (Step 26: Universal Case comments backend API)
 
-The `case_comments` table and SQLAlchemy model exist for workspace-scoped Universal Case comments. Case detail page supports full PATCH fields, assignment, and delete. **Comments API and frontend comments UI are not implemented yet.**
+Comments can be created and listed through case-scoped backend endpoints. Case detail supports full PATCH fields, assignment, and delete. **Frontend comments UI is not implemented yet.**
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 26 has **not started**.
+Phase 1 / Step 27 has **not started**.
 
 ## Confirmed stack
 
@@ -306,7 +306,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case assignment backend API (Phase 1 / Step 23)
 - [x] Universal Case assignment frontend UI (Phase 1 / Step 24)
 - [x] Universal Case comments database foundation (Phase 1 / Step 25)
-- [ ] Phase 1 / Step 26 (not started)
+- [x] Universal Case comments backend API (Phase 1 / Step 26)
+- [ ] Phase 1 / Step 27 (not started)
 
 ## License
 

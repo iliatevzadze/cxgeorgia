@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 25: Universal Case comments database foundation)
+**Phase 1 — SaaS Base** (Step 26: Universal Case comments backend API)
 
-Alembic head: `0005`. Universal Case API endpoints exist for `universal_cases`. The `case_comments` table and SQLAlchemy model exist for workspace-scoped case comments. **Comments API and frontend comments UI are not implemented yet.**
+Alembic head: `0005`. Universal Case CRUD endpoints exist. Comments can be created and listed through case-scoped endpoints. **Frontend comments UI is not implemented yet.**
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 26 has **not started**.
+Phase 1 / Step 27 has **not started**.
 
 ## Auth API
 
@@ -31,7 +31,7 @@ Phase 1 / Step 26 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case API (Phase 1 / Steps 11–23)
+## Universal Case API (Phase 1 / Steps 11–26)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -40,8 +40,10 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source, customer metadata and assignment |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | Create comment on case (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | List case comments, oldest first |
 
-All case endpoints require `Authorization: Bearer <token>` and active workspace membership.
+All case and comment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
 Database tables: `universal_cases`, `case_comments`. Enums: `case_status`, `case_priority`, `case_source`. All case rows include `workspace_id` for tenant isolation.
 

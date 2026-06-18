@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.workspace_deps import get_active_workspace_membership
 from app.db.session import get_async_session
+from app.models.case_comment import CaseComment
 from app.models.enums import WorkspaceMemberStatus
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
+from app.schemas.case_comment import CaseCommentCreate, CaseCommentRead
 from app.schemas.universal_case import (
     UniversalCaseCreate,
     UniversalCaseDeleteRead,
@@ -45,6 +47,25 @@ async def _require_active_workspace_assignee(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Assignee must be an active member of this workspace",
         )
+
+
+async def _get_workspace_case_or_404(
+    session: AsyncSession,
+    workspace_id: UUID,
+    case_id: UUID,
+) -> UniversalCase:
+    case = await session.scalar(
+        select(UniversalCase).where(
+            UniversalCase.id == case_id,
+            UniversalCase.workspace_id == workspace_id,
+        )
+    )
+    if case is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case not found",
+        )
+    return case
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -195,3 +216,53 @@ async def delete_case(
     return _envelope(
         UniversalCaseDeleteRead(id=case_id, deleted=True).model_dump(mode="json")
     )
+
+
+@router.post("/{case_id}/comments", status_code=status.HTTP_201_CREATED)
+async def create_case_comment(
+    body: CaseCommentCreate,
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Create a comment on a universal case in the workspace."""
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+
+    comment = CaseComment(
+        workspace_id=workspace_id,
+        case_id=case_id,
+        author_user_id=membership.user_id,
+        body=body.body,
+        is_internal=body.is_internal,
+    )
+    session.add(comment)
+    await session.commit()
+    await session.refresh(comment)
+    return _envelope(CaseCommentRead.model_validate(comment).model_dump(mode="json"))
+
+
+@router.get("/{case_id}/comments")
+async def list_case_comments(
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """List comments for a universal case, oldest first."""
+    _ = membership
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+
+    result = await session.scalars(
+        select(CaseComment)
+        .where(
+            CaseComment.workspace_id == workspace_id,
+            CaseComment.case_id == case_id,
+        )
+        .order_by(CaseComment.created_at.asc())
+    )
+    items = [
+        CaseCommentRead.model_validate(item).model_dump(mode="json")
+        for item in result.all()
+    ]
+    return _envelope(items)
