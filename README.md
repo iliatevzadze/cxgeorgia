@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 22: Universal Case delete frontend UI)
+**Phase 1 — SaaS Base** (Step 23: Universal Case assignment backend API)
 
-Case detail page can update all PATCH fields and delete cases via `DELETE /api/v1/workspaces/{workspace_id}/cases/{case_id}`. Successful delete returns to the cases list.
+PATCH can assign or unassign cases through `assigned_to_user_id`. Case detail page can update all PATCH fields and delete cases. **Frontend assignment controls are not implemented yet.**
 
-Assignment, comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 23 has **not started**.
+Phase 1 / Step 24 has **not started**.
 
 ## Confirmed stack
 
@@ -303,7 +303,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case customer/source update frontend UI (Phase 1 / Step 20)
 - [x] Universal Case DELETE backend API (Phase 1 / Step 21)
 - [x] Universal Case delete frontend UI (Phase 1 / Step 22)
-- [ ] Phase 1 / Step 23 (not started)
+- [x] Universal Case assignment backend API (Phase 1 / Step 23)
+- [ ] Phase 1 / Step 24 (not started)
 
 ## License
 

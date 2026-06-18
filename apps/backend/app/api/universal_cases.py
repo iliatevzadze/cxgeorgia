@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.workspace_deps import get_active_workspace_membership
 from app.db.session import get_async_session
+from app.models.enums import WorkspaceMemberStatus
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
 from app.schemas.universal_case import (
@@ -25,6 +26,25 @@ router = APIRouter(
 
 def _envelope(data: dict | list) -> dict:
     return {"data": data, "meta": {}, "error": None}
+
+
+async def _require_active_workspace_assignee(
+    session: AsyncSession,
+    workspace_id: UUID,
+    user_id: UUID,
+) -> None:
+    membership = await session.scalar(
+        select(WorkspaceMembership).where(
+            WorkspaceMembership.workspace_id == workspace_id,
+            WorkspaceMembership.user_id == user_id,
+            WorkspaceMembership.status == WorkspaceMemberStatus.ACTIVE,
+        )
+    )
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Assignee must be an active member of this workspace",
+        )
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -135,6 +155,14 @@ async def update_case(
         case.customer_email = body.customer_email
     if "external_reference" in body.model_fields_set:
         case.external_reference = body.external_reference
+    if "assigned_to_user_id" in body.model_fields_set:
+        if body.assigned_to_user_id is not None:
+            await _require_active_workspace_assignee(
+                session,
+                workspace_id,
+                body.assigned_to_user_id,
+            )
+        case.assigned_to_user_id = body.assigned_to_user_id
 
     await session.commit()
     await session.refresh(case)

@@ -6,10 +6,19 @@ from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import CasePriority, CaseSource, CaseStatus
+from app.models.enums import (
+    CasePriority,
+    CaseSource,
+    CaseStatus,
+    WorkspaceMemberRole,
+    WorkspaceMemberStatus,
+)
 from app.models.universal_case import UniversalCase
+from app.models.user import User
+from app.models.workspace_membership import WorkspaceMembership
 from tests.conftest import auth_headers, login_user, register_user, response_data
 
 pytestmark = pytest.mark.asyncio
@@ -43,6 +52,34 @@ async def _create_case(
     )
     assert response.status_code == 201
     return response_data(response)["id"]
+
+
+async def _get_user_id(client: AsyncClient, headers: dict[str, str]) -> str:
+    response = await client.get("/api/v1/auth/me", headers=headers)
+    assert response.status_code == 200
+    return response_data(response)["id"]
+
+
+async def _add_active_workspace_member(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    workspace_id: str,
+    *,
+    email: str,
+) -> str:
+    await register_user(client, email=email)
+    user = await db_session.scalar(select(User).where(User.email == email))
+    assert user is not None
+    db_session.add(
+        WorkspaceMembership(
+            workspace_id=UUID(workspace_id),
+            user_id=user.id,
+            role=WorkspaceMemberRole.MEMBER,
+            status=WorkspaceMemberStatus.ACTIVE,
+        )
+    )
+    await db_session.flush()
+    return str(user.id)
 
 
 async def test_create_case_unauthenticated_returns_401(client: AsyncClient) -> None:
@@ -550,7 +587,6 @@ async def test_patch_case_forbidden_fields_return_422(client: AsyncClient) -> No
             "id": str(uuid.uuid4()),
             "workspace_id": str(uuid.uuid4()),
             "created_by_user_id": str(uuid.uuid4()),
-            "assigned_to_user_id": str(uuid.uuid4()),
             "created_at": "2020-01-01T00:00:00+00:00",
             "updated_at": "2020-01-01T00:00:00+00:00",
         },
@@ -1071,6 +1107,212 @@ async def test_patch_case_all_allowed_fields_together(client: AsyncClient) -> No
     assert data["customer_name"] == "Mariam"
     assert data["customer_email"] == "mariam@example.com"
     assert data["external_reference"] == "EXT-FULL"
+
+
+async def test_patch_case_assign_to_self(client: AsyncClient) -> None:
+    email = f"case-patch-assign-self-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Assign Self Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": user_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["assigned_to_user_id"] == user_id
+
+
+async def test_patch_case_assign_to_other_active_member(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    owner_email = f"case-patch-assign-owner-{uuid.uuid4()}@example.com"
+    member_email = f"case-patch-assign-member-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, owner_email)
+    workspace_id = await _create_workspace(client, headers, "Assign Member Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+    member_user_id = await _add_active_workspace_member(
+        client,
+        db_session,
+        workspace_id,
+        email=member_email,
+    )
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": member_user_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["assigned_to_user_id"] == member_user_id
+
+
+async def test_patch_case_unassign_with_null(client: AsyncClient) -> None:
+    email = f"case-patch-unassign-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Unassign Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+
+    assign_response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": user_id},
+        headers=headers,
+    )
+    assert assign_response.status_code == 200
+    assert response_data(assign_response)["assigned_to_user_id"] == user_id
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["assigned_to_user_id"] is None
+
+
+async def test_patch_case_assignment_persists_in_database(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    email = f"case-patch-assign-persist-{uuid.uuid4()}@example.com"
+    headers = await auth_headers(client, email)
+    workspace_id = await _create_workspace(client, headers, "Assign Persist Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": user_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    case = await db_session.get(UniversalCase, UUID(case_id))
+    assert case is not None
+    assert str(case.assigned_to_user_id) == user_id
+
+
+async def test_patch_case_invalid_assigned_to_user_id_format_returns_422(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-assign-bad-uuid-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Assign Bad UUID Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": "not-a-uuid"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_assign_user_outside_workspace_returns_422(
+    client: AsyncClient,
+) -> None:
+    owner_email = f"case-patch-assign-outside-owner-{uuid.uuid4()}@example.com"
+    other_email = f"case-patch-assign-outside-other-{uuid.uuid4()}@example.com"
+    owner_headers = await auth_headers(client, owner_email)
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Assign Outside Workspace",
+    )
+    case_id = await _create_case(client, owner_headers, workspace_id)
+
+    other_headers = await auth_headers(client, other_email)
+    other_user_id = await _get_user_id(client, other_headers)
+    await _create_workspace(client, other_headers, "Other User Workspace")
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": other_user_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_assign_nonexistent_user_returns_422(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-assign-missing-user-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Assign Missing User Workspace",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": str(uuid.uuid4())},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_assign_inactive_member_returns_422(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    owner_email = f"case-patch-assign-inactive-owner-{uuid.uuid4()}@example.com"
+    member_email = f"case-patch-assign-inactive-member-{uuid.uuid4()}@example.com"
+    owner_headers = await auth_headers(client, owner_email)
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Assign Inactive Workspace",
+    )
+    case_id = await _create_case(client, owner_headers, workspace_id)
+    member_user_id = await _add_active_workspace_member(
+        client,
+        db_session,
+        workspace_id,
+        email=member_email,
+    )
+    membership = await db_session.scalar(
+        select(WorkspaceMembership).where(
+            WorkspaceMembership.workspace_id == UUID(workspace_id),
+            WorkspaceMembership.user_id == UUID(member_user_id),
+        )
+    )
+    assert membership is not None
+    membership.status = WorkspaceMemberStatus.REMOVED
+    await db_session.flush()
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": member_user_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_patch_case_assigned_to_user_id_is_allowed(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-assign-allowed-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Assign Allowed Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"assigned_to_user_id": user_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
 
 
 async def test_delete_case_unauthenticated_returns_401(client: AsyncClient) -> None:
