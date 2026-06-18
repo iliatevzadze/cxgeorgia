@@ -314,7 +314,9 @@
             "priority_changed": "Priority changed",
             "assignment_changed": "Assignment changed",
             "comment_created": "Comment added",
-            "comment_deleted": "Comment deleted"
+            "comment_deleted": "Comment deleted",
+            "tag_attached": "Tag attached",
+            "tag_detached": "Tag detached"
           },
           "deleteTitle": "Delete case",
           "deleteWarning": "This permanently removes the case. This action cannot be undone.",

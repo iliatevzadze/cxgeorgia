@@ -279,3 +279,53 @@ def record_comment_edited_activity(
             "changed_fields": changed_fields,
         },
     )
+
+
+def record_tag_attached_activity(
+    session: AsyncSession,
+    *,
+    workspace_id: UUID,
+    case_id: UUID,
+    actor_user_id: UUID,
+    tag_id: UUID,
+    tag_name: str,
+    tag_slug: str,
+) -> CaseActivity:
+    return record_case_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=actor_user_id,
+        activity_type=CaseActivityType.TAG_ATTACHED,
+        message="Tag attached",
+        metadata={
+            "tag_id": str(tag_id),
+            "tag_name": tag_name,
+            "tag_slug": tag_slug,
+        },
+    )
+
+
+def record_tag_detached_activity(
+    session: AsyncSession,
+    *,
+    workspace_id: UUID,
+    case_id: UUID,
+    actor_user_id: UUID,
+    tag_id: UUID,
+    tag_name: str,
+    tag_slug: str,
+) -> CaseActivity:
+    return record_case_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=actor_user_id,
+        activity_type=CaseActivityType.TAG_DETACHED,
+        message="Tag detached",
+        metadata={
+            "tag_id": str(tag_id),
+            "tag_name": tag_name,
+            "tag_slug": tag_slug,
+        },
+    )

@@ -5,10 +5,12 @@ from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.case_activity import CaseActivity
 from app.models.case_tag import CaseTag, UniversalCaseTag
+from app.models.enums import CaseActivityType
 from app.models.universal_case import UniversalCase
 from tests.conftest import auth_headers, response_data
 
@@ -29,6 +31,48 @@ def _case_tags_path(workspace_id: str, case_id: str) -> str:
 
 def _case_tag_detail_path(workspace_id: str, case_id: str, tag_id: str) -> str:
     return f"{_case_tags_path(workspace_id, case_id)}/{tag_id}"
+
+
+def _activities_path(workspace_id: str, case_id: str) -> str:
+    return f"/api/v1/workspaces/{workspace_id}/cases/{case_id}/activities"
+
+
+async def _get_user_id(client: AsyncClient, headers: dict[str, str]) -> str:
+    response = await client.get("/api/v1/auth/me", headers=headers)
+    assert response.status_code == 200
+    return response_data(response)["id"]
+
+
+async def _tag_activity_count(
+    db_session: AsyncSession,
+    workspace_id: str,
+    case_id: str,
+    activity_type: CaseActivityType,
+) -> int:
+    count = await db_session.scalar(
+        select(func.count())
+        .select_from(CaseActivity)
+        .where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.activity_type == activity_type,
+        )
+    )
+    return int(count or 0)
+
+
+async def _list_activities(
+    client: AsyncClient,
+    headers: dict[str, str],
+    workspace_id: str,
+    case_id: str,
+) -> list[dict]:
+    response = await client.get(
+        _activities_path(workspace_id, case_id),
+        headers=headers,
+    )
+    assert response.status_code == 200
+    return response_data(response)
 
 
 async def _create_workspace(
@@ -761,3 +805,289 @@ async def test_deleting_tag_removes_join_rows_but_leaves_case(
         )
     ).all()
     assert join_rows == []
+
+
+async def test_attach_tag_creates_tag_attached_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-attach-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Tag Activity Attach")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+    create_response = await _create_tag(
+        client,
+        headers,
+        workspace_id,
+        name="Urgent",
+        slug="urgent",
+    )
+    tag_id = response_data(create_response)["id"]
+
+    response = await client.post(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert response.status_code == 201
+
+    assert (
+        await _tag_activity_count(
+            db_session,
+            workspace_id,
+            case_id,
+            CaseActivityType.TAG_ATTACHED,
+        )
+        == 1
+    )
+
+    activity = await db_session.scalar(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.activity_type == CaseActivityType.TAG_ATTACHED,
+        )
+    )
+    assert activity is not None
+    assert activity.actor_user_id == UUID(user_id)
+    assert activity.message == "Tag attached"
+    assert activity.activity_metadata == {
+        "tag_id": tag_id,
+        "tag_name": "Urgent",
+        "tag_slug": "urgent",
+    }
+
+
+async def test_idempotent_reattach_does_not_create_second_tag_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-idempotent-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Tag Activity Idempotent")
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_tag(
+        client,
+        headers,
+        workspace_id,
+        name="Repeat",
+        slug="repeat",
+    )
+    tag_id = response_data(create_response)["id"]
+
+    first = await client.post(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    second = await client.post(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert first.status_code == 201
+    assert second.status_code == 200
+    assert (
+        await _tag_activity_count(
+            db_session,
+            workspace_id,
+            case_id,
+            CaseActivityType.TAG_ATTACHED,
+        )
+        == 1
+    )
+
+
+async def test_detach_tag_creates_tag_detached_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-detach-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Tag Activity Detach")
+    case_id = await _create_case(client, headers, workspace_id)
+    user_id = await _get_user_id(client, headers)
+    create_response = await _create_tag(
+        client,
+        headers,
+        workspace_id,
+        name="Billing",
+        slug="billing",
+    )
+    tag_id = response_data(create_response)["id"]
+
+    attach_response = await client.post(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert attach_response.status_code == 201
+
+    detach_response = await client.delete(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert detach_response.status_code == 200
+
+    assert (
+        await _tag_activity_count(
+            db_session,
+            workspace_id,
+            case_id,
+            CaseActivityType.TAG_DETACHED,
+        )
+        == 1
+    )
+
+    activity = await db_session.scalar(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.activity_type == CaseActivityType.TAG_DETACHED,
+        )
+    )
+    assert activity is not None
+    assert activity.actor_user_id == UUID(user_id)
+    assert activity.message == "Tag detached"
+    assert activity.activity_metadata == {
+        "tag_id": tag_id,
+        "tag_name": "Billing",
+        "tag_slug": "billing",
+    }
+
+
+async def test_detach_not_attached_does_not_create_tag_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-detach-missing-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client, headers, "Tag Activity Detach Missing"
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_tag(
+        client,
+        headers,
+        workspace_id,
+        name="Unattached",
+        slug="unattached",
+    )
+    tag_id = response_data(create_response)["id"]
+
+    response = await client.delete(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert (
+        await _tag_activity_count(
+            db_session,
+            workspace_id,
+            case_id,
+            CaseActivityType.TAG_DETACHED,
+        )
+        == 0
+    )
+
+
+async def test_cross_workspace_attach_does_not_create_tag_activity(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-cross-{uuid.uuid4()}@example.com",
+    )
+    workspace_a = await _create_workspace(client, headers, "Tag Activity Cross A")
+    workspace_b = await _create_workspace(client, headers, "Tag Activity Cross B")
+    case_id = await _create_case(client, headers, workspace_a)
+    foreign_tag = await _create_tag(
+        client,
+        headers,
+        workspace_b,
+        name="Foreign",
+        slug="foreign",
+    )
+    tag_id = response_data(foreign_tag)["id"]
+
+    response = await client.post(
+        _case_tag_detail_path(workspace_a, case_id, tag_id),
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert (
+        await _tag_activity_count(
+            db_session,
+            workspace_a,
+            case_id,
+            CaseActivityType.TAG_ATTACHED,
+        )
+        == 0
+    )
+
+
+async def test_activity_timeline_lists_tag_attach_and_detach_activities(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"tag-activity-timeline-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Tag Activity Timeline")
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_tag(
+        client,
+        headers,
+        workspace_id,
+        name="Timeline",
+        slug="timeline",
+    )
+    tag_id = response_data(create_response)["id"]
+
+    attach_response = await client.post(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert attach_response.status_code == 201
+
+    detach_response = await client.delete(
+        _case_tag_detail_path(workspace_id, case_id, tag_id),
+        headers=headers,
+    )
+    assert detach_response.status_code == 200
+
+    activities = await _list_activities(client, headers, workspace_id, case_id)
+    tag_types = {
+        item["activity_type"]
+        for item in activities
+        if item["activity_type"]
+        in {
+            CaseActivityType.TAG_ATTACHED.value,
+            CaseActivityType.TAG_DETACHED.value,
+        }
+    }
+    assert tag_types == {
+        CaseActivityType.TAG_ATTACHED.value,
+        CaseActivityType.TAG_DETACHED.value,
+    }
+
+    attached = next(
+        item
+        for item in activities
+        if item["activity_type"] == CaseActivityType.TAG_ATTACHED.value
+    )
+    detached = next(
+        item
+        for item in activities
+        if item["activity_type"] == CaseActivityType.TAG_DETACHED.value
+    )
+    assert attached["message"] == "Tag attached"
+    assert detached["message"] == "Tag detached"
+    assert attached["metadata"]["tag_slug"] == "timeline"
+    assert detached["metadata"]["tag_slug"] == "timeline"

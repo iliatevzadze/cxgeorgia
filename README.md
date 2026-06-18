@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 38: Universal Case tags frontend UI)
+**Phase 1 — SaaS Base** (Step 39: Universal Case tag activity recording)
 
-Tags can be viewed, created, attached and detached from the case detail page.
+Tag attach and detach actions appear in the case activity timeline.
 
 SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 39 has **not started**.
+Phase 1 / Step 40 has **not started**.
 
 ## Confirmed stack
 
@@ -319,7 +319,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case tags database foundation (Phase 1 / Step 36)
 - [x] Universal Case tags backend API (Phase 1 / Step 37)
 - [x] Universal Case tags frontend UI (Phase 1 / Step 38)
-- [ ] Phase 1 / Step 39 (not started)
+- [x] Universal Case tag activity recording (Phase 1 / Step 39)
+- [ ] Phase 1 / Step 40 (not started)
 
 ## License
 

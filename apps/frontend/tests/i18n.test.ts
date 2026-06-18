@@ -292,6 +292,8 @@ test("required workspace keys exist in both locales", () => {
     "workspaces.app.cases.detail.activityTypeLabels.assignment_changed",
     "workspaces.app.cases.detail.activityTypeLabels.comment_created",
     "workspaces.app.cases.detail.activityTypeLabels.comment_deleted",
+    "workspaces.app.cases.detail.activityTypeLabels.tag_attached",
+    "workspaces.app.cases.detail.activityTypeLabels.tag_detached",
     "workspaces.app.cases.detail.deleteTitle",
     "workspaces.app.cases.detail.deleteWarning",
     "workspaces.app.cases.detail.deleteButton",

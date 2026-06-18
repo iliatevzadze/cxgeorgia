@@ -108,7 +108,9 @@ export type CaseActivityType =
   | "priority_changed"
   | "assignment_changed"
   | "comment_created"
-  | "comment_deleted";
+  | "comment_deleted"
+  | "tag_attached"
+  | "tag_detached";
 
 export type CaseActivityRead = {
   id: string;

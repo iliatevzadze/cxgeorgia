@@ -35,6 +35,8 @@ from app.services.case_activity import (
     record_comment_created_activity,
     record_comment_deleted_activity,
     record_comment_edited_activity,
+    record_tag_attached_activity,
+    record_tag_detached_activity,
     snapshot_case,
 )
 
@@ -476,7 +478,6 @@ async def attach_case_tag(
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Attach a workspace tag to a universal case."""
-    _ = membership
     await _get_workspace_case_or_404(session, workspace_id, case_id)
     tag = await get_workspace_case_tag_or_404(session, workspace_id, tag_id)
 
@@ -491,6 +492,15 @@ async def attach_case_tag(
         return _envelope(CaseTagRead.model_validate(tag).model_dump(mode="json"))
 
     session.add(UniversalCaseTag(case_id=case_id, tag_id=tag_id))
+    record_tag_attached_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=membership.user_id,
+        tag_id=tag.id,
+        tag_name=tag.name,
+        tag_slug=tag.slug,
+    )
     await session.commit()
     response.status_code = status.HTTP_201_CREATED
     return _envelope(CaseTagRead.model_validate(tag).model_dump(mode="json"))
@@ -505,9 +515,8 @@ async def detach_case_tag(
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Detach a workspace tag from a universal case."""
-    _ = membership
     await _get_workspace_case_or_404(session, workspace_id, case_id)
-    await get_workspace_case_tag_or_404(session, workspace_id, tag_id)
+    tag = await get_workspace_case_tag_or_404(session, workspace_id, tag_id)
 
     join_row = await session.scalar(
         select(UniversalCaseTag).where(
@@ -522,6 +531,15 @@ async def detach_case_tag(
         )
 
     await session.delete(join_row)
+    record_tag_detached_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=membership.user_id,
+        tag_id=tag.id,
+        tag_name=tag.name,
+        tag_slug=tag.slug,
+    )
     await session.commit()
     return _envelope(
         CaseTagDetachRead(tag_id=tag_id, detached=True).model_dump(mode="json")

@@ -55,3 +55,5 @@ class CaseActivityType(StrEnum):
     ASSIGNMENT_CHANGED = "assignment_changed"
     COMMENT_CREATED = "comment_created"
     COMMENT_DELETED = "comment_deleted"
+    TAG_ATTACHED = "tag_attached"
+    TAG_DETACHED = "tag_detached"

@@ -314,7 +314,9 @@
             "priority_changed": "პრიორიტეტი შეიცვალა",
             "assignment_changed": "მიმაგრება შეიცვალა",
             "comment_created": "კომენტარი დაემატა",
-            "comment_deleted": "კომენტარი წაიშალა"
+            "comment_deleted": "კომენტარი წაიშალა",
+            "tag_attached": "თეგი მიერთდა",
+            "tag_detached": "თეგი მოიხსნა"
           },
           "deleteTitle": "ქეისის წაშლა",
           "deleteWarning": "ეს სამუდამოდ წაშლის ქეისს. ქმედების გაუქმება შეუძლებელია.",

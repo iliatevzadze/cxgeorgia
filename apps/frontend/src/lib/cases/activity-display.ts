@@ -56,6 +56,19 @@ export function formatCommentActivitySummary(
   return metadata.is_internal ? internalLabel : publicLabel;
 }
 
+export function formatTagActivitySummary(
+  metadata: Record<string, unknown>,
+): string | null {
+  const parts: string[] = [];
+  if ("tag_name" in metadata && metadata.tag_name) {
+    parts.push(String(metadata.tag_name));
+  }
+  if ("tag_slug" in metadata && metadata.tag_slug) {
+    parts.push(String(metadata.tag_slug));
+  }
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
 export function getActivityMetadataSummary(
   activity: Pick<CaseActivityRead, "activity_type" | "metadata">,
   options: {
@@ -89,6 +102,9 @@ export function getActivityMetadataSummary(
         options.internalLabel,
         options.publicLabel,
       );
+    case "tag_attached":
+    case "tag_detached":
+      return formatTagActivitySummary(metadata);
     default:
       return null;
   }

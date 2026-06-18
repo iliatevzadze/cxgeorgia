@@ -7,6 +7,7 @@ import {
   formatChangedFieldsSummary,
   formatCommentActivitySummary,
   formatFromToSummary,
+  formatTagActivitySummary,
   getActivityMetadataSummary,
 } from "../src/lib/cases/activity-display";
 
@@ -121,5 +122,47 @@ test("getActivityMetadataSummary renders assignment and case updated metadata", 
       options,
     ),
     "title",
+  );
+});
+
+test("formatTagActivitySummary renders tag name and slug", () => {
+  assert.equal(
+    formatTagActivitySummary({
+      tag_id: "tag-1",
+      tag_name: "Urgent",
+      tag_slug: "urgent",
+    }),
+    "Urgent · urgent",
+  );
+});
+
+test("getActivityMetadataSummary renders tag attach and detach metadata", () => {
+  const options = {
+    unassignedLabel: "Unassigned",
+    internalLabel: "Internal",
+    publicLabel: "Public",
+    formatEnumValue: (_field: string, value: unknown) => String(value),
+    formatCreatedField: (key: string, value: unknown) =>
+      `${key}:${String(value)}`,
+  };
+  const metadata = {
+    tag_id: "tag-1",
+    tag_name: "Billing",
+    tag_slug: "billing",
+  };
+
+  assert.equal(
+    getActivityMetadataSummary(
+      { activity_type: "tag_attached", metadata },
+      options,
+    ),
+    "Billing · billing",
+  );
+  assert.equal(
+    getActivityMetadataSummary(
+      { activity_type: "tag_detached", metadata },
+      options,
+    ),
+    "Billing · billing",
   );
 });

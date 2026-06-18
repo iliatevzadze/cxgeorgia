@@ -4,13 +4,13 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 38: Universal Case tags frontend UI)
+**Phase 1 — SaaS Base** (Step 39: Universal Case tag activity recording)
 
-Case detail supports viewing, creating, attaching and detaching workspace tags.
+Tag attach and detach actions appear in the case activity timeline.
 
 SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 39 has **not started**.
+Phase 1 / Step 40 has **not started**.
 
 ## What exists now
 
