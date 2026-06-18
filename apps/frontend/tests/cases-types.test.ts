@@ -92,6 +92,21 @@ test("case types export CaseCommentDeleteResponse", () => {
   assert.match(deleteBlock, /deleted: boolean/);
 });
 
+test("case types export CaseActivityRead with expected fields", () => {
+  assert.match(typesSource, /export type CaseActivityType/);
+  assert.match(typesSource, /export type CaseActivityRead/);
+  const activityReadStart = typesSource.indexOf("export type CaseActivityRead");
+  const activityReadBlock = typesSource.slice(activityReadStart);
+  assert.match(activityReadBlock, /id: string/);
+  assert.match(activityReadBlock, /workspace_id: string/);
+  assert.match(activityReadBlock, /case_id: string/);
+  assert.match(activityReadBlock, /actor_user_id: string \| null/);
+  assert.match(activityReadBlock, /activity_type: CaseActivityType/);
+  assert.match(activityReadBlock, /message: string \| null/);
+  assert.match(activityReadBlock, /metadata: Record<string, unknown>/);
+  assert.match(activityReadBlock, /created_at: string/);
+});
+
 test("case status, priority and source unions match backend enums", () => {
   assert.match(typesSource, /export type CaseStatus/);
   assert.match(typesSource, /"open" \| "pending" \| "resolved" \| "closed"/);

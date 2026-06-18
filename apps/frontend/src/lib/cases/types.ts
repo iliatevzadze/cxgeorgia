@@ -74,3 +74,23 @@ export type CaseCommentDeleteResponse = {
   id: string;
   deleted: boolean;
 };
+
+export type CaseActivityType =
+  | "case_created"
+  | "case_updated"
+  | "status_changed"
+  | "priority_changed"
+  | "assignment_changed"
+  | "comment_created"
+  | "comment_deleted";
+
+export type CaseActivityRead = {
+  id: string;
+  workspace_id: string;
+  case_id: string;
+  actor_user_id: string | null;
+  activity_type: CaseActivityType;
+  message: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};

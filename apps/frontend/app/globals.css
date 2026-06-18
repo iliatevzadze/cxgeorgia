@@ -360,6 +360,43 @@ a {
   margin-top: 1.5rem;
 }
 
+.workspace-case-activities-panel {
+  margin-top: 1.5rem;
+}
+
+.workspace-case-activities {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-case-activity-item {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.workspace-case-activity-label {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+.workspace-case-activity-message,
+.workspace-case-activity-meta {
+  margin: 0 0 0.35rem;
+  color: #334155;
+}
+
+.workspace-case-activity-time {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
 .workspace-case-comments {
   list-style: none;
   margin: 0 0 1rem;

@@ -12,10 +12,13 @@ import {
   deleteCase,
   deleteCaseComment,
   getCase,
+  listCaseActivities,
   listCaseComments,
   updateCase,
 } from "@/lib/cases/api";
+import { getActivityMetadataSummary } from "@/lib/cases/activity-display";
 import type {
+  CaseActivityRead,
   CaseCommentRead,
   CasePriority,
   CaseSource,
@@ -212,6 +215,11 @@ export function WorkspaceCaseDetail({
   const [commentDeleteErrorMessage, setCommentDeleteErrorMessage] = useState<
     string | null
   >(null);
+  const [activities, setActivities] = useState<CaseActivityRead[]>([]);
+  const [isActivitiesLoading, setIsActivitiesLoading] = useState(true);
+  const [activitiesLoadError, setActivitiesLoadError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -374,6 +382,78 @@ export function WorkspaceCaseDetail({
     };
   }, [workspaceId, caseId, caseItem, t, tCommon]);
 
+  useEffect(() => {
+    if (!caseItem) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadActivities() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setActivitiesLoadError(tCommon("accessDenied"));
+          setIsActivitiesLoading(false);
+        }
+        return;
+      }
+
+      setIsActivitiesLoading(true);
+      setActivitiesLoadError(null);
+
+      try {
+        const items = await listCaseActivities(workspaceId, caseId, token);
+        if (isMounted) {
+          setActivities(items);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setActivities([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setActivitiesLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setActivitiesLoadError(tCommon("notFound"));
+          } else {
+            setActivitiesLoadError(t("activitiesLoadError"));
+          }
+        } else {
+          setActivitiesLoadError(t("activitiesLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsActivitiesLoading(false);
+        }
+      }
+    }
+
+    void loadActivities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, caseId, caseItem, t, tCommon]);
+
+  async function reloadActivities() {
+    const token = getAccessToken();
+    if (!token) {
+      return;
+    }
+
+    try {
+      const items = await listCaseActivities(workspaceId, caseId, token);
+      setActivities(items);
+      setActivitiesLoadError(null);
+    } catch {
+      // Keep the page usable; timeline errors are shown in the activity panel only.
+    }
+  }
+
   const normalizedDescription = normalizeOptionalText(description);
   const normalizedCustomerName = normalizeOptionalText(customerName);
   const normalizedCustomerEmail = normalizeOptionalText(customerEmail);
@@ -446,6 +526,7 @@ export function WorkspaceCaseDetail({
       setCustomerEmail(updated.customer_email ?? "");
       setExternalReference(updated.external_reference ?? "");
       setSuccessMessage(t("success"));
+      await reloadActivities();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 404) {
@@ -497,6 +578,7 @@ export function WorkspaceCaseDetail({
       setCaseItem(updated);
       setSelectedAssigneeId(updated.assigned_to_user_id ?? "");
       setAssignmentSuccessMessage(t("assignmentSuccess"));
+      await reloadActivities();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 404) {
@@ -548,6 +630,7 @@ export function WorkspaceCaseDetail({
       setCommentBody("");
       setCommentIsInternal(true);
       setCommentSuccessMessage(t("commentCreateSuccess"));
+      await reloadActivities();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 404) {
@@ -600,6 +683,7 @@ export function WorkspaceCaseDetail({
           current.filter((comment) => comment.id !== commentId),
         );
         setCommentDeleteConfirmId(null);
+        await reloadActivities();
         return;
       }
       setCommentDeleteErrorMessage(t("commentDeleteError"));
@@ -680,6 +764,39 @@ export function WorkspaceCaseDetail({
   }
 
   const noValue = t("noValue");
+
+  function formatActivityMetadataSummary(activity: CaseActivityRead): string | null {
+    return getActivityMetadataSummary(activity, {
+      unassignedLabel: t("assignmentUnassigned"),
+      internalLabel: t("commentVisibilityInternal"),
+      publicLabel: t("commentVisibilityPublic"),
+      formatEnumValue: (field, value) => {
+        const raw = String(value);
+        if (field === "status_changed") {
+          return t(`statusOptions.${raw as CaseStatus}`);
+        }
+        if (field === "priority_changed") {
+          return t(`priorityOptions.${raw as CasePriority}`);
+        }
+        return raw;
+      },
+      formatCreatedField: (key, value) => {
+        if (key === "title") {
+          return `${t("activityCreatedFieldTitle")}: ${String(value)}`;
+        }
+        if (key === "status") {
+          return `${t("statusLabel")}: ${t(`statusOptions.${String(value) as CaseStatus}`)}`;
+        }
+        if (key === "priority") {
+          return `${t("priorityLabel")}: ${t(`priorityOptions.${String(value) as CasePriority}`)}`;
+        }
+        if (key === "source") {
+          return `${t("sourceLabel")}: ${t(`sourceOptions.${String(value) as CaseSource}`)}`;
+        }
+        return String(value);
+      },
+    });
+  }
 
   return (
     <section className="workspace-panel">
@@ -1126,6 +1243,55 @@ export function WorkspaceCaseDetail({
             {isCommentSubmitting ? t("commentSubmitting") : t("commentSubmit")}
           </button>
         </form>
+      </section>
+
+      <section className="workspace-panel workspace-case-activities-panel">
+        <h2>{t("activitiesTitle")}</h2>
+        <p className="workspace-description">{t("activitiesDescription")}</p>
+
+        {activitiesLoadError ? (
+          <p className="workspace-error" role="alert">
+            {activitiesLoadError}
+          </p>
+        ) : null}
+
+        {isActivitiesLoading ? (
+          <p className="workspace-status">{t("activitiesLoading")}</p>
+        ) : (
+          <>
+            {!activitiesLoadError && activities.length === 0 ? (
+              <p className="workspace-empty">{t("activitiesEmpty")}</p>
+            ) : null}
+
+            {!activitiesLoadError && activities.length > 0 ? (
+              <ul className="workspace-case-activities">
+                {activities.map((activity) => {
+                  const metadataSummary = formatActivityMetadataSummary(activity);
+                  return (
+                    <li key={activity.id} className="workspace-case-activity-item">
+                      <p className="workspace-case-activity-label">
+                        {t(`activityTypeLabels.${activity.activity_type}`)}
+                      </p>
+                      {activity.message ? (
+                        <p className="workspace-case-activity-message">
+                          {activity.message}
+                        </p>
+                      ) : null}
+                      {metadataSummary ? (
+                        <p className="workspace-case-activity-meta">
+                          {metadataSummary}
+                        </p>
+                      ) : null}
+                      <p className="workspace-case-activity-time">
+                        {formatDateTime(activity.created_at, locale)}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </>
+        )}
       </section>
 
       <section className="workspace-panel workspace-case-delete-panel">

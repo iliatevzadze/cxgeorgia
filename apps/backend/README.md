@@ -4,15 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 32: Automatic Universal Case activity recording)
+**Phase 1 — SaaS Base** (Step 33: Universal Case activity timeline frontend UI)
 
-Activity records are automatically created for case creation, case updates, assignment changes, and comment create/delete. **Frontend activity timeline UI is not implemented yet.**
+Activity timeline is visible on the case detail page in the frontend. Activity records remain **read-only** in the UI.
 
 Comments can be created, listed and deleted through case-scoped backend endpoints. **Comment edit is not implemented yet.**
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 33 has **not started**.
+Phase 1 / Step 34 has **not started**.
 
 ## Auth API
 

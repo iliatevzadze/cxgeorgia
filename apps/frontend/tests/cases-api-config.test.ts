@@ -56,6 +56,15 @@ test("casePaths.commentDetail includes workspace id, case id and comment id", ()
   );
 });
 
+test("casePaths.activities includes workspace id and case id", () => {
+  const workspaceId = "550e8400-e29b-41d4-a716-446655440000";
+  const caseId = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
+  assert.equal(
+    casePaths.activities(workspaceId, caseId),
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/activities`,
+  );
+});
+
 test("cases api exports getCase helper", () => {
   assert.match(apiSource, /export async function getCase/);
 });
@@ -98,5 +107,13 @@ test("cases api exports deleteCaseComment helper using DELETE", () => {
   assert.match(
     apiSource,
     /casePaths\.commentDetail\(workspaceId, caseId, commentId\)/,
+  );
+});
+
+test("cases api exports listCaseActivities helper using GET", () => {
+  assert.match(apiSource, /export async function listCaseActivities/);
+  assert.match(
+    apiSource,
+    /casePaths\.activities\(workspaceId, caseId\)/,
   );
 });
