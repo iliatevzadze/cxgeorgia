@@ -356,6 +356,49 @@ a {
   margin-top: 1.5rem;
 }
 
+.workspace-case-comments-panel {
+  margin-top: 1.5rem;
+}
+
+.workspace-case-comments {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-case-comment-item {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.workspace-case-comment-body {
+  margin: 0 0 0.75rem;
+  white-space: pre-wrap;
+}
+
+.workspace-case-comment-meta {
+  margin: 0;
+}
+
+.workspace-case-comment-form {
+  margin-top: 1rem;
+}
+
+.workspace-case-comment-internal {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.workspace-case-comment-internal input {
+  width: auto;
+}
+
 .workspace-case-delete-actions {
   display: flex;
   flex-direction: column;

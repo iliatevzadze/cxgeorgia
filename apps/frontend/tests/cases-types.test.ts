@@ -27,9 +27,9 @@ test("case types export UniversalCaseCreateRequest", () => {
 
 test("case types export UniversalCaseUpdateRequest with allowed optional fields", () => {
   assert.match(typesSource, /export type UniversalCaseUpdateRequest/);
-  const updateBlock = typesSource.slice(
-    typesSource.indexOf("export type UniversalCaseUpdateRequest"),
-  );
+  const updateStart = typesSource.indexOf("export type UniversalCaseUpdateRequest");
+  const updateEnd = typesSource.indexOf("export type UniversalCaseDeleteResponse");
+  const updateBlock = typesSource.slice(updateStart, updateEnd);
   assert.match(updateBlock, /title\?: string/);
   assert.match(updateBlock, /description\?: string \| null/);
   assert.match(updateBlock, /status\?: CaseStatus/);
@@ -53,6 +53,31 @@ test("case types export UniversalCaseDeleteResponse", () => {
   );
   assert.match(deleteBlock, /id: string/);
   assert.match(deleteBlock, /deleted: boolean/);
+});
+
+test("case types export CaseCommentRead with expected fields", () => {
+  assert.match(typesSource, /export type CaseCommentRead/);
+  const commentReadStart = typesSource.indexOf("export type CaseCommentRead");
+  const commentReadEnd = typesSource.indexOf("export type CaseCommentCreateRequest");
+  const commentReadBlock = typesSource.slice(commentReadStart, commentReadEnd);
+  assert.match(commentReadBlock, /id: string/);
+  assert.match(commentReadBlock, /workspace_id: string/);
+  assert.match(commentReadBlock, /case_id: string/);
+  assert.match(commentReadBlock, /author_user_id: string \| null/);
+  assert.match(commentReadBlock, /body: string/);
+  assert.match(commentReadBlock, /is_internal: boolean/);
+  assert.match(commentReadBlock, /created_at: string/);
+  assert.match(commentReadBlock, /updated_at: string/);
+});
+
+test("case types export CaseCommentCreateRequest", () => {
+  assert.match(typesSource, /export type CaseCommentCreateRequest/);
+  const commentCreateStart = typesSource.indexOf(
+    "export type CaseCommentCreateRequest",
+  );
+  const commentCreateBlock = typesSource.slice(commentCreateStart);
+  assert.match(commentCreateBlock, /body: string/);
+  assert.match(commentCreateBlock, /is_internal\?: boolean/);
 });
 
 test("case status, priority and source unions match backend enums", () => {

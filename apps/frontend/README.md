@@ -4,15 +4,15 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 24: Universal Case assignment frontend UI)
+**Phase 1 — SaaS Base** (Step 27: Universal Case comments frontend UI)
 
-Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail can update all PATCH fields, assign or unassign cases, and delete cases** (returns to cases list on successful delete).
+Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail can update all PATCH fields, assign or unassign cases, list/create comments, and delete cases.**
 
-Assignment uses `PATCH assigned_to_user_id` and loads active workspace members from `GET /api/v1/workspaces/{id}/memberships`.
+Comments use `GET/POST /api/v1/workspaces/{id}/cases/{caseId}/comments`. Comment edit/delete is **not implemented**.
 
-Comments, SLA, attachments, and customer module are **not implemented**.
+Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 25 has **not started**.
+Phase 1 / Step 28 has **not started**.
 
 ## What exists now
 
@@ -25,7 +25,7 @@ Phase 1 / Step 25 has **not started**.
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
-- Case detail update, assignment and delete controls (`PATCH` / `DELETE`)
+- Case detail update, assignment, comments and delete controls (`PATCH` / `DELETE` / comment API)
 - Workspace app placeholder routes: dashboard, customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
@@ -36,6 +36,7 @@ Phase 1 / Step 25 has **not started**.
 
 ## What does not exist yet
 
+- Comment edit/delete
 - Product dashboard, customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
@@ -64,7 +65,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
-| `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with update, assignment and delete |
+| `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with update, assignment, comments and delete |
 | `/ka/workspaces/{id}/app/dashboard`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration

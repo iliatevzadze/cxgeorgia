@@ -7,8 +7,15 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 
 import { ApiError } from "@/lib/api/errors";
-import { deleteCase, getCase, updateCase } from "@/lib/cases/api";
+import {
+  createCaseComment,
+  deleteCase,
+  getCase,
+  listCaseComments,
+  updateCase,
+} from "@/lib/cases/api";
 import type {
+  CaseCommentRead,
   CasePriority,
   CaseSource,
   CaseStatus,
@@ -178,6 +185,23 @@ export function WorkspaceCaseDetail({
   const [assignmentSuccessMessage, setAssignmentSuccessMessage] = useState<
     string | null
   >(null);
+  const [comments, setComments] = useState<CaseCommentRead[]>([]);
+  const [isCommentsLoading, setIsCommentsLoading] = useState(true);
+  const [commentsLoadError, setCommentsLoadError] = useState<string | null>(
+    null,
+  );
+  const [commentBody, setCommentBody] = useState("");
+  const [commentIsInternal, setCommentIsInternal] = useState(true);
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [commentValidationError, setCommentValidationError] = useState<
+    string | null
+  >(null);
+  const [commentCreateError, setCommentCreateError] = useState<string | null>(
+    null,
+  );
+  const [commentSuccessMessage, setCommentSuccessMessage] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -282,6 +306,63 @@ export function WorkspaceCaseDetail({
       isMounted = false;
     };
   }, [workspaceId, caseId, t, tCommon]);
+
+  useEffect(() => {
+    if (!caseItem) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadComments() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setCommentsLoadError(tCommon("accessDenied"));
+          setIsCommentsLoading(false);
+        }
+        return;
+      }
+
+      setIsCommentsLoading(true);
+      setCommentsLoadError(null);
+
+      try {
+        const items = await listCaseComments(workspaceId, caseId, token);
+        if (isMounted) {
+          setComments(items);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setComments([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setCommentsLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setCommentsLoadError(tCommon("notFound"));
+          } else {
+            setCommentsLoadError(t("commentsLoadError"));
+          }
+        } else {
+          setCommentsLoadError(t("commentsLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsCommentsLoading(false);
+        }
+      }
+    }
+
+    void loadComments();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, caseId, caseItem, t, tCommon]);
 
   const normalizedDescription = normalizeOptionalText(description);
   const normalizedCustomerName = normalizeOptionalText(customerName);
@@ -422,6 +503,57 @@ export function WorkspaceCaseDetail({
       }
     } finally {
       setIsAssigning(false);
+    }
+  }
+
+  async function handleCommentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setCommentValidationError(null);
+    setCommentCreateError(null);
+    setCommentSuccessMessage(null);
+
+    const trimmedBody = commentBody.trim();
+    if (!trimmedBody) {
+      setCommentValidationError(t("commentBodyRequired"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setCommentCreateError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsCommentSubmitting(true);
+
+    try {
+      const created = await createCaseComment(
+        workspaceId,
+        caseId,
+        { body: trimmedBody, is_internal: commentIsInternal },
+        token,
+      );
+      setComments((current) => [...current, created]);
+      setCommentBody("");
+      setCommentIsInternal(true);
+      setCommentSuccessMessage(t("commentCreateSuccess"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setCommentCreateError(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setCommentCreateError(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setCommentValidationError(t("commentValidationError"));
+        } else {
+          setCommentCreateError(t("commentCreateError"));
+        }
+      } else {
+        setCommentCreateError(t("commentCreateError"));
+      }
+    } finally {
+      setIsCommentSubmitting(false);
     }
   }
 
@@ -729,6 +861,7 @@ export function WorkspaceCaseDetail({
                   isAssigning ||
                   isSubmitting ||
                   isDeleting ||
+                  isCommentSubmitting ||
                   Boolean(membershipsLoadError)
                 }
                 onChange={(event) => setSelectedAssigneeId(event.target.value)}
@@ -758,6 +891,126 @@ export function WorkspaceCaseDetail({
             </button>
           </>
         )}
+      </section>
+
+      <section className="workspace-panel workspace-case-comments-panel">
+        <h2>{t("commentsTitle")}</h2>
+        <p className="workspace-description">{t("commentsDescription")}</p>
+
+        {commentsLoadError ? (
+          <p className="workspace-error" role="alert">
+            {commentsLoadError}
+          </p>
+        ) : null}
+
+        {isCommentsLoading ? (
+          <p className="workspace-status">{t("commentsLoading")}</p>
+        ) : (
+          <>
+            {!commentsLoadError && comments.length === 0 ? (
+              <p className="workspace-empty">{t("commentsEmpty")}</p>
+            ) : null}
+
+            {!commentsLoadError && comments.length > 0 ? (
+              <ul className="workspace-case-comments">
+                {comments.map((comment) => (
+                  <li key={comment.id} className="workspace-case-comment-item">
+                    <p className="workspace-case-comment-body">{comment.body}</p>
+                    <dl className="account-details workspace-case-comment-meta">
+                      <div>
+                        <dt>{t("commentAuthorLabel")}</dt>
+                        <dd>
+                          {formatOptional(comment.author_user_id, noValue)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("commentVisibilityLabel")}</dt>
+                        <dd>
+                          {comment.is_internal
+                            ? t("commentVisibilityInternal")
+                            : t("commentVisibilityPublic")}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("createdAtLabel")}</dt>
+                        <dd>{formatDateTime(comment.created_at, locale)}</dd>
+                      </div>
+                    </dl>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
+        )}
+
+        <form
+          className="workspace-form workspace-case-comment-form"
+          onSubmit={handleCommentSubmit}
+        >
+          {commentValidationError ? (
+            <p className="workspace-error" role="alert">
+              {commentValidationError}
+            </p>
+          ) : null}
+
+          {commentCreateError ? (
+            <p className="workspace-error" role="alert">
+              {commentCreateError}
+            </p>
+          ) : null}
+
+          {commentSuccessMessage ? (
+            <p className="workspace-success" role="status">
+              {commentSuccessMessage}
+            </p>
+          ) : null}
+
+          <label className="auth-field">
+            <span>{t("commentBodyLabel")}</span>
+            <textarea
+              name="commentBody"
+              rows={3}
+              value={commentBody}
+              disabled={
+                isCommentSubmitting ||
+                isSubmitting ||
+                isAssigning ||
+                isDeleting
+              }
+              onChange={(event) => setCommentBody(event.target.value)}
+            />
+          </label>
+
+          <label className="auth-field workspace-case-comment-internal">
+            <input
+              type="checkbox"
+              name="commentIsInternal"
+              checked={commentIsInternal}
+              disabled={
+                isCommentSubmitting ||
+                isSubmitting ||
+                isAssigning ||
+                isDeleting
+              }
+              onChange={(event) => setCommentIsInternal(event.target.checked)}
+            />
+            <span>{t("commentInternalLabel")}</span>
+          </label>
+
+          <button
+            type="submit"
+            className="auth-submit"
+            disabled={
+              isCommentSubmitting ||
+              isSubmitting ||
+              isAssigning ||
+              isDeleting ||
+              !commentBody.trim()
+            }
+          >
+            {isCommentSubmitting ? t("commentSubmitting") : t("commentSubmit")}
+          </button>
+        </form>
       </section>
 
       <section className="workspace-panel workspace-case-delete-panel">
@@ -793,7 +1046,7 @@ export function WorkspaceCaseDetail({
           <button
             type="button"
             className="auth-submit workspace-case-delete-trigger"
-            disabled={isDeleting || isSubmitting || isAssigning}
+            disabled={isDeleting || isSubmitting || isAssigning || isCommentSubmitting}
             onClick={() => {
               setDeleteErrorMessage(null);
               setShowDeleteConfirm(true);

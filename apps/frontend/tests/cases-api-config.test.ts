@@ -37,6 +37,15 @@ test("casePaths.detail includes workspace id and case id", () => {
   );
 });
 
+test("casePaths.comments includes workspace id and case id", () => {
+  const workspaceId = "550e8400-e29b-41d4-a716-446655440000";
+  const caseId = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
+  assert.equal(
+    casePaths.comments(workspaceId, caseId),
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/comments`,
+  );
+});
+
 test("cases api exports getCase helper", () => {
   assert.match(apiSource, /export async function getCase/);
 });
@@ -53,5 +62,22 @@ test("cases api exports deleteCase helper using DELETE", () => {
   assert.match(
     apiSource,
     /casePaths\.detail\(workspaceId, caseId\)[\s\S]*method: "DELETE"/,
+  );
+});
+
+test("cases api exports listCaseComments helper using GET", () => {
+  assert.match(apiSource, /export async function listCaseComments/);
+  assert.match(
+    apiSource,
+    /casePaths\.comments\(workspaceId, caseId\)/,
+  );
+});
+
+test("cases api exports createCaseComment helper using POST", () => {
+  assert.match(apiSource, /export async function createCaseComment/);
+  assert.match(apiSource, /method: "POST"/);
+  assert.match(
+    apiSource,
+    /casePaths\.comments\(workspaceId, caseId\)[\s\S]*method: "POST"/,
   );
 });

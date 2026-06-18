@@ -53,3 +53,19 @@ export type UniversalCaseDeleteResponse = {
   id: string;
   deleted: boolean;
 };
+
+export type CaseCommentRead = {
+  id: string;
+  workspace_id: string;
+  case_id: string;
+  author_user_id: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CaseCommentCreateRequest = {
+  body: string;
+  is_internal?: boolean;
+};

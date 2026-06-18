@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 26: Universal Case comments backend API)
+**Phase 1 — SaaS Base** (Step 27: Universal Case comments frontend UI)
 
-Comments can be created and listed through case-scoped backend endpoints. Case detail supports full PATCH fields, assignment, and delete. **Frontend comments UI is not implemented yet.**
+Case detail page supports full PATCH fields, assignment, delete, and comments (list + create). **Comment edit/delete is not implemented yet.**
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 27 has **not started**.
+Phase 1 / Step 28 has **not started**.
 
 ## Confirmed stack
 
@@ -307,7 +307,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case assignment frontend UI (Phase 1 / Step 24)
 - [x] Universal Case comments database foundation (Phase 1 / Step 25)
 - [x] Universal Case comments backend API (Phase 1 / Step 26)
-- [ ] Phase 1 / Step 27 (not started)
+- [x] Universal Case comments frontend UI (Phase 1 / Step 27)
+- [ ] Phase 1 / Step 28 (not started)
 
 ## License
 

@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 24).
+Guide for running the Next.js frontend locally (Phase 1 / Step 27).
 
 ## Scope
 
@@ -12,7 +12,7 @@ This frontend includes:
 - Workspace foundation: list, create, detail, memberships pages
 - Workspace app shell at `/workspaces/{id}/app`
 - Universal Cases create form, list and detail at `/workspaces/{id}/app/cases`
-- Case detail update, assignment and delete controls (PATCH / DELETE)
+- Case detail update, assignment, comments and delete controls (PATCH / DELETE / comment API)
 - Workspace app placeholder routes: dashboard, customers, settings
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
@@ -88,13 +88,15 @@ Visiting `/` redirects to `/ka` (default locale).
 9. Click a case title to open the detail page; change source, customer metadata, title, description, status or priority and save; confirm success and updated values.
 10. Assign the case to an active workspace member and save assignment; confirm the detail view updates; refresh and confirm persistence.
 11. Unassign the case; confirm assignment clears in the detail view.
-12. Clear description or customer metadata fields and save; confirm they clear safely.
-13. Delete a case from the detail page; cancel confirmation first, then confirm and verify redirect to cases list.
-14. Confirm deleted case no longer appears in the list.
-15. Use **Back to cases** to return when not deleting.
-16. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
-17. Confirm submit is disabled when there are no changes.
-18. Confirm an invalid case id shows a safe not-found state.
+12. Add an internal comment on the case detail page; confirm it appears in the comments list; refresh and confirm persistence.
+13. Add a public (non-internal) comment if the UI exposes the internal checkbox; confirm visibility label.
+14. Clear description or customer metadata fields and save; confirm they clear safely.
+15. Delete a case from the detail page; cancel confirmation first, then confirm and verify redirect to cases list.
+16. Confirm deleted case no longer appears in the list.
+17. Use **Back to cases** to return when not deleting.
+18. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
+19. Confirm submit is disabled when there are no changes.
+20. Confirm an invalid case id shows a safe not-found state.
 
 ## Build and quality checks
 
@@ -111,7 +113,8 @@ Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` 
 
 ## What is intentionally not implemented
 
-- Comments, timeline, SLA, attachments, tags, customer module
+- Comment edit/delete
+- Timeline, SLA, attachments, tags, customer module
 - Product dashboard, customers, billing, integrations
 - Workspace switcher, invitation flow and advanced RBAC UI
 - HttpOnly refresh tokens
