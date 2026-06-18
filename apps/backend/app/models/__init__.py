@@ -1,6 +1,7 @@
 """SQLAlchemy ORM models."""
 
 from app.models.case_activity import CaseActivity
+from app.models.case_attachment import CaseAttachment
 from app.models.case_comment import CaseComment
 from app.models.case_tag import CaseTag, UniversalCaseTag
 from app.models.enums import (
@@ -21,6 +22,7 @@ from app.models.workspace_membership import WorkspaceMembership
 __all__ = [
     "CaseActivity",
     "CaseActivityType",
+    "CaseAttachment",
     "CaseComment",
     "CaseTag",
     "CasePriority",

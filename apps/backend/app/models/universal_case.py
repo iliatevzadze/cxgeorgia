@@ -15,6 +15,7 @@ from app.models.enums import CasePriority, CaseSource, CaseStatus
 
 if TYPE_CHECKING:
     from app.models.case_activity import CaseActivity
+    from app.models.case_attachment import CaseAttachment
     from app.models.case_comment import CaseComment
     from app.models.case_tag import CaseTag
     from app.models.workspace import Workspace
@@ -102,4 +103,8 @@ class UniversalCase(Base):
     tags: Mapped[list[CaseTag]] = relationship(
         secondary="universal_case_tags",
         back_populates="cases",
+    )
+    attachments: Mapped[list[CaseAttachment]] = relationship(
+        back_populates="case",
+        cascade="all, delete-orphan",
     )
