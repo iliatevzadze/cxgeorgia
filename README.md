@@ -10,15 +10,15 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 31: Universal Case activity timeline backend API)
+**Phase 1 — SaaS Base** (Step 32: Automatic Universal Case activity recording)
 
-Activity records can be listed for a case via read-only backend API. **Activity creation, automatic activity recording, and frontend timeline UI are not implemented yet.**
+Activity records are automatically created for case creation, case updates, assignment changes, and comment create/delete. **Frontend activity timeline UI is not implemented yet.**
 
 Case detail supports comment list, create and delete. **Comment edit is not implemented yet.**
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 32 has **not started**.
+Phase 1 / Step 33 has **not started**.
 
 ## Confirmed stack
 
@@ -314,7 +314,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case comment delete frontend UI (Phase 1 / Step 29)
 - [x] Universal Case activity timeline database foundation (Phase 1 / Step 30)
 - [x] Universal Case activity timeline backend API (Phase 1 / Step 31)
-- [ ] Phase 1 / Step 32 (not started)
+- [x] Automatic Universal Case activity recording (Phase 1 / Step 32)
+- [ ] Phase 1 / Step 33 (not started)
 
 ## License
 

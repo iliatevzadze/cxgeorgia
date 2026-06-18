@@ -4,15 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 31: Universal Case activity timeline backend API)
+**Phase 1 — SaaS Base** (Step 32: Automatic Universal Case activity recording)
 
-Activity records can be listed for a case via read-only backend API. **Activity creation, automatic activity recording, and frontend timeline UI are not implemented yet.**
+Activity records are automatically created for case creation, case updates, assignment changes, and comment create/delete. **Frontend activity timeline UI is not implemented yet.**
 
 Comments can be created, listed and deleted through case-scoped backend endpoints. **Comment edit is not implemented yet.**
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 32 has **not started**.
+Phase 1 / Step 33 has **not started**.
 
 ## Auth API
 
@@ -33,7 +33,7 @@ Phase 1 / Step 32 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case API (Phase 1 / Steps 11–31)
+## Universal Case API (Phase 1 / Steps 11–32)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -51,7 +51,7 @@ All case, comment and activity endpoints require `Authorization: Bearer <token>`
 
 Database tables: `universal_cases`, `case_comments`, `case_activities`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
 
-**Automatic activity recording is not implemented yet.**
+Case create, update, assignment changes, and comment create/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 
 ## Migrations
 

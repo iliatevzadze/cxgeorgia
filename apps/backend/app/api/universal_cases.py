@@ -25,6 +25,13 @@ from app.schemas.universal_case import (
     UniversalCaseRead,
     UniversalCaseUpdate,
 )
+from app.services.case_activity import (
+    record_case_created_activity,
+    record_case_patch_activities,
+    record_comment_created_activity,
+    record_comment_deleted_activity,
+    snapshot_case,
+)
 
 router = APIRouter(
     prefix="/api/v1/workspaces/{workspace_id}/cases",
@@ -117,6 +124,13 @@ async def create_case(
         assigned_to_user_id=body.assigned_to_user_id,
     )
     session.add(case)
+    await session.flush()
+    record_case_created_activity(
+        session,
+        workspace_id=workspace_id,
+        case=case,
+        actor_user_id=membership.user_id,
+    )
     await session.commit()
     await session.refresh(case)
     return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
@@ -174,7 +188,6 @@ async def update_case(
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Update universal case fields allowed by PATCH."""
-    _ = membership
     case = await session.scalar(
         select(UniversalCase).where(
             UniversalCase.id == case_id,
@@ -186,6 +199,8 @@ async def update_case(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Case not found",
         )
+
+    before = snapshot_case(case)
 
     if "title" in body.model_fields_set and body.title is not None:
         case.title = body.title
@@ -212,6 +227,14 @@ async def update_case(
             )
         case.assigned_to_user_id = body.assigned_to_user_id
 
+    record_case_patch_activities(
+        session,
+        workspace_id=workspace_id,
+        case=case,
+        actor_user_id=membership.user_id,
+        before=before,
+        body=body,
+    )
     await session.commit()
     await session.refresh(case)
     return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
@@ -264,6 +287,15 @@ async def create_case_comment(
         is_internal=body.is_internal,
     )
     session.add(comment)
+    await session.flush()
+    record_comment_created_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=membership.user_id,
+        comment_id=comment.id,
+        is_internal=comment.is_internal,
+    )
     await session.commit()
     await session.refresh(comment)
     return _envelope(CaseCommentRead.model_validate(comment).model_dump(mode="json"))
@@ -338,8 +370,18 @@ async def delete_case_comment(
         case_id,
         comment_id,
     )
+    comment_id_value = comment.id
+    is_internal = comment.is_internal
 
     await session.delete(comment)
+    record_comment_deleted_activity(
+        session,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        actor_user_id=membership.user_id,
+        comment_id=comment_id_value,
+        is_internal=is_internal,
+    )
     await session.commit()
     return _envelope(
         CaseCommentDeleteRead(id=comment_id, deleted=True).model_dump(mode="json")

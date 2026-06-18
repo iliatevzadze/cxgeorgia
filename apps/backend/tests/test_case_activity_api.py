@@ -6,6 +6,7 @@ from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.case_activity import CaseActivity
@@ -50,12 +51,28 @@ async def _create_case(
     return response_data(response)["id"]
 
 
+async def _create_case_in_db(
+    db_session: AsyncSession,
+    workspace_id: str,
+    *,
+    title: str = "Activity test case",
+) -> str:
+    case = UniversalCase(
+        workspace_id=UUID(workspace_id),
+        title=title,
+        status=CaseStatus.OPEN,
+    )
+    db_session.add(case)
+    await db_session.flush()
+    return str(case.id)
+
+
 async def _insert_activity(
     db_session: AsyncSession,
     *,
     workspace_id: str,
     case_id: str,
-    activity_type: CaseActivityType = CaseActivityType.CASE_CREATED,
+    activity_type: CaseActivityType = CaseActivityType.STATUS_CHANGED,
     actor_user_id: UUID | None = None,
     message: str | None = None,
     activity_metadata: dict | None = None,
@@ -110,15 +127,20 @@ async def test_list_activities_as_workspace_member(
     )
     assert response.status_code == 200
     items = response_data(response)
-    assert len(items) == 1
-    assert items[0]["workspace_id"] == workspace_id
-    assert items[0]["case_id"] == case_id
-    assert items[0]["actor_user_id"] == str(user_id)
-    assert items[0]["activity_type"] == CaseActivityType.STATUS_CHANGED.value
-    assert items[0]["message"] == "Status changed"
-    assert items[0]["metadata"] == {"from": "open", "to": "pending"}
-    assert items[0]["id"]
-    assert items[0]["created_at"]
+    assert len(items) == 2
+    item = next(
+        item
+        for item in items
+        if item["activity_type"] == CaseActivityType.STATUS_CHANGED.value
+    )
+    assert item["workspace_id"] == workspace_id
+    assert item["case_id"] == case_id
+    assert item["actor_user_id"] == str(user_id)
+    assert item["activity_type"] == CaseActivityType.STATUS_CHANGED.value
+    assert item["message"] == "Status changed"
+    assert item["metadata"] == {"from": "open", "to": "pending"}
+    assert item["id"]
+    assert item["created_at"]
 
 
 async def test_list_activities_response_uses_envelope(
@@ -141,6 +163,7 @@ async def test_list_activities_response_uses_envelope(
         workspace_id=workspace_id,
         case_id=case_id,
         message="Envelope activity",
+        created_at=datetime.now(UTC) + timedelta(seconds=1),
     )
 
     response = await client.get(
@@ -175,6 +198,7 @@ async def test_list_activities_metadata_serializes_as_metadata(
         workspace_id=workspace_id,
         case_id=case_id,
         activity_metadata={"field": "value"},
+        created_at=datetime.now(UTC) + timedelta(seconds=1),
     )
 
     response = await client.get(
@@ -182,7 +206,11 @@ async def test_list_activities_metadata_serializes_as_metadata(
         headers=headers,
     )
     assert response.status_code == 200
-    item = response_data(response)[0]
+    item = next(
+        item
+        for item in response_data(response)
+        if item["metadata"] == {"field": "value"}
+    )
     assert "metadata" in item
     assert item["metadata"] == {"field": "value"}
     assert "activity_metadata" not in item
@@ -208,6 +236,7 @@ async def test_list_activities_actor_user_id_can_be_null(
         workspace_id=workspace_id,
         case_id=case_id,
         actor_user_id=None,
+        created_at=datetime.now(UTC) + timedelta(seconds=1),
     )
 
     response = await client.get(
@@ -215,7 +244,10 @@ async def test_list_activities_actor_user_id_can_be_null(
         headers=headers,
     )
     assert response.status_code == 200
-    assert response_data(response)[0]["actor_user_id"] is None
+    item = next(
+        item for item in response_data(response) if item["actor_user_id"] is None
+    )
+    assert item["actor_user_id"] is None
 
 
 async def test_list_activities_returns_newest_first(
@@ -225,6 +257,16 @@ async def test_list_activities_returns_newest_first(
     headers = await auth_headers(client, f"activity-order-{uuid.uuid4()}@example.com")
     workspace_id = await _create_workspace(client, headers, "Activity Order Workspace")
     case_id = await _create_case(client, headers, workspace_id)
+
+    case_created = await db_session.scalar(
+        select(CaseActivity).where(
+            CaseActivity.workspace_id == UUID(workspace_id),
+            CaseActivity.case_id == UUID(case_id),
+            CaseActivity.activity_type == CaseActivityType.CASE_CREATED,
+        )
+    )
+    assert case_created is not None
+    case_created.created_at = datetime.now(UTC) - timedelta(hours=2)
 
     older = await _insert_activity(
         db_session,
@@ -247,8 +289,16 @@ async def test_list_activities_returns_newest_first(
     )
     assert response.status_code == 200
     items = response_data(response)
-    assert [item["id"] for item in items] == [str(newer.id), str(older.id)]
-    assert [item["message"] for item in items] == ["Newer activity", "Older activity"]
+    assert [item["id"] for item in items] == [
+        str(newer.id),
+        str(older.id),
+        str(case_created.id),
+    ]
+    assert [item["message"] for item in items] == [
+        "Newer activity",
+        "Older activity",
+        "Case created",
+    ]
 
 
 async def test_list_activities_excludes_other_case_in_same_workspace(
@@ -286,9 +336,10 @@ async def test_list_activities_excludes_other_case_in_same_workspace(
     )
     assert response.status_code == 200
     items = response_data(response)
-    assert len(items) == 1
-    assert items[0]["case_id"] == case_a
-    assert items[0]["message"] == "Activity on case A"
+    assert len(items) == 2
+    assert all(item["case_id"] == case_a for item in items)
+    assert any(item["message"] == "Activity on case A" for item in items)
+    assert not any(item["message"] == "Activity on case B" for item in items)
 
 
 async def test_list_activities_excludes_other_workspace(
@@ -330,9 +381,10 @@ async def test_list_activities_excludes_other_workspace(
     )
     assert response.status_code == 200
     items = response_data(response)
-    assert len(items) == 1
-    assert items[0]["workspace_id"] == workspace_a
-    assert items[0]["message"] == "Activity in workspace A"
+    assert len(items) == 2
+    assert all(item["workspace_id"] == workspace_a for item in items)
+    assert any(item["message"] == "Activity in workspace A" for item in items)
+    assert not any(item["message"] == "Activity in workspace B" for item in items)
 
 
 async def test_list_activities_cross_workspace_returns_404(client: AsyncClient) -> None:
@@ -395,6 +447,7 @@ async def test_list_activities_nonexistent_case_returns_404(
 
 async def test_list_activities_empty_list_returns_empty_array(
     client: AsyncClient,
+    db_session: AsyncSession,
 ) -> None:
     headers = await auth_headers(
         client,
@@ -405,7 +458,7 @@ async def test_list_activities_empty_list_returns_empty_array(
         headers,
         "Activity Empty Workspace",
     )
-    case_id = await _create_case(client, headers, workspace_id)
+    case_id = await _create_case_in_db(db_session, workspace_id)
 
     response = await client.get(
         _activities_path(workspace_id, case_id),
