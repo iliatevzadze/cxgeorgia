@@ -49,3 +49,10 @@ class CaseCommentRead(BaseModel):
     is_internal: bool
     created_at: datetime
     updated_at: datetime
+
+
+class CaseCommentDeleteRead(BaseModel):
+    """Delete case comment response."""
+
+    id: UUID
+    deleted: bool

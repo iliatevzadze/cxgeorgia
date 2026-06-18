@@ -20,6 +20,14 @@ def _comments_path(workspace_id: str, case_id: str) -> str:
     return f"/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments"
 
 
+def _comment_detail_path(
+    workspace_id: str,
+    case_id: str,
+    comment_id: str,
+) -> str:
+    return f"{_comments_path(workspace_id, case_id)}/{comment_id}"
+
+
 async def _create_workspace(
     client: AsyncClient,
     headers: dict[str, str],
@@ -462,3 +470,279 @@ async def test_list_comments_non_member_returns_404(client: AsyncClient) -> None
         headers=other_headers,
     )
     assert response.status_code == 404
+
+
+async def test_delete_comment_unauthenticated_returns_401(client: AsyncClient) -> None:
+    response = await client.delete(
+        _comment_detail_path(
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+        ),
+    )
+    assert response.status_code == 401
+
+
+async def test_delete_comment_as_workspace_member(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"comment-delete-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Comment Delete Workspace")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Delete me",
+    )
+    assert create_response.status_code == 201
+    comment_id = response_data(create_response)["id"]
+
+    delete_response = await client.delete(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        headers=headers,
+    )
+    assert delete_response.status_code == 200
+    data = response_data(delete_response)
+    assert data["id"] == comment_id
+    assert data["deleted"] is True
+
+
+async def test_delete_comment_response_uses_envelope(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-envelope-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Delete Envelope",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(client, headers, workspace_id, case_id)
+    comment_id = response_data(create_response)["id"]
+
+    delete_response = await client.delete(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        headers=headers,
+    )
+    assert delete_response.status_code == 200
+    payload = delete_response.json()
+    assert payload["error"] is None
+    assert payload["meta"] == {}
+    assert payload["data"]["deleted"] is True
+
+
+async def test_delete_comment_removed_from_list(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-list-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Comment Delete List")
+    case_id = await _create_case(client, headers, workspace_id)
+
+    keep_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Keep this comment",
+    )
+    delete_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_id,
+        body="Remove this comment",
+    )
+    assert keep_response.status_code == 201
+    assert delete_response.status_code == 201
+    keep_id = response_data(keep_response)["id"]
+    remove_id = response_data(delete_response)["id"]
+
+    remove_delete = await client.delete(
+        _comment_detail_path(workspace_id, case_id, remove_id),
+        headers=headers,
+    )
+    assert remove_delete.status_code == 200
+
+    list_response = await client.get(
+        _comments_path(workspace_id, case_id),
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == keep_id
+
+
+async def test_delete_comment_not_found_returns_404(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-missing-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Delete Missing",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.delete(
+        _comment_detail_path(workspace_id, case_id, str(uuid.uuid4())),
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_comment_from_other_case_returns_404(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-other-case-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Delete Other Case",
+    )
+    case_a = await _create_case(client, headers, workspace_id, title="Case A")
+    case_b = await _create_case(client, headers, workspace_id, title="Case B")
+
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_id,
+        case_b,
+        body="Comment on case B",
+    )
+    assert create_response.status_code == 201
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.delete(
+        _comment_detail_path(workspace_id, case_a, comment_id),
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_comment_from_other_workspace_returns_404(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-other-ws-{uuid.uuid4()}@example.com",
+    )
+    workspace_a = await _create_workspace(client, headers, "Comment Delete WS A")
+    workspace_b = await _create_workspace(client, headers, "Comment Delete WS B")
+    case_a = await _create_case(client, headers, workspace_a)
+
+    create_response = await _create_comment(
+        client,
+        headers,
+        workspace_a,
+        case_a,
+        body="Comment in workspace A",
+    )
+    assert create_response.status_code == 201
+    comment_id = response_data(create_response)["id"]
+
+    other_case = UniversalCase(
+        workspace_id=UUID(workspace_b),
+        title="Case in B",
+        status=CaseStatus.OPEN,
+    )
+    db_session.add(other_case)
+    await db_session.flush()
+    db_session.add(
+        CaseComment(
+            workspace_id=UUID(workspace_b),
+            case_id=other_case.id,
+            body="Comment in workspace B",
+        )
+    )
+    await db_session.flush()
+
+    response = await client.delete(
+        _comment_detail_path(workspace_b, str(other_case.id), comment_id),
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_comment_cross_workspace_case_returns_404(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-cross-{uuid.uuid4()}@example.com",
+    )
+    workspace_a = await _create_workspace(client, headers, "Comment Delete Cross A")
+    workspace_b = await _create_workspace(client, headers, "Comment Delete Cross B")
+    case_id = await _create_case(client, headers, workspace_a)
+    create_response = await _create_comment(client, headers, workspace_a, case_id)
+    comment_id = response_data(create_response)["id"]
+
+    response = await client.delete(
+        _comment_detail_path(workspace_b, case_id, comment_id),
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_comment_non_member_returns_404(client: AsyncClient) -> None:
+    owner_email = f"comment-delete-owner-{uuid.uuid4()}@example.com"
+    other_email = f"comment-delete-other-{uuid.uuid4()}@example.com"
+    owner_headers = await auth_headers(client, owner_email)
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Comment Delete Private",
+    )
+    case_id = await _create_case(client, owner_headers, workspace_id)
+    create_response = await _create_comment(
+        client,
+        owner_headers,
+        workspace_id,
+        case_id,
+    )
+    comment_id = response_data(create_response)["id"]
+
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.delete(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_comment_repeated_delete_returns_404(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"comment-delete-repeat-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Comment Delete Repeat",
+    )
+    case_id = await _create_case(client, headers, workspace_id)
+    create_response = await _create_comment(client, headers, workspace_id, case_id)
+    comment_id = response_data(create_response)["id"]
+
+    first_delete = await client.delete(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        headers=headers,
+    )
+    assert first_delete.status_code == 200
+
+    second_delete = await client.delete(
+        _comment_detail_path(workspace_id, case_id, comment_id),
+        headers=headers,
+    )
+    assert second_delete.status_code == 404

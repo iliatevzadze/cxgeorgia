@@ -1,7 +1,11 @@
 """Pydantic schemas."""
 
 from app.schemas.auth import Token, TokenPayload
-from app.schemas.case_comment import CaseCommentCreate, CaseCommentRead
+from app.schemas.case_comment import (
+    CaseCommentCreate,
+    CaseCommentDeleteRead,
+    CaseCommentRead,
+)
 from app.schemas.universal_case import (
     UniversalCaseCreate,
     UniversalCaseDeleteRead,
@@ -18,6 +22,7 @@ from app.schemas.workspace import (
 
 __all__ = [
     "CaseCommentCreate",
+    "CaseCommentDeleteRead",
     "CaseCommentRead",
     "Token",
     "TokenPayload",

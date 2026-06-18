@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 26: Universal Case comments backend API)
+**Phase 1 — SaaS Base** (Step 28: Universal Case comment delete backend API)
 
-Alembic head: `0005`. Universal Case CRUD endpoints exist. Comments can be created and listed through case-scoped endpoints. **Frontend comments UI is not implemented yet.**
+Comments can be created, listed and deleted through case-scoped backend endpoints. **Frontend comment delete UI and comment edit are not implemented yet.**
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 27 has **not started**.
+Phase 1 / Step 29 has **not started**.
 
 ## Auth API
 
@@ -31,7 +31,7 @@ Phase 1 / Step 27 has **not started**.
 
 All workspace endpoints require `Authorization: Bearer <token>`.
 
-## Universal Case API (Phase 1 / Steps 11–26)
+## Universal Case API (Phase 1 / Steps 11–28)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -42,6 +42,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | Create comment on case (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments` | List case comments, oldest first |
+| DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/comments/{comment_id}` | Delete comment (active members only) |
 
 All case and comment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 

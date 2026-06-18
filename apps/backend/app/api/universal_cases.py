@@ -12,7 +12,11 @@ from app.models.case_comment import CaseComment
 from app.models.enums import WorkspaceMemberStatus
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
-from app.schemas.case_comment import CaseCommentCreate, CaseCommentRead
+from app.schemas.case_comment import (
+    CaseCommentCreate,
+    CaseCommentDeleteRead,
+    CaseCommentRead,
+)
 from app.schemas.universal_case import (
     UniversalCaseCreate,
     UniversalCaseDeleteRead,
@@ -66,6 +70,27 @@ async def _get_workspace_case_or_404(
             detail="Case not found",
         )
     return case
+
+
+async def _get_workspace_case_comment_or_404(
+    session: AsyncSession,
+    workspace_id: UUID,
+    case_id: UUID,
+    comment_id: UUID,
+) -> CaseComment:
+    comment = await session.scalar(
+        select(CaseComment).where(
+            CaseComment.id == comment_id,
+            CaseComment.workspace_id == workspace_id,
+            CaseComment.case_id == case_id,
+        )
+    )
+    if comment is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found",
+        )
+    return comment
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -266,3 +291,28 @@ async def list_case_comments(
         for item in result.all()
     ]
     return _envelope(items)
+
+
+@router.delete("/{case_id}/comments/{comment_id}")
+async def delete_case_comment(
+    workspace_id: UUID,
+    case_id: UUID,
+    comment_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """Delete a comment from a universal case in the workspace."""
+    _ = membership
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+    comment = await _get_workspace_case_comment_or_404(
+        session,
+        workspace_id,
+        case_id,
+        comment_id,
+    )
+
+    await session.delete(comment)
+    await session.commit()
+    return _envelope(
+        CaseCommentDeleteRead(id=comment_id, deleted=True).model_dump(mode="json")
+    )
