@@ -1,5 +1,6 @@
 """SQLAlchemy ORM models."""
 
+from app.models.case_comment import CaseComment
 from app.models.enums import (
     CasePriority,
     CaseSource,
@@ -15,6 +16,7 @@ from app.models.workspace import Workspace
 from app.models.workspace_membership import WorkspaceMembership
 
 __all__ = [
+    "CaseComment",
     "CasePriority",
     "CaseSource",
     "CaseStatus",

@@ -14,6 +14,7 @@ from app.db.base import Base
 from app.models.enums import CasePriority, CaseSource, CaseStatus
 
 if TYPE_CHECKING:
+    from app.models.case_comment import CaseComment
     from app.models.workspace import Workspace
 
 
@@ -88,3 +89,7 @@ class UniversalCase(Base):
     )
 
     workspace: Mapped[Workspace] = relationship(back_populates="universal_cases")
+    comments: Mapped[list[CaseComment]] = relationship(
+        back_populates="case",
+        cascade="all, delete-orphan",
+    )

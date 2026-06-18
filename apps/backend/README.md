@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 23: Universal Case assignment backend API)
+**Phase 1 — SaaS Base** (Step 25: Universal Case comments database foundation)
 
-Alembic head: `0004`. Create, list, detail, PATCH and DELETE endpoints exist for `universal_cases`. PATCH can assign or unassign cases through `assigned_to_user_id`. **Frontend assignment controls are not implemented yet.**
+Alembic head: `0005`. Universal Case API endpoints exist for `universal_cases`. The `case_comments` table and SQLAlchemy model exist for workspace-scoped case comments. **Comments API and frontend comments UI are not implemented yet.**
 
-Comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 24 has **not started**.
+Phase 1 / Step 26 has **not started**.
 
 ## Auth API
 
@@ -43,12 +43,12 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 
 All case endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
-Database table: `universal_cases`. Enums: `case_status`, `case_priority`, `case_source`. All rows include `workspace_id` for tenant isolation.
+Database tables: `universal_cases`, `case_comments`. Enums: `case_status`, `case_priority`, `case_source`. All case rows include `workspace_id` for tenant isolation.
 
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0004
+alembic upgrade head   # applies through 0005
 alembic current
 ```
 

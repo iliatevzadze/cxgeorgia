@@ -1,4 +1,4 @@
-"""Tests for Universal Case Alembic migration metadata."""
+"""Tests for Universal Case comments Alembic migration metadata."""
 
 from pathlib import Path
 
@@ -13,7 +13,11 @@ def _alembic_script() -> ScriptDirectory:
     return ScriptDirectory.from_config(config)
 
 
-def test_0004_migration_revises_0003() -> None:
-    revision = _alembic_script().get_revision("0004")
+def test_alembic_head_is_0005() -> None:
+    assert _alembic_script().get_current_head() == "0005"
+
+
+def test_0005_migration_revises_0004() -> None:
+    revision = _alembic_script().get_revision("0005")
     assert revision is not None
-    assert revision.down_revision == "0003"
+    assert revision.down_revision == "0004"

@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 24: Universal Case assignment frontend UI)
+**Phase 1 — SaaS Base** (Step 25: Universal Case comments database foundation)
 
-Case detail page can update all PATCH fields, assign or unassign cases through `assigned_to_user_id`, and delete cases. Assignment uses the existing PATCH endpoint and workspace memberships list.
+The `case_comments` table and SQLAlchemy model exist for workspace-scoped Universal Case comments. Case detail page supports full PATCH fields, assignment, and delete. **Comments API and frontend comments UI are not implemented yet.**
 
-Comments, timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 25 has **not started**.
+Phase 1 / Step 26 has **not started**.
 
 ## Confirmed stack
 
@@ -305,7 +305,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case delete frontend UI (Phase 1 / Step 22)
 - [x] Universal Case assignment backend API (Phase 1 / Step 23)
 - [x] Universal Case assignment frontend UI (Phase 1 / Step 24)
-- [ ] Phase 1 / Step 25 (not started)
+- [x] Universal Case comments database foundation (Phase 1 / Step 25)
+- [ ] Phase 1 / Step 26 (not started)
 
 ## License
 
