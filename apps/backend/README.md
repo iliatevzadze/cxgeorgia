@@ -4,13 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 28: Universal Case comment delete backend API)
+**Phase 1 — SaaS Base** (Step 30: Universal Case activity timeline database foundation)
 
-Comments can be created, listed and deleted through case-scoped backend endpoints. **Frontend comment delete UI and comment edit are not implemented yet.**
+The `case_activities` table and `CaseActivity` model exist (Alembic head **0006**). **Activity API, frontend timeline UI, and automatic activity recording are not implemented yet.**
 
-Timeline, SLA, attachments, tags, and customer module are **not implemented**.
+Comments can be created, listed and deleted through case-scoped backend endpoints. **Comment edit is not implemented yet.**
 
-Phase 1 / Step 29 has **not started**.
+SLA, attachments, tags, and customer module are **not implemented**.
+
+Phase 1 / Step 31 has **not started**.
 
 ## Auth API
 
@@ -46,12 +48,14 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 
 All case and comment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
-Database tables: `universal_cases`, `case_comments`. Enums: `case_status`, `case_priority`, `case_source`. All case rows include `workspace_id` for tenant isolation.
+Database tables: `universal_cases`, `case_comments`, `case_activities`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
+
+**Activity timeline API is not implemented yet.**
 
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0005
+alembic upgrade head   # applies through 0006
 alembic current
 ```
 

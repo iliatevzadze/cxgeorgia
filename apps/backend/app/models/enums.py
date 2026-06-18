@@ -45,3 +45,13 @@ class CaseSource(StrEnum):
     PHONE = "phone"
     WEB = "web"
     IMPORT = "import"
+
+
+class CaseActivityType(StrEnum):
+    CASE_CREATED = "case_created"
+    CASE_UPDATED = "case_updated"
+    STATUS_CHANGED = "status_changed"
+    PRIORITY_CHANGED = "priority_changed"
+    ASSIGNMENT_CHANGED = "assignment_changed"
+    COMMENT_CREATED = "comment_created"
+    COMMENT_DELETED = "comment_deleted"
