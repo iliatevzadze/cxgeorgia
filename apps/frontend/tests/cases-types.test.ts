@@ -34,13 +34,16 @@ test("case types export UniversalCaseUpdateRequest with allowed optional fields"
   assert.match(updateBlock, /description\?: string \| null/);
   assert.match(updateBlock, /status\?: CaseStatus/);
   assert.match(updateBlock, /priority\?: CasePriority/);
+  assert.match(updateBlock, /source\?: CaseSource/);
+  assert.match(updateBlock, /customer_name\?: string \| null/);
+  assert.match(updateBlock, /customer_email\?: string \| null/);
+  assert.match(updateBlock, /external_reference\?: string \| null/);
+  assert.doesNotMatch(updateBlock, /\bid\?:/);
   assert.doesNotMatch(updateBlock, /workspace_id/);
   assert.doesNotMatch(updateBlock, /created_by_user_id/);
   assert.doesNotMatch(updateBlock, /assigned_to_user_id/);
-  assert.doesNotMatch(updateBlock, /source\?:/);
-  assert.doesNotMatch(updateBlock, /customer_name/);
-  assert.doesNotMatch(updateBlock, /customer_email/);
-  assert.doesNotMatch(updateBlock, /external_reference/);
+  assert.doesNotMatch(updateBlock, /created_at/);
+  assert.doesNotMatch(updateBlock, /updated_at/);
 });
 
 test("case status, priority and source unions match backend enums", () => {

@@ -42,4 +42,8 @@ export type UniversalCaseUpdateRequest = {
   description?: string | null;
   status?: CaseStatus;
   priority?: CasePriority;
+  source?: CaseSource;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  external_reference?: string | null;
 };

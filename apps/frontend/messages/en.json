@@ -208,7 +208,7 @@
           }
         },
         "detail": {
-          "description": "Universal Case details. Update title, description, status and priority below.",
+          "description": "Universal Case details. Update case fields below.",
           "loading": "Loading case...",
           "error": "Could not load case.",
           "backToCases": "Back to cases",
@@ -226,7 +226,7 @@
           "updatedAtLabel": "Updated",
           "noValue": "—",
           "updateTitle": "Update case",
-          "updateDescription": "Change title, description, status or priority and save.",
+          "updateDescription": "Change case fields and save.",
           "submit": "Save changes",
           "submitting": "Saving...",
           "success": "Case updated successfully.",
@@ -245,6 +245,14 @@
             "normal": "Normal",
             "high": "High",
             "urgent": "Urgent"
+          },
+          "sourceOptions": {
+            "manual": "Manual",
+            "email": "Email",
+            "chat": "Chat",
+            "phone": "Phone",
+            "web": "Web",
+            "import": "Import"
           }
         }
       },

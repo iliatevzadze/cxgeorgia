@@ -4,13 +4,13 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 18: Universal Case title/description update frontend UI)
+**Phase 1 — SaaS Base** (Step 20: Universal Case customer/source update frontend UI)
 
-Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail can update title, description, status and priority.**
+Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail can update title, description, status, priority, source and customer metadata.**
 
-Customer/source editing, assignment, delete, comments, SLA, attachments, and customer module are **not implemented**.
+Assignment, delete, comments, SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 19 has **not started**.
+Phase 1 / Step 21 has **not started**.
 
 ## What exists now
 
@@ -23,7 +23,7 @@ Phase 1 / Step 19 has **not started**.
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
-- Case detail update form for title, description, status and priority (`PATCH` via same detail path)
+- Case detail update form for all PATCH fields (`PATCH` via same detail path)
 - Workspace app placeholder routes: dashboard, customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
@@ -34,7 +34,7 @@ Phase 1 / Step 19 has **not started**.
 
 ## What does not exist yet
 
-- Case customer/source editing or delete
+- Case assignment or delete
 - Product dashboard, customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
@@ -63,7 +63,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/memberships`, `/en/workspaces/{id}/memberships` | Memberships (`GET /api/v1/workspaces/{id}/memberships`) |
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
-| `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with title/description/status/priority update |
+| `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with full PATCH update form |
 | `/ka/workspaces/{id}/app/dashboard`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration
