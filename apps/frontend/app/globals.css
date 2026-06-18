@@ -443,11 +443,29 @@ a {
   margin-top: 0.75rem;
 }
 
+.workspace-case-comment-item-actions,
+.workspace-case-comment-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.workspace-case-comment-edit-form {
+  margin: 0;
+}
+
+.workspace-case-comment-edit-trigger,
+.workspace-case-comment-edit-save {
+  width: auto;
+}
+
 .workspace-case-comment-delete-trigger,
 .workspace-case-comment-delete-confirm {
   background: #b91c1c;
 }
 
+.workspace-case-comment-edit-cancel,
 .workspace-case-comment-delete-cancel {
   width: 100%;
   padding: 0.7rem 1rem;

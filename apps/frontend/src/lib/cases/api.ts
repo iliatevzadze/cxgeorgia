@@ -5,6 +5,7 @@ import type {
   CaseCommentCreateRequest,
   CaseCommentDeleteResponse,
   CaseCommentRead,
+  CaseCommentUpdateRequest,
   UniversalCaseCreateRequest,
   UniversalCaseDeleteResponse,
   UniversalCaseRead,
@@ -107,6 +108,23 @@ export async function createCaseComment(
     casePaths.comments(workspaceId, caseId),
     {
       method: "POST",
+      body: payload,
+      token,
+    },
+  );
+}
+
+export async function updateCaseComment(
+  workspaceId: string,
+  caseId: string,
+  commentId: string,
+  payload: CaseCommentUpdateRequest,
+  token: string,
+): Promise<CaseCommentRead> {
+  return apiRequest<CaseCommentRead>(
+    casePaths.commentDetail(workspaceId, caseId, commentId),
+    {
+      method: "PATCH",
       body: payload,
       token,
     },

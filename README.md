@@ -10,15 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 34: Universal Case comment edit backend API)
+**Phase 1 — SaaS Base** (Step 35: Universal Case comment edit frontend UI)
 
-Comment body and internal/public visibility can be edited through the backend API. **Comment edit frontend UI is not implemented yet.**
-
-Activity timeline records comment edits as read-only case activity.
+Comments can be edited from the case detail page. Comment edit activity appears in the read-only activity timeline.
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 35 has **not started**.
+Phase 1 / Step 36 has **not started**.
 
 ## Confirmed stack
 
@@ -317,7 +315,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Automatic Universal Case activity recording (Phase 1 / Step 32)
 - [x] Universal Case activity timeline frontend UI (Phase 1 / Step 33)
 - [x] Universal Case comment edit backend API (Phase 1 / Step 34)
-- [ ] Phase 1 / Step 35 (not started)
+- [x] Universal Case comment edit frontend UI (Phase 1 / Step 35)
+- [ ] Phase 1 / Step 36 (not started)
 
 ## License
 

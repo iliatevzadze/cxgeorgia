@@ -76,11 +76,24 @@ test("case types export CaseCommentCreateRequest", () => {
     "export type CaseCommentCreateRequest",
   );
   const commentCreateEnd = typesSource.indexOf(
-    "export type CaseCommentDeleteResponse",
+    "export type CaseCommentUpdateRequest",
   );
   const commentCreateBlock = typesSource.slice(commentCreateStart, commentCreateEnd);
   assert.match(commentCreateBlock, /body: string/);
   assert.match(commentCreateBlock, /is_internal\?: boolean/);
+});
+
+test("case types export CaseCommentUpdateRequest", () => {
+  assert.match(typesSource, /export type CaseCommentUpdateRequest/);
+  const commentUpdateStart = typesSource.indexOf(
+    "export type CaseCommentUpdateRequest",
+  );
+  const commentUpdateEnd = typesSource.indexOf(
+    "export type CaseCommentDeleteResponse",
+  );
+  const commentUpdateBlock = typesSource.slice(commentUpdateStart, commentUpdateEnd);
+  assert.match(commentUpdateBlock, /body\?: string/);
+  assert.match(commentUpdateBlock, /is_internal\?: boolean/);
 });
 
 test("case types export CaseCommentDeleteResponse", () => {

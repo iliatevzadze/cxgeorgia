@@ -101,6 +101,15 @@ test("cases api exports createCaseComment helper using POST", () => {
   );
 });
 
+test("cases api exports updateCaseComment helper using PATCH", () => {
+  assert.match(apiSource, /export async function updateCaseComment/);
+  assert.match(apiSource, /method: "PATCH"/);
+  assert.match(
+    apiSource,
+    /casePaths\.commentDetail\(workspaceId, caseId, commentId\)[\s\S]*method: "PATCH"/,
+  );
+});
+
 test("cases api exports deleteCaseComment helper using DELETE", () => {
   assert.match(apiSource, /export async function deleteCaseComment/);
   assert.match(apiSource, /method: "DELETE"/);

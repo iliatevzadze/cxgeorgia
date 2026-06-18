@@ -4,15 +4,15 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 34: Universal Case comment edit backend API)
+**Phase 1 — SaaS Base** (Step 35: Universal Case comment edit frontend UI)
 
-Comment body and `is_internal` can be updated via PATCH on case comments. **Comment edit frontend UI is not implemented yet.**
+Comment body and `is_internal` can be updated via PATCH on case comments. The case detail frontend supports editing comments.
 
 Comment edits record a read-only `case_updated` activity with message `"Comment edited"`.
 
 SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 35 has **not started**.
+Phase 1 / Step 36 has **not started**.
 
 ## Auth API
 
