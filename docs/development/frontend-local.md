@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 27).
+Guide for running the Next.js frontend locally (Phase 1 / Step 29).
 
 ## Scope
 
@@ -90,13 +90,14 @@ Visiting `/` redirects to `/ka` (default locale).
 11. Unassign the case; confirm assignment clears in the detail view.
 12. Add an internal comment on the case detail page; confirm it appears in the comments list; refresh and confirm persistence.
 13. Add a public (non-internal) comment if the UI exposes the internal checkbox; confirm visibility label.
-14. Clear description or customer metadata fields and save; confirm they clear safely.
-15. Delete a case from the detail page; cancel confirmation first, then confirm and verify redirect to cases list.
-16. Confirm deleted case no longer appears in the list.
-17. Use **Back to cases** to return when not deleting.
-18. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
-19. Confirm submit is disabled when there are no changes.
-20. Confirm an invalid case id shows a safe not-found state.
+14. Delete a comment using the inline confirm flow; refresh and confirm it stays deleted.
+15. Clear description or customer metadata fields and save; confirm they clear safely.
+16. Delete a case from the detail page; cancel confirmation first, then confirm and verify redirect to cases list.
+17. Confirm deleted case no longer appears in the list.
+18. Use **Back to cases** to return when not deleting.
+19. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
+20. Confirm submit is disabled when there are no changes.
+21. Confirm an invalid case id shows a safe not-found state.
 
 ## Build and quality checks
 
@@ -113,7 +114,7 @@ Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` 
 
 ## What is intentionally not implemented
 
-- Comment edit/delete
+- Comment edit
 - Timeline, SLA, attachments, tags, customer module
 - Product dashboard, customers, billing, integrations
 - Workspace switcher, invitation flow and advanced RBAC UI

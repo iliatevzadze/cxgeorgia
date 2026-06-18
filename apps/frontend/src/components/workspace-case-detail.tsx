@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api/errors";
 import {
   createCaseComment,
   deleteCase,
+  deleteCaseComment,
   getCase,
   listCaseComments,
   updateCase,
@@ -200,6 +201,15 @@ export function WorkspaceCaseDetail({
     null,
   );
   const [commentSuccessMessage, setCommentSuccessMessage] = useState<
+    string | null
+  >(null);
+  const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState<
+    string | null
+  >(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  );
+  const [commentDeleteErrorMessage, setCommentDeleteErrorMessage] = useState<
     string | null
   >(null);
 
@@ -557,6 +567,59 @@ export function WorkspaceCaseDetail({
     }
   }
 
+  function handleCommentDeleteClick(commentId: string) {
+    setCommentDeleteErrorMessage(null);
+    setCommentDeleteConfirmId(commentId);
+  }
+
+  function handleCommentDeleteCancel() {
+    setCommentDeleteConfirmId(null);
+    setCommentDeleteErrorMessage(null);
+  }
+
+  async function handleCommentDeleteConfirm(commentId: string) {
+    setCommentDeleteErrorMessage(null);
+
+    const token = getAccessToken();
+    if (!token) {
+      setCommentDeleteErrorMessage(tCommon("accessDenied"));
+      return;
+    }
+
+    setDeletingCommentId(commentId);
+
+    try {
+      const result = await deleteCaseComment(
+        workspaceId,
+        caseId,
+        commentId,
+        token,
+      );
+      if (result.deleted) {
+        setComments((current) =>
+          current.filter((comment) => comment.id !== commentId),
+        );
+        setCommentDeleteConfirmId(null);
+        return;
+      }
+      setCommentDeleteErrorMessage(t("commentDeleteError"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setCommentDeleteErrorMessage(t("commentDeleteNotFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setCommentDeleteErrorMessage(tCommon("accessDenied"));
+        } else {
+          setCommentDeleteErrorMessage(t("commentDeleteError"));
+        }
+      } else {
+        setCommentDeleteErrorMessage(t("commentDeleteError"));
+      }
+    } finally {
+      setDeletingCommentId(null);
+    }
+  }
+
   async function handleDeleteConfirm() {
     setDeleteErrorMessage(null);
 
@@ -862,6 +925,7 @@ export function WorkspaceCaseDetail({
                   isSubmitting ||
                   isDeleting ||
                   isCommentSubmitting ||
+                  deletingCommentId !== null ||
                   Boolean(membershipsLoadError)
                 }
                 onChange={(event) => setSelectedAssigneeId(event.target.value)}
@@ -882,6 +946,8 @@ export function WorkspaceCaseDetail({
                 isAssigning ||
                 isSubmitting ||
                 isDeleting ||
+                isCommentSubmitting ||
+                deletingCommentId !== null ||
                 Boolean(membershipsLoadError) ||
                 !hasAssignmentChanges
               }
@@ -900,6 +966,12 @@ export function WorkspaceCaseDetail({
         {commentsLoadError ? (
           <p className="workspace-error" role="alert">
             {commentsLoadError}
+          </p>
+        ) : null}
+
+        {commentDeleteErrorMessage ? (
+          <p className="workspace-error" role="alert">
+            {commentDeleteErrorMessage}
           </p>
         ) : null}
 
@@ -936,6 +1008,46 @@ export function WorkspaceCaseDetail({
                         <dd>{formatDateTime(comment.created_at, locale)}</dd>
                       </div>
                     </dl>
+
+                    {commentDeleteConfirmId === comment.id ? (
+                      <div className="workspace-case-comment-delete-actions">
+                        <button
+                          type="button"
+                          className="auth-submit workspace-case-comment-delete-confirm"
+                          disabled={deletingCommentId === comment.id}
+                          onClick={() =>
+                            void handleCommentDeleteConfirm(comment.id)
+                          }
+                        >
+                          {deletingCommentId === comment.id
+                            ? t("commentDeleting")
+                            : t("commentConfirmDeleteButton")}
+                        </button>
+                        <button
+                          type="button"
+                          className="workspace-case-comment-delete-cancel"
+                          disabled={deletingCommentId === comment.id}
+                          onClick={handleCommentDeleteCancel}
+                        >
+                          {t("commentCancelDeleteButton")}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="auth-submit workspace-case-comment-delete-trigger"
+                        disabled={
+                          deletingCommentId !== null ||
+                          isCommentSubmitting ||
+                          isSubmitting ||
+                          isAssigning ||
+                          isDeleting
+                        }
+                        onClick={() => handleCommentDeleteClick(comment.id)}
+                      >
+                        {t("commentDeleteButton")}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -975,7 +1087,8 @@ export function WorkspaceCaseDetail({
                 isCommentSubmitting ||
                 isSubmitting ||
                 isAssigning ||
-                isDeleting
+                isDeleting ||
+                deletingCommentId !== null
               }
               onChange={(event) => setCommentBody(event.target.value)}
             />
@@ -990,7 +1103,8 @@ export function WorkspaceCaseDetail({
                 isCommentSubmitting ||
                 isSubmitting ||
                 isAssigning ||
-                isDeleting
+                isDeleting ||
+                deletingCommentId !== null
               }
               onChange={(event) => setCommentIsInternal(event.target.checked)}
             />
@@ -1005,6 +1119,7 @@ export function WorkspaceCaseDetail({
               isSubmitting ||
               isAssigning ||
               isDeleting ||
+              deletingCommentId !== null ||
               !commentBody.trim()
             }
           >
@@ -1046,7 +1161,7 @@ export function WorkspaceCaseDetail({
           <button
             type="button"
             className="auth-submit workspace-case-delete-trigger"
-            disabled={isDeleting || isSubmitting || isAssigning || isCommentSubmitting}
+            disabled={isDeleting || isSubmitting || isAssigning || isCommentSubmitting || deletingCommentId !== null}
             onClick={() => {
               setDeleteErrorMessage(null);
               setShowDeleteConfirm(true);

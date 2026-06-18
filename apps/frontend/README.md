@@ -4,15 +4,13 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 27: Universal Case comments frontend UI)
+**Phase 1 — SaaS Base** (Step 29: Universal Case comment delete frontend UI)
 
-Cases page can create, list and open case details at `/workspaces/{id}/app/cases/{caseId}`. **Case detail can update all PATCH fields, assign or unassign cases, list/create comments, and delete cases.**
-
-Comments use `GET/POST /api/v1/workspaces/{id}/cases/{caseId}/comments`. Comment edit/delete is **not implemented**.
+Case detail can update all PATCH fields, assign or unassign cases, list/create/delete comments, and delete cases. Comment edit is **not implemented**.
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 28 has **not started**.
+Phase 1 / Step 30 has **not started**.
 
 ## What exists now
 
@@ -25,7 +23,7 @@ Phase 1 / Step 28 has **not started**.
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
-- Case detail update, assignment, comments and delete controls (`PATCH` / `DELETE` / comment API)
+- Case detail update, assignment, comments (list/create/delete) and case delete controls
 - Workspace app placeholder routes: dashboard, customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
@@ -36,7 +34,7 @@ Phase 1 / Step 28 has **not started**.
 
 ## What does not exist yet
 
-- Comment edit/delete
+- Comment edit
 - Product dashboard, customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI

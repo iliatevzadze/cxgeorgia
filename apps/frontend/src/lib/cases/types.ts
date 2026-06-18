@@ -69,3 +69,8 @@ export type CaseCommentCreateRequest = {
   body: string;
   is_internal?: boolean;
 };
+
+export type CaseCommentDeleteResponse = {
+  id: string;
+  deleted: boolean;
+};

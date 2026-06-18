@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 28: Universal Case comment delete backend API)
+**Phase 1 — SaaS Base** (Step 29: Universal Case comment delete frontend UI)
 
-Case detail supports comment list/create. Comments can also be deleted through the backend API. **Frontend comment delete UI and comment edit are not implemented yet.**
+Case detail supports comment list, create and delete. **Comment edit is not implemented yet.**
 
 Timeline, SLA, attachments, tags, and customer module are **not implemented**.
 
-Phase 1 / Step 29 has **not started**.
+Phase 1 / Step 30 has **not started**.
 
 ## Confirmed stack
 
@@ -309,7 +309,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case comments backend API (Phase 1 / Step 26)
 - [x] Universal Case comments frontend UI (Phase 1 / Step 27)
 - [x] Universal Case comment delete backend API (Phase 1 / Step 28)
-- [ ] Phase 1 / Step 29 (not started)
+- [x] Universal Case comment delete frontend UI (Phase 1 / Step 29)
+- [ ] Phase 1 / Step 30 (not started)
 
 ## License
 

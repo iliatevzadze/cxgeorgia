@@ -2,6 +2,7 @@ import { apiRequest } from "@/lib/api/client";
 
 import type {
   CaseCommentCreateRequest,
+  CaseCommentDeleteResponse,
   CaseCommentRead,
   UniversalCaseCreateRequest,
   UniversalCaseDeleteResponse,
@@ -16,6 +17,8 @@ export const casePaths = {
     `/api/v1/workspaces/${workspaceId}/cases/${caseId}`,
   comments: (workspaceId: string, caseId: string) =>
     `/api/v1/workspaces/${workspaceId}/cases/${caseId}/comments`,
+  commentDetail: (workspaceId: string, caseId: string, commentId: string) =>
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/comments/${commentId}`,
 } as const;
 
 export async function listCases(
@@ -102,6 +105,21 @@ export async function createCaseComment(
     {
       method: "POST",
       body: payload,
+      token,
+    },
+  );
+}
+
+export async function deleteCaseComment(
+  workspaceId: string,
+  caseId: string,
+  commentId: string,
+  token: string,
+): Promise<CaseCommentDeleteResponse> {
+  return apiRequest<CaseCommentDeleteResponse>(
+    casePaths.commentDetail(workspaceId, caseId, commentId),
+    {
+      method: "DELETE",
       token,
     },
   );

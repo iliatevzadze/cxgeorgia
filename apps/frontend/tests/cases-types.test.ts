@@ -75,9 +75,21 @@ test("case types export CaseCommentCreateRequest", () => {
   const commentCreateStart = typesSource.indexOf(
     "export type CaseCommentCreateRequest",
   );
-  const commentCreateBlock = typesSource.slice(commentCreateStart);
+  const commentCreateEnd = typesSource.indexOf(
+    "export type CaseCommentDeleteResponse",
+  );
+  const commentCreateBlock = typesSource.slice(commentCreateStart, commentCreateEnd);
   assert.match(commentCreateBlock, /body: string/);
   assert.match(commentCreateBlock, /is_internal\?: boolean/);
+});
+
+test("case types export CaseCommentDeleteResponse", () => {
+  assert.match(typesSource, /export type CaseCommentDeleteResponse/);
+  const deleteBlock = typesSource.slice(
+    typesSource.indexOf("export type CaseCommentDeleteResponse"),
+  );
+  assert.match(deleteBlock, /id: string/);
+  assert.match(deleteBlock, /deleted: boolean/);
 });
 
 test("case status, priority and source unions match backend enums", () => {
