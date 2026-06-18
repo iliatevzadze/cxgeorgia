@@ -6,6 +6,9 @@ import type {
   CaseCommentDeleteResponse,
   CaseCommentRead,
   CaseCommentUpdateRequest,
+  CaseTag,
+  CaseTagCreateInput,
+  CaseTagDetachResponse,
   UniversalCaseCreateRequest,
   UniversalCaseDeleteResponse,
   UniversalCaseRead,
@@ -23,6 +26,12 @@ export const casePaths = {
     `/api/v1/workspaces/${workspaceId}/cases/${caseId}/comments/${commentId}`,
   activities: (workspaceId: string, caseId: string) =>
     `/api/v1/workspaces/${workspaceId}/cases/${caseId}/activities`,
+  caseTags: (workspaceId: string, caseId: string) =>
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/tags`,
+  caseTagDetail: (workspaceId: string, caseId: string, tagId: string) =>
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/tags/${tagId}`,
+  workspaceCaseTags: (workspaceId: string) =>
+    `/api/v1/workspaces/${workspaceId}/case-tags`,
 } as const;
 
 export async function listCases(
@@ -154,5 +163,66 @@ export async function listCaseActivities(
   return apiRequest<CaseActivityRead[]>(
     casePaths.activities(workspaceId, caseId),
     { token },
+  );
+}
+
+export async function listWorkspaceCaseTags(
+  workspaceId: string,
+  token: string,
+): Promise<CaseTag[]> {
+  return apiRequest<CaseTag[]>(casePaths.workspaceCaseTags(workspaceId), {
+    token,
+  });
+}
+
+export async function createWorkspaceCaseTag(
+  workspaceId: string,
+  payload: CaseTagCreateInput,
+  token: string,
+): Promise<CaseTag> {
+  return apiRequest<CaseTag>(casePaths.workspaceCaseTags(workspaceId), {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+export async function listCaseTags(
+  workspaceId: string,
+  caseId: string,
+  token: string,
+): Promise<CaseTag[]> {
+  return apiRequest<CaseTag[]>(casePaths.caseTags(workspaceId, caseId), {
+    token,
+  });
+}
+
+export async function attachCaseTag(
+  workspaceId: string,
+  caseId: string,
+  tagId: string,
+  token: string,
+): Promise<CaseTag> {
+  return apiRequest<CaseTag>(
+    casePaths.caseTagDetail(workspaceId, caseId, tagId),
+    {
+      method: "POST",
+      token,
+    },
+  );
+}
+
+export async function detachCaseTag(
+  workspaceId: string,
+  caseId: string,
+  tagId: string,
+  token: string,
+): Promise<CaseTagDetachResponse> {
+  return apiRequest<CaseTagDetachResponse>(
+    casePaths.caseTagDetail(workspaceId, caseId, tagId),
+    {
+      method: "DELETE",
+      token,
+    },
   );
 }

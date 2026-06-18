@@ -126,3 +126,55 @@ test("cases api exports listCaseActivities helper using GET", () => {
     /casePaths\.activities\(workspaceId, caseId\)/,
   );
 });
+
+test("casePaths.caseTags includes workspace id and case id", () => {
+  const workspaceId = "550e8400-e29b-41d4-a716-446655440000";
+  const caseId = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
+  assert.equal(
+    casePaths.caseTags(workspaceId, caseId),
+    `/api/v1/workspaces/${workspaceId}/cases/${caseId}/tags`,
+  );
+});
+
+test("casePaths.workspaceCaseTags includes workspace id", () => {
+  const workspaceId = "550e8400-e29b-41d4-a716-446655440000";
+  assert.equal(
+    casePaths.workspaceCaseTags(workspaceId),
+    `/api/v1/workspaces/${workspaceId}/case-tags`,
+  );
+});
+
+test("cases api exports listWorkspaceCaseTags helper using GET", () => {
+  assert.match(apiSource, /export async function listWorkspaceCaseTags/);
+  assert.match(apiSource, /casePaths\.workspaceCaseTags\(workspaceId\)/);
+});
+
+test("cases api exports createWorkspaceCaseTag helper using POST", () => {
+  assert.match(apiSource, /export async function createWorkspaceCaseTag/);
+  assert.match(
+    apiSource,
+    /casePaths\.workspaceCaseTags\(workspaceId\)[\s\S]*method: "POST"/,
+  );
+});
+
+test("cases api exports listCaseTags helper using GET", () => {
+  assert.match(apiSource, /export async function listCaseTags/);
+  assert.match(apiSource, /casePaths\.caseTags\(workspaceId, caseId\)/);
+});
+
+test("cases api exports attachCaseTag helper using POST", () => {
+  assert.match(apiSource, /export async function attachCaseTag/);
+  assert.match(apiSource, /method: "POST"/);
+  assert.match(
+    apiSource,
+    /casePaths\.caseTagDetail\(workspaceId, caseId, tagId\)/,
+  );
+});
+
+test("cases api exports detachCaseTag helper using DELETE", () => {
+  assert.match(apiSource, /export async function detachCaseTag/);
+  assert.match(
+    apiSource,
+    /casePaths\.caseTagDetail\(workspaceId, caseId, tagId\)[\s\S]*method: "DELETE"/,
+  );
+});

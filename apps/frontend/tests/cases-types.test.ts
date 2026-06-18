@@ -100,9 +100,26 @@ test("case types export CaseCommentDeleteResponse", () => {
   assert.match(typesSource, /export type CaseCommentDeleteResponse/);
   const deleteBlock = typesSource.slice(
     typesSource.indexOf("export type CaseCommentDeleteResponse"),
+    typesSource.indexOf("export type CaseTag"),
   );
   assert.match(deleteBlock, /id: string/);
   assert.match(deleteBlock, /deleted: boolean/);
+});
+
+test("case types export CaseTag and CaseTagCreateInput", () => {
+  assert.match(typesSource, /export type CaseTag/);
+  const tagStart = typesSource.indexOf("export type CaseTag");
+  const tagEnd = typesSource.indexOf("export type CaseTagDetachResponse");
+  const tagBlock = typesSource.slice(tagStart, tagEnd);
+  assert.match(tagBlock, /id: string/);
+  assert.match(tagBlock, /workspace_id: string/);
+  assert.match(tagBlock, /name: string/);
+  assert.match(tagBlock, /slug: string/);
+  assert.match(tagBlock, /color: string \| null/);
+  assert.match(typesSource, /export type CaseTagCreateInput/);
+  assert.match(typesSource, /name: string/);
+  assert.match(typesSource, /slug: string/);
+  assert.match(typesSource, /color\?: string/);
 });
 
 test("case types export CaseActivityRead with expected fields", () => {

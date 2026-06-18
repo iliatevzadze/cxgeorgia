@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 37: Universal Case tags backend API)
+**Phase 1 — SaaS Base** (Step 38: Universal Case tags frontend UI)
 
-Workspace tag CRUD and case tag attach/list/detach API endpoints exist. **Tag frontend UI is not implemented.**
+Case detail supports viewing, creating, attaching and detaching workspace tags. Tag backend API exists.
 
 SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 38 has **not started**.
+Phase 1 / Step 39 has **not started**.
 
 ## Auth API
 

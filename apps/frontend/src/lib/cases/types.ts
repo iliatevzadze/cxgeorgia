@@ -80,6 +80,27 @@ export type CaseCommentDeleteResponse = {
   deleted: boolean;
 };
 
+export type CaseTag = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CaseTagCreateInput = {
+  name: string;
+  slug: string;
+  color?: string;
+};
+
+export type CaseTagDetachResponse = {
+  tag_id: string;
+  detached: boolean;
+};
+
 export type CaseActivityType =
   | "case_created"
   | "case_updated"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
@@ -8,12 +8,17 @@ import { Link, useRouter } from "@/i18n/navigation";
 
 import { ApiError } from "@/lib/api/errors";
 import {
+  attachCaseTag,
   createCaseComment,
+  createWorkspaceCaseTag,
   deleteCase,
   deleteCaseComment,
+  detachCaseTag,
   getCase,
   listCaseActivities,
   listCaseComments,
+  listCaseTags,
+  listWorkspaceCaseTags,
   updateCase,
   updateCaseComment,
 } from "@/lib/cases/api";
@@ -22,6 +27,7 @@ import type {
   CaseActivityRead,
   CaseCommentRead,
   CaseCommentUpdateRequest,
+  CaseTag,
   CasePriority,
   CaseSource,
   CaseStatus,
@@ -87,6 +93,17 @@ function formatAssignmentDisplay(
     (item) => item.user_id === assignedToUserId,
   );
   return member ? formatMemberLabel(member) : assignedToUserId;
+}
+
+function isSafeTagColor(color: string | null): color is string {
+  return Boolean(color && /^#[0-9A-Fa-f]{3,8}$/.test(color));
+}
+
+function tagColorDotStyle(color: string | null): CSSProperties | undefined {
+  if (!isSafeTagColor(color)) {
+    return undefined;
+  }
+  return { backgroundColor: color };
 }
 
 function buildUpdatePayload(
@@ -232,6 +249,26 @@ export function WorkspaceCaseDetail({
   const [commentEditSuccessMessage, setCommentEditSuccessMessage] = useState<
     string | null
   >(null);
+  const [attachedTags, setAttachedTags] = useState<CaseTag[]>([]);
+  const [workspaceTags, setWorkspaceTags] = useState<CaseTag[]>([]);
+  const [isTagsLoading, setIsTagsLoading] = useState(true);
+  const [tagsLoadError, setTagsLoadError] = useState<string | null>(null);
+  const [selectedAttachTagId, setSelectedAttachTagId] = useState("");
+  const [isAttachingTag, setIsAttachingTag] = useState(false);
+  const [detachingTagId, setDetachingTagId] = useState<string | null>(null);
+  const [tagAttachError, setTagAttachError] = useState<string | null>(null);
+  const [tagDetachError, setTagDetachError] = useState<string | null>(null);
+  const [tagSuccessMessage, setTagSuccessMessage] = useState<string | null>(
+    null,
+  );
+  const [newTagName, setNewTagName] = useState("");
+  const [newTagSlug, setNewTagSlug] = useState("");
+  const [newTagColor, setNewTagColor] = useState("");
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [tagCreateValidationError, setTagCreateValidationError] = useState<
+    string | null
+  >(null);
+  const [tagCreateError, setTagCreateError] = useState<string | null>(null);
   const [activities, setActivities] = useState<CaseActivityRead[]>([]);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(true);
   const [activitiesLoadError, setActivitiesLoadError] = useState<string | null>(
@@ -406,6 +443,68 @@ export function WorkspaceCaseDetail({
 
     let isMounted = true;
 
+    async function loadTags() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setTagsLoadError(tCommon("accessDenied"));
+          setIsTagsLoading(false);
+        }
+        return;
+      }
+
+      setIsTagsLoading(true);
+      setTagsLoadError(null);
+
+      try {
+        const [attached, available] = await Promise.all([
+          listCaseTags(workspaceId, caseId, token),
+          listWorkspaceCaseTags(workspaceId, token),
+        ]);
+        if (isMounted) {
+          setAttachedTags(attached);
+          setWorkspaceTags(available);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setAttachedTags([]);
+        setWorkspaceTags([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setTagsLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setTagsLoadError(tCommon("notFound"));
+          } else {
+            setTagsLoadError(t("tagsLoadError"));
+          }
+        } else {
+          setTagsLoadError(t("tagsLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsTagsLoading(false);
+        }
+      }
+    }
+
+    void loadTags();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, caseId, caseItem, t, tCommon]);
+
+  useEffect(() => {
+    if (!caseItem) {
+      return;
+    }
+
+    let isMounted = true;
+
     async function loadActivities() {
       const token = getAccessToken();
       if (!token) {
@@ -468,6 +567,25 @@ export function WorkspaceCaseDetail({
       setActivitiesLoadError(null);
     } catch {
       // Keep the page usable; timeline errors are shown in the activity panel only.
+    }
+  }
+
+  async function reloadTags() {
+    const token = getAccessToken();
+    if (!token) {
+      return;
+    }
+
+    try {
+      const [attached, available] = await Promise.all([
+        listCaseTags(workspaceId, caseId, token),
+        listWorkspaceCaseTags(workspaceId, token),
+      ]);
+      setAttachedTags(attached);
+      setWorkspaceTags(available);
+      setTagsLoadError(null);
+    } catch {
+      // Keep the page usable; tag errors are shown in the tags panel only.
     }
   }
 
@@ -622,6 +740,7 @@ export function WorkspaceCaseDetail({
     setCommentCreateError(null);
     setCommentSuccessMessage(null);
     setCommentEditSuccessMessage(null);
+    setTagSuccessMessage(null);
 
     const trimmedBody = commentBody.trim();
     if (!trimmedBody) {
@@ -665,6 +784,160 @@ export function WorkspaceCaseDetail({
       }
     } finally {
       setIsCommentSubmitting(false);
+    }
+  }
+
+  async function handleAttachTagSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setTagAttachError(null);
+    setTagDetachError(null);
+    setTagSuccessMessage(null);
+
+    if (!selectedAttachTagId) {
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setTagAttachError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsAttachingTag(true);
+
+    try {
+      const tag = await attachCaseTag(
+        workspaceId,
+        caseId,
+        selectedAttachTagId,
+        token,
+      );
+      setAttachedTags((current) => {
+        if (current.some((item) => item.id === tag.id)) {
+          return current;
+        }
+        return [...current, tag].sort((left, right) =>
+          left.name.localeCompare(right.name),
+        );
+      });
+      setSelectedAttachTagId("");
+      setTagSuccessMessage(t("tagAttachSuccess"));
+      await reloadTags();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setTagAttachError(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setTagAttachError(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setTagAttachError(t("tagValidationError"));
+        } else {
+          setTagAttachError(t("tagAttachError"));
+        }
+      } else {
+        setTagAttachError(t("tagAttachError"));
+      }
+    } finally {
+      setIsAttachingTag(false);
+    }
+  }
+
+  async function handleCreateAndAttachTagSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    setTagCreateValidationError(null);
+    setTagCreateError(null);
+    setTagAttachError(null);
+    setTagDetachError(null);
+    setTagSuccessMessage(null);
+
+    const trimmedName = newTagName.trim();
+    const trimmedSlug = newTagSlug.trim();
+    const normalizedColor = normalizeOptionalText(newTagColor);
+
+    if (!trimmedName || !trimmedSlug) {
+      setTagCreateValidationError(t("tagFieldsRequired"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setTagCreateError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsCreatingTag(true);
+
+    try {
+      const created = await createWorkspaceCaseTag(
+        workspaceId,
+        {
+          name: trimmedName,
+          slug: trimmedSlug,
+          ...(normalizedColor ? { color: normalizedColor } : {}),
+        },
+        token,
+      );
+      await attachCaseTag(workspaceId, caseId, created.id, token);
+      setNewTagName("");
+      setNewTagSlug("");
+      setNewTagColor("");
+      setTagSuccessMessage(t("tagCreateAttachSuccess"));
+      await reloadTags();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setTagCreateError(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setTagCreateError(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setTagCreateValidationError(t("tagDuplicateSlugError"));
+        } else {
+          setTagCreateError(t("tagCreateError"));
+        }
+      } else {
+        setTagCreateError(t("tagCreateError"));
+      }
+    } finally {
+      setIsCreatingTag(false);
+    }
+  }
+
+  async function handleDetachTag(tagId: string) {
+    setTagDetachError(null);
+    setTagAttachError(null);
+    setTagSuccessMessage(null);
+
+    const token = getAccessToken();
+    if (!token) {
+      setTagDetachError(tCommon("accessDenied"));
+      return;
+    }
+
+    setDetachingTagId(tagId);
+
+    try {
+      await detachCaseTag(workspaceId, caseId, tagId, token);
+      setAttachedTags((current) => current.filter((tag) => tag.id !== tagId));
+      setTagSuccessMessage(t("tagDetachSuccess"));
+      await reloadTags();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setTagDetachError(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setTagDetachError(tCommon("accessDenied"));
+        } else {
+          setTagDetachError(t("tagDetachError"));
+        }
+      } else {
+        setTagDetachError(t("tagDetachError"));
+      }
+    } finally {
+      setDetachingTagId(null);
     }
   }
 
@@ -876,6 +1149,20 @@ export function WorkspaceCaseDetail({
   }
 
   const noValue = t("noValue");
+  const attachableTags = workspaceTags.filter(
+    (tag) => !attachedTags.some((attached) => attached.id === tag.id),
+  );
+  const isTagActionBusy =
+    isAttachingTag ||
+    isCreatingTag ||
+    detachingTagId !== null ||
+    isSubmitting ||
+    isAssigning ||
+    isDeleting ||
+    isCommentSubmitting ||
+    deletingCommentId !== null ||
+    editingCommentId !== null ||
+    isCommentEditSaving;
 
   function formatActivityMetadataSummary(activity: CaseActivityRead): string | null {
     return getActivityMetadataSummary(activity, {
@@ -1190,6 +1477,174 @@ export function WorkspaceCaseDetail({
             </button>
           </>
         )}
+      </section>
+
+      <section className="workspace-panel workspace-case-tags-panel">
+        <h2>{t("tagsTitle")}</h2>
+        <p className="workspace-description">{t("tagsDescription")}</p>
+
+        {tagsLoadError ? (
+          <p className="workspace-error" role="alert">
+            {tagsLoadError}
+          </p>
+        ) : null}
+
+        {tagAttachError ? (
+          <p className="workspace-error" role="alert">
+            {tagAttachError}
+          </p>
+        ) : null}
+
+        {tagDetachError ? (
+          <p className="workspace-error" role="alert">
+            {tagDetachError}
+          </p>
+        ) : null}
+
+        {tagSuccessMessage ? (
+          <p className="workspace-success" role="status">
+            {tagSuccessMessage}
+          </p>
+        ) : null}
+
+        {isTagsLoading ? (
+          <p className="workspace-status">{t("tagsLoading")}</p>
+        ) : (
+          <>
+            {!tagsLoadError && attachedTags.length === 0 ? (
+              <p className="workspace-empty">{t("tagsEmpty")}</p>
+            ) : null}
+
+            {!tagsLoadError && attachedTags.length > 0 ? (
+              <ul className="workspace-case-tags">
+                {attachedTags.map((tag) => (
+                  <li key={tag.id} className="workspace-case-tag-chip">
+                    {isSafeTagColor(tag.color) ? (
+                      <span
+                        className="workspace-case-tag-color-dot"
+                        style={tagColorDotStyle(tag.color)}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <span className="workspace-case-tag-name">{tag.name}</span>
+                    <button
+                      type="button"
+                      className="workspace-case-tag-detach"
+                      disabled={isTagActionBusy || detachingTagId === tag.id}
+                      onClick={() => void handleDetachTag(tag.id)}
+                    >
+                      {detachingTagId === tag.id
+                        ? t("tagDetaching")
+                        : t("tagDetachButton")}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
+        )}
+
+        <form
+          className="workspace-form workspace-case-tag-attach-form"
+          onSubmit={handleAttachTagSubmit}
+        >
+          <label className="auth-field">
+            <span>{t("tagAttachLabel")}</span>
+            <select
+              name="attachTagId"
+              value={selectedAttachTagId}
+              disabled={isTagActionBusy || Boolean(tagsLoadError) || isTagsLoading}
+              onChange={(event) => setSelectedAttachTagId(event.target.value)}
+            >
+              <option value="">{t("tagAttachPlaceholder")}</option>
+              {attachableTags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="submit"
+            className="auth-submit"
+            disabled={
+              isTagActionBusy ||
+              Boolean(tagsLoadError) ||
+              isTagsLoading ||
+              !selectedAttachTagId
+            }
+          >
+            {isAttachingTag ? t("tagAttaching") : t("tagAttachButton")}
+          </button>
+        </form>
+
+        <form
+          className="workspace-form workspace-case-tag-create-form"
+          onSubmit={handleCreateAndAttachTagSubmit}
+        >
+          {tagCreateValidationError ? (
+            <p className="workspace-error" role="alert">
+              {tagCreateValidationError}
+            </p>
+          ) : null}
+
+          {tagCreateError ? (
+            <p className="workspace-error" role="alert">
+              {tagCreateError}
+            </p>
+          ) : null}
+
+          <label className="auth-field">
+            <span>{t("tagCreateNameLabel")}</span>
+            <input
+              type="text"
+              name="newTagName"
+              maxLength={255}
+              value={newTagName}
+              disabled={isTagActionBusy || Boolean(tagsLoadError) || isTagsLoading}
+              onChange={(event) => setNewTagName(event.target.value)}
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>{t("tagCreateSlugLabel")}</span>
+            <input
+              type="text"
+              name="newTagSlug"
+              maxLength={100}
+              value={newTagSlug}
+              disabled={isTagActionBusy || Boolean(tagsLoadError) || isTagsLoading}
+              onChange={(event) => setNewTagSlug(event.target.value)}
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>{t("tagCreateColorLabel")}</span>
+            <input
+              type="text"
+              name="newTagColor"
+              maxLength={32}
+              value={newTagColor}
+              disabled={isTagActionBusy || Boolean(tagsLoadError) || isTagsLoading}
+              onChange={(event) => setNewTagColor(event.target.value)}
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="auth-submit"
+            disabled={
+              isTagActionBusy ||
+              Boolean(tagsLoadError) ||
+              isTagsLoading ||
+              !newTagName.trim() ||
+              !newTagSlug.trim()
+            }
+          >
+            {isCreatingTag ? t("tagCreating") : t("tagCreateButton")}
+          </button>
+        </form>
       </section>
 
       <section className="workspace-panel workspace-case-comments-panel">
