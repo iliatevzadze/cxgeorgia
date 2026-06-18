@@ -1,6 +1,6 @@
 # Frontend Local Development
 
-Guide for running the Next.js frontend locally (Phase 1 / Step 20).
+Guide for running the Next.js frontend locally (Phase 1 / Step 22).
 
 ## Scope
 
@@ -12,12 +12,12 @@ This frontend includes:
 - Workspace foundation: list, create, detail, memberships pages
 - Workspace app shell at `/workspaces/{id}/app`
 - Universal Cases create form, list and detail at `/workspaces/{id}/app/cases`
-- Case detail update controls for title, description, status, priority, source and customer metadata (PATCH)
+- Case detail update and delete controls (PATCH / DELETE)
 - Workspace app placeholder routes: dashboard, customers, settings
 - API client with same-origin `/api/v1` proxy to the backend
 - JWT access token in `localStorage`
 
-It does **not** include case assignment, delete, functional dashboard, customer CRUD module, settings forms, billing, integrations, invitations, or advanced RBAC.
+It does **not** include case assignment, functional dashboard, customer CRUD module, settings forms, billing, integrations, invitations, or advanced RBAC.
 
 ## Prerequisites
 
@@ -71,7 +71,7 @@ Use `--hostname localhost` (configured in `package.json`). Do **not** use `next 
 | [http://127.0.0.1:3000/ka/workspaces/new](http://127.0.0.1:3000/ka/workspaces/new) | Create workspace |
 | `http://127.0.0.1:3000/ka/workspaces/{id}/app` | Workspace app shell (after login) |
 | `http://127.0.0.1:3000/ka/workspaces/{id}/app/cases` | Cases create form + list |
-| `http://127.0.0.1:3000/ka/workspaces/{id}/app/cases/{caseId}` | Case detail with full PATCH update form |
+| `http://127.0.0.1:3000/ka/workspaces/{id}/app/cases/{caseId}` | Case detail with update and delete |
 
 Visiting `/` redirects to `/ka` (default locale).
 
@@ -87,10 +87,12 @@ Visiting `/` redirects to `/ka` (default locale).
 8. Click **Cases** in the sidebar — create a case from the form and confirm it appears in the list.
 9. Click a case title to open the detail page; change source, customer metadata, title, description, status or priority and save; confirm success and updated values.
 10. Clear description or customer metadata fields and save; confirm they clear safely.
-11. Use **Back to cases** to return.
-12. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
-13. Confirm submit is disabled when there are no changes.
-14. Confirm an invalid case id shows a safe not-found state.
+11. Delete a case from the detail page; cancel confirmation first, then confirm and verify redirect to cases list.
+12. Confirm deleted case no longer appears in the list.
+13. Use **Back to cases** to return when not deleting.
+14. Confirm `/en/workspaces/{id}/app/cases` and detail routes work with English UI.
+15. Confirm submit is disabled when there are no changes.
+16. Confirm an invalid case id shows a safe not-found state.
 
 ## Build and quality checks
 
@@ -107,7 +109,7 @@ Client code calls relative paths such as `/api/v1/workspaces`. `next.config.ts` 
 
 ## What is intentionally not implemented
 
-- Case assignment or delete
+- Case assignment
 - Comments, timeline, SLA, attachments, tags, customer module
 - Product dashboard, customers, billing, integrations
 - Workspace switcher, invitation flow and advanced RBAC UI

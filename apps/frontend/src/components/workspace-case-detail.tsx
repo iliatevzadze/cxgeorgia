@@ -4,10 +4,10 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 import { ApiError } from "@/lib/api/errors";
-import { getCase, updateCase } from "@/lib/cases/api";
+import { deleteCase, getCase, updateCase } from "@/lib/cases/api";
 import type {
   CasePriority,
   CaseSource,
@@ -115,6 +115,7 @@ export function WorkspaceCaseDetail({
   const t = useTranslations("workspaces.app.cases.detail");
   const tCommon = useTranslations("workspaces.common");
   const locale = useLocale();
+  const router = useRouter();
 
   const [caseItem, setCaseItem] = useState<UniversalCaseRead | null>(null);
   const [title, setTitle] = useState("");
@@ -133,6 +134,11 @@ export function WorkspaceCaseDetail({
   );
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -280,6 +286,46 @@ export function WorkspaceCaseDetail({
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleDeleteConfirm() {
+    setDeleteErrorMessage(null);
+
+    const token = getAccessToken();
+    if (!token) {
+      setDeleteErrorMessage(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteCase(workspaceId, caseId, token);
+      if (result.deleted) {
+        router.push(workspaceRoutes.appCases(workspaceId));
+        return;
+      }
+      setDeleteErrorMessage(t("deleteError"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setDeleteErrorMessage(t("deleteNotFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setDeleteErrorMessage(tCommon("accessDenied"));
+        } else {
+          setDeleteErrorMessage(t("deleteError"));
+        }
+      } else {
+        setDeleteErrorMessage(t("deleteError"));
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function handleDeleteCancel() {
+    setShowDeleteConfirm(false);
+    setDeleteErrorMessage(null);
   }
 
   if (isLoading) {
@@ -496,6 +542,50 @@ export function WorkspaceCaseDetail({
           {isSubmitting ? t("submitting") : t("submit")}
         </button>
       </form>
+
+      <section className="workspace-panel workspace-case-delete-panel">
+        <h2>{t("deleteTitle")}</h2>
+        <p className="workspace-description">{t("deleteWarning")}</p>
+
+        {deleteErrorMessage ? (
+          <p className="workspace-error" role="alert">
+            {deleteErrorMessage}
+          </p>
+        ) : null}
+
+        {showDeleteConfirm ? (
+          <div className="workspace-case-delete-actions">
+            <button
+              type="button"
+              className="auth-submit workspace-case-delete-confirm"
+              disabled={isDeleting}
+              onClick={() => void handleDeleteConfirm()}
+            >
+              {isDeleting ? t("deleting") : t("confirmDeleteButton")}
+            </button>
+            <button
+              type="button"
+              className="workspace-case-delete-cancel"
+              disabled={isDeleting}
+              onClick={handleDeleteCancel}
+            >
+              {t("cancelDeleteButton")}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="auth-submit workspace-case-delete-trigger"
+            disabled={isDeleting || isSubmitting}
+            onClick={() => {
+              setDeleteErrorMessage(null);
+              setShowDeleteConfirm(true);
+            }}
+          >
+            {t("deleteButton")}
+          </button>
+        )}
+      </section>
 
       <p className="auth-form-footer">
         <Link href={workspaceRoutes.appCases(workspaceId)}>

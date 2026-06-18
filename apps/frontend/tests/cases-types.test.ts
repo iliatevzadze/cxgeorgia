@@ -46,6 +46,15 @@ test("case types export UniversalCaseUpdateRequest with allowed optional fields"
   assert.doesNotMatch(updateBlock, /updated_at/);
 });
 
+test("case types export UniversalCaseDeleteResponse", () => {
+  assert.match(typesSource, /export type UniversalCaseDeleteResponse/);
+  const deleteBlock = typesSource.slice(
+    typesSource.indexOf("export type UniversalCaseDeleteResponse"),
+  );
+  assert.match(deleteBlock, /id: string/);
+  assert.match(deleteBlock, /deleted: boolean/);
+});
+
 test("case status, priority and source unions match backend enums", () => {
   assert.match(typesSource, /export type CaseStatus/);
   assert.match(typesSource, /"open" \| "pending" \| "resolved" \| "closed"/);

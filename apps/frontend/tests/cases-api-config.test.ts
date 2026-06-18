@@ -46,3 +46,12 @@ test("cases api exports updateCase helper using PATCH", () => {
   assert.match(apiSource, /method: "PATCH"/);
   assert.match(apiSource, /casePaths\.detail\(workspaceId, caseId\)/);
 });
+
+test("cases api exports deleteCase helper using DELETE", () => {
+  assert.match(apiSource, /export async function deleteCase/);
+  assert.match(apiSource, /method: "DELETE"/);
+  assert.match(
+    apiSource,
+    /casePaths\.detail\(workspaceId, caseId\)[\s\S]*method: "DELETE"/,
+  );
+});

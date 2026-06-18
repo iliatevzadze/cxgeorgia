@@ -47,3 +47,8 @@ export type UniversalCaseUpdateRequest = {
   customer_email?: string | null;
   external_reference?: string | null;
 };
+
+export type UniversalCaseDeleteResponse = {
+  id: string;
+  deleted: boolean;
+};

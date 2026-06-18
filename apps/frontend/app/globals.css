@@ -348,6 +348,38 @@ a {
   color: #047857;
 }
 
+.workspace-case-delete-panel {
+  margin-top: 1.5rem;
+}
+
+.workspace-case-delete-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.workspace-case-delete-trigger,
+.workspace-case-delete-confirm {
+  background: #b91c1c;
+}
+
+.workspace-case-delete-cancel {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.workspace-case-delete-cancel:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .workspace-empty {
   margin: 0;
   color: #475569;

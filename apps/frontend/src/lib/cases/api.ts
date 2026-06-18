@@ -2,6 +2,7 @@ import { apiRequest } from "@/lib/api/client";
 
 import type {
   UniversalCaseCreateRequest,
+  UniversalCaseDeleteResponse,
   UniversalCaseRead,
   UniversalCaseUpdateRequest,
 } from "./types";
@@ -56,6 +57,20 @@ export async function updateCase(
     {
       method: "PATCH",
       body: payload,
+      token,
+    },
+  );
+}
+
+export async function deleteCase(
+  workspaceId: string,
+  caseId: string,
+  token: string,
+): Promise<UniversalCaseDeleteResponse> {
+  return apiRequest<UniversalCaseDeleteResponse>(
+    casePaths.detail(workspaceId, caseId),
+    {
+      method: "DELETE",
       token,
     },
   );
