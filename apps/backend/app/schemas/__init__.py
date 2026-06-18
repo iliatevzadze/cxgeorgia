@@ -8,6 +8,13 @@ from app.schemas.case_comment import (
     CaseCommentRead,
     CaseCommentUpdate,
 )
+from app.schemas.case_tag import (
+    CaseTagCreate,
+    CaseTagDeleteRead,
+    CaseTagDetachRead,
+    CaseTagRead,
+    CaseTagUpdate,
+)
 from app.schemas.universal_case import (
     UniversalCaseCreate,
     UniversalCaseDeleteRead,
@@ -28,6 +35,11 @@ __all__ = [
     "CaseCommentDeleteRead",
     "CaseCommentRead",
     "CaseCommentUpdate",
+    "CaseTagCreate",
+    "CaseTagDeleteRead",
+    "CaseTagDetachRead",
+    "CaseTagRead",
+    "CaseTagUpdate",
     "Token",
     "TokenPayload",
     "UniversalCaseCreate",

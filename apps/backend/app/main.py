@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
+from app.api.case_tags import router as case_tags_router
 from app.api.health import router as health_router
 from app.api.universal_cases import router as universal_cases_router
 from app.api.workspaces import router as workspaces_router
@@ -19,6 +20,7 @@ def create_app() -> FastAPI:
     application.include_router(health_router)
     application.include_router(auth_router)
     application.include_router(workspaces_router)
+    application.include_router(case_tags_router)
     application.include_router(universal_cases_router)
     return application
 

@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 36: Universal Case tags database foundation)
+**Phase 1 — SaaS Base** (Step 37: Universal Case tags backend API)
 
-`case_tags` and `universal_case_tags` tables exist for workspace-scoped tags on Universal Cases. **Tag API and frontend UI are not implemented yet.**
+Tag API endpoints exist for workspace tag CRUD and case tag attachment. **Tag frontend UI is not implemented yet.**
 
 SLA, attachments, and customer module are **not implemented**.
 
-Phase 1 / Step 37 has **not started**.
+Phase 1 / Step 38 has **not started**.
 
 ## Confirmed stack
 
@@ -317,7 +317,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case comment edit backend API (Phase 1 / Step 34)
 - [x] Universal Case comment edit frontend UI (Phase 1 / Step 35)
 - [x] Universal Case tags database foundation (Phase 1 / Step 36)
-- [ ] Phase 1 / Step 37 (not started)
+- [x] Universal Case tags backend API (Phase 1 / Step 37)
+- [ ] Phase 1 / Step 38 (not started)
 
 ## License
 
