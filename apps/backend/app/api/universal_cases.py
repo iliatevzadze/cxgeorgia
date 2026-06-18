@@ -8,10 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.workspace_deps import get_active_workspace_membership
 from app.db.session import get_async_session
+from app.models.case_activity import CaseActivity
 from app.models.case_comment import CaseComment
 from app.models.enums import WorkspaceMemberStatus
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
+from app.schemas.case_activity import CaseActivityRead
 from app.schemas.case_comment import (
     CaseCommentCreate,
     CaseCommentDeleteRead,
@@ -288,6 +290,32 @@ async def list_case_comments(
     )
     items = [
         CaseCommentRead.model_validate(item).model_dump(mode="json")
+        for item in result.all()
+    ]
+    return _envelope(items)
+
+
+@router.get("/{case_id}/activities")
+async def list_case_activities(
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """List activity timeline records for a universal case, newest first."""
+    _ = membership
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+
+    result = await session.scalars(
+        select(CaseActivity)
+        .where(
+            CaseActivity.workspace_id == workspace_id,
+            CaseActivity.case_id == case_id,
+        )
+        .order_by(CaseActivity.created_at.desc())
+    )
+    items = [
+        CaseActivityRead.model_validate(item).model_dump(mode="json")
         for item in result.all()
     ]
     return _envelope(items)
