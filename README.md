@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 70: Saved case list views backend)
+**Phase 1 — SaaS Base** (Step 71: Saved case views frontend API)
 
-Backend CRUD foundation for workspace saved case list views (filters, sorting, page size). Frontend saved-view UI is not implemented yet.
+Frontend API and types foundation for workspace saved case list views. No saved-view UI yet.
 
-Phase 1 / Step 71 has **not started**.
+Phase 1 / Step 72 has **not started**.
 
 ## Confirmed stack
 
@@ -349,7 +349,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Case list backend sorting (Phase 1 / Step 68)
 - [x] Case list sorting UI (Phase 1 / Step 69)
 - [x] Saved case list views backend (Phase 1 / Step 70)
-- [ ] Phase 1 / Step 71 (not started)
+- [x] Saved case views frontend API (Phase 1 / Step 71)
+- [ ] Phase 1 / Step 72 (not started)
 
 ## License
 

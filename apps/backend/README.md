@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 70: Saved case list views backend)
 
-Workspace-scoped CRUD for saved case list views (`case_list_views` table). Stores filters, sorting and page-size preferences. Frontend saved-view UI is not implemented yet.
+Workspace-scoped CRUD for saved case list views (`case_list_views` table). Frontend API/types foundation from Step 71; saved-view UI is not implemented yet.
 
-Phase 1 / Step 71 has **not started**.
+Phase 1 / Step 72 has **not started**.
 
 ## Auth API
 

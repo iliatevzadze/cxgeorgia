@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 69: Case list sorting UI)
+**Phase 1 — SaaS Base** (Step 71: Saved case views frontend API)
 
-The Cases list includes sort field and direction controls with URL-persisted `sort_by` and `sort_order` state. Backend saved case list views from Step 70; frontend saved-view UI is not implemented yet.
+Frontend types and API helpers for workspace saved case list views (`saved-views-types.ts`, `saved-views-api.ts`). No saved-view UI yet.
 
-Phase 1 / Step 71 has **not started**.
+Phase 1 / Step 72 has **not started**.
 
 ## What exists now
 
