@@ -12,6 +12,8 @@ import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
 import {
   buildCaseListSearchParams,
+  CASE_LIST_DEFAULT_SORT_BY,
+  CASE_LIST_DEFAULT_SORT_ORDER,
   CASE_LIST_PAGE_SIZE_OPTIONS,
   CASE_LIST_SORT_BY_OPTIONS,
   CASE_LIST_SORT_ORDER_OPTIONS,
@@ -19,6 +21,15 @@ import {
   parseCaseListUrlState,
   type CaseListFilterState,
 } from "@/lib/cases/list-url-state";
+import {
+  createCaseListView,
+  listCaseListViews,
+} from "@/lib/cases/saved-views-api";
+import type {
+  CaseListViewFilters,
+  CaseListViewPageSize,
+  CaseListViewRead,
+} from "@/lib/cases/saved-views-types";
 import type {
   CaseListFilters,
   CaseListSortBy,
@@ -90,6 +101,42 @@ function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
     filters.assigned_to_user_id = state.assigned_to_user_id;
   }
   return filters;
+}
+
+function filterStateToSavedViewFilters(
+  state: CaseListFilterState,
+): CaseListViewFilters {
+  const filters: CaseListViewFilters = {};
+  if (state.status) {
+    filters.status = state.status;
+  }
+  if (state.priority) {
+    filters.priority = state.priority;
+  }
+  if (state.source) {
+    filters.source = state.source;
+  }
+  if (state.sla_status) {
+    filters.sla_status = state.sla_status;
+  }
+  if (state.customer_id) {
+    filters.customer_id = state.customer_id;
+  }
+  if (state.assigned_to_user_id) {
+    filters.assigned_to_user_id = state.assigned_to_user_id;
+  }
+  return filters;
+}
+
+function savedViewFiltersToState(filters: CaseListViewFilters): CaseListFilterState {
+  return {
+    status: filters.status ?? "",
+    priority: filters.priority ?? "",
+    source: filters.source ?? "",
+    sla_status: filters.sla_status ?? "",
+    customer_id: filters.customer_id ?? "",
+    assigned_to_user_id: filters.assigned_to_user_id ?? "",
+  };
 }
 
 function formatMemberLabel(membership: WorkspaceMembershipRead): string {
@@ -165,6 +212,17 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [assigneesLoadError, setAssigneesLoadError] = useState<string | null>(
     null,
   );
+  const [savedViews, setSavedViews] = useState<CaseListViewRead[]>([]);
+  const [isSavedViewsLoading, setIsSavedViewsLoading] = useState(true);
+  const [savedViewsLoadError, setSavedViewsLoadError] = useState<string | null>(
+    null,
+  );
+  const [selectedSavedViewId, setSelectedSavedViewId] = useState("");
+  const [saveViewName, setSaveViewName] = useState("");
+  const [saveViewDescription, setSaveViewDescription] = useState("");
+  const [isSavingView, setIsSavingView] = useState(false);
+  const [saveViewError, setSaveViewError] = useState<string | null>(null);
+  const [saveViewSuccess, setSaveViewSuccess] = useState<string | null>(null);
 
   const replaceListUrl = useCallback(
     (next: {
@@ -187,6 +245,41 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     },
     [pathname, router, searchParams],
   );
+
+  const loadSavedViews = useCallback(async () => {
+    const token = getAccessToken();
+    if (!token) {
+      setIsSavedViewsLoading(false);
+      return;
+    }
+
+    setIsSavedViewsLoading(true);
+    setSavedViewsLoadError(null);
+
+    try {
+      const items = await listCaseListViews(workspaceId, token);
+      setSavedViews(items);
+    } catch (error) {
+      setSavedViews([]);
+      if (error instanceof ApiError) {
+        if (error.status === 401 || error.status === 403) {
+          setSavedViewsLoadError(tCommon("accessDenied"));
+        } else if (error.status === 404) {
+          setSavedViewsLoadError(tCommon("notFound"));
+        } else {
+          setSavedViewsLoadError(t("savedViewsLoadError"));
+        }
+      } else {
+        setSavedViewsLoadError(t("savedViewsLoadError"));
+      }
+    } finally {
+      setIsSavedViewsLoading(false);
+    }
+  }, [workspaceId, t, tCommon]);
+
+  useEffect(() => {
+    void loadSavedViews();
+  }, [loadSavedViews]);
 
   useEffect(() => {
     let isMounted = true;
@@ -417,6 +510,78 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     });
   }
 
+  function handleApplySavedView() {
+    const view = savedViews.find((item) => item.id === selectedSavedViewId);
+    if (!view) {
+      return;
+    }
+
+    replaceListUrl({
+      filters: savedViewFiltersToState(view.filters),
+      pageSize: view.page_size ?? pageSize,
+      offset: 0,
+      sortBy: view.sort_by ?? CASE_LIST_DEFAULT_SORT_BY,
+      sortOrder: view.sort_order ?? CASE_LIST_DEFAULT_SORT_ORDER,
+    });
+  }
+
+  async function handleSaveView() {
+    const trimmedName = saveViewName.trim();
+    if (!trimmedName) {
+      setSaveViewError(t("viewNameRequired"));
+      setSaveViewSuccess(null);
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setSaveViewError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsSavingView(true);
+    setSaveViewError(null);
+    setSaveViewSuccess(null);
+
+    const trimmedDescription = saveViewDescription.trim();
+
+    try {
+      const created = await createCaseListView(
+        workspaceId,
+        {
+          name: trimmedName,
+          description: trimmedDescription || null,
+          filters: filterStateToSavedViewFilters(filters),
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          page_size: pageSize as CaseListViewPageSize,
+        },
+        token,
+      );
+      await loadSavedViews();
+      setSelectedSavedViewId(created.id);
+      setSaveViewName("");
+      setSaveViewDescription("");
+      setSaveViewSuccess(t("savedViewCreated"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 422 && typeof error.message === "string") {
+          setSaveViewError(error.message);
+        } else if (error.status === 401 || error.status === 403) {
+          setSaveViewError(tCommon("accessDenied"));
+        } else if (error.status === 404) {
+          setSaveViewError(tCommon("notFound"));
+        } else {
+          setSaveViewError(t("saveViewFailed"));
+        }
+      } else {
+        setSaveViewError(t("saveViewFailed"));
+      }
+    } finally {
+      setIsSavingView(false);
+    }
+  }
+
   const canGoPrevious = offset > 0;
   const canGoNext = offset + pageSize < listTotal;
   const pageNumber =
@@ -580,6 +745,89 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
               onClick={handleClearFilters}
             >
               {t("clearFilters")}
+            </button>
+          </div>
+
+          <div
+            className="workspace-cases-saved-views"
+            aria-label={t("savedViewsLabel")}
+          >
+            <h2>{t("savedViewsLabel")}</h2>
+            {savedViewsLoadError ? (
+              <p
+                className="workspace-error workspace-cases-filter-error"
+                role="alert"
+              >
+                {savedViewsLoadError}
+              </p>
+            ) : null}
+            {isSavedViewsLoading ? (
+              <p className="workspace-status">{t("loading")}</p>
+            ) : savedViews.length === 0 ? (
+              <p className="workspace-status">{t("noSavedViewsYet")}</p>
+            ) : (
+              <label className="auth-field">
+                <span>{t("selectSavedView")}</span>
+                <select
+                  name="savedViewSelect"
+                  value={selectedSavedViewId}
+                  disabled={isLoading}
+                  onChange={(event) => setSelectedSavedViewId(event.target.value)}
+                >
+                  <option value="">{t("selectSavedView")}</option>
+                  {savedViews.map((view) => (
+                    <option key={view.id} value={view.id}>
+                      {view.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={
+                isLoading || !selectedSavedViewId || isSavedViewsLoading
+              }
+              onClick={handleApplySavedView}
+            >
+              {t("applyView")}
+            </button>
+
+            <h3>{t("saveCurrentView")}</h3>
+            <label className="auth-field">
+              <span>{t("viewNameLabel")}</span>
+              <input
+                type="text"
+                name="saveViewName"
+                value={saveViewName}
+                disabled={isSavingView}
+                onChange={(event) => setSaveViewName(event.target.value)}
+              />
+            </label>
+            <label className="auth-field">
+              <span>{t("viewDescriptionLabel")}</span>
+              <input
+                type="text"
+                name="saveViewDescription"
+                value={saveViewDescription}
+                disabled={isSavingView}
+                onChange={(event) => setSaveViewDescription(event.target.value)}
+              />
+            </label>
+            {saveViewError ? (
+              <p className="workspace-error" role="alert">{saveViewError}</p>
+            ) : null}
+            {saveViewSuccess ? (
+              <p className="workspace-status">{saveViewSuccess}</p>
+            ) : null}
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={isSavingView || isLoading}
+              onClick={() => void handleSaveView()}
+            >
+              {isSavingView ? t("savingView") : t("saveView")}
             </button>
           </div>
 
