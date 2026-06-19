@@ -266,6 +266,13 @@
         "customerLabel": "Customer",
         "createdAtLabel": "Created",
         "noCustomer": "—",
+        "slaStatusLabel": "SLA status",
+        "notSet": "Not set",
+        "slaStatusOptions": {
+          "on_track": "On track",
+          "at_risk": "At risk",
+          "breached": "Breached"
+        },
         "create": {
           "title": "New case",
           "description": "Create a Universal Case in this workspace.",
@@ -329,6 +336,18 @@
           "customerLinkNoChanges": "No customer link changes to save.",
           "customerLinkSaving": "Saving customer link...",
           "customerLinkSave": "Save customer link",
+          "slaTitle": "SLA",
+          "slaStatusLabel": "SLA status",
+          "firstResponseDueLabel": "First response due",
+          "firstResponseAtLabel": "First response at",
+          "resolutionDueLabel": "Resolution due",
+          "resolvedAtLabel": "Resolved at",
+          "notSet": "Not set",
+          "slaStatusOptions": {
+            "on_track": "On track",
+            "at_risk": "At risk",
+            "breached": "Breached"
+          },
           "externalReferenceLabel": "External reference",
           "createdByLabel": "Created by",
           "assignedToLabel": "Assigned to",

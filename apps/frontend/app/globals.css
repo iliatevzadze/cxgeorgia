@@ -356,6 +356,39 @@ a {
   margin-top: 1.5rem;
 }
 
+.workspace-case-sla-panel {
+  margin-top: 1.5rem;
+}
+
+.workspace-case-sla-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.workspace-case-sla-badge--on-track {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.workspace-case-sla-badge--at-risk {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.workspace-case-sla-badge--breached {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.workspace-case-sla-badge--not-set {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
 .workspace-case-comments-panel {
   margin-top: 1.5rem;
 }

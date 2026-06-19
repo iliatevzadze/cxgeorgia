@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 56: Case–Customer frontend linking)
+**Phase 1 — SaaS Base** (Step 57: Read-only SLA frontend visibility)
 
-Users can link and unlink customers from cases in the UI when creating or viewing a case.
+Users can view SLA status and timestamps on case list and case detail. SLA calculation remains backend-owned.
 
-Phase 1 / Step 57 has **not started**.
+Phase 1 / Step 58 has **not started**.
 
 ## Confirmed stack
 
@@ -335,7 +335,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Customer Records frontend UI (Phase 1 / Step 54)
 - [x] Case–Customer backend linking (Phase 1 / Step 55)
 - [x] Case–Customer frontend linking (Phase 1 / Step 56)
-- [ ] Phase 1 / Step 57 (not started)
+- [x] Read-only SLA frontend visibility (Phase 1 / Step 57)
+- [ ] Phase 1 / Step 58 (not started)
 
 ## License
 

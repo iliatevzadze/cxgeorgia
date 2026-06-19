@@ -10,6 +10,8 @@ export type CaseSource =
   | "web"
   | "import";
 
+export type CaseSlaStatus = "on_track" | "at_risk" | "breached";
+
 export type UniversalCaseRead = {
   id: string;
   workspace_id: string;
@@ -24,6 +26,11 @@ export type UniversalCaseRead = {
   external_reference: string | null;
   created_by_user_id: string | null;
   assigned_to_user_id: string | null;
+  first_response_due_at: string | null;
+  first_response_at: string | null;
+  resolution_due_at: string | null;
+  resolved_at: string | null;
+  sla_status: CaseSlaStatus | null;
   created_at: string;
   updated_at: string;
 };

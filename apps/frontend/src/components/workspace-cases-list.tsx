@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { WorkspaceCaseCreateForm } from "@/components/workspace-case-create-form";
 import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
-import type { UniversalCaseRead } from "@/lib/cases/types";
+import type { CaseSlaStatus, UniversalCaseRead } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 
@@ -31,6 +31,23 @@ function formatCreatedAt(value: string, locale: string): string {
 
 function formatCustomer(item: UniversalCaseRead, fallback: string): string {
   return item.customer_name ?? item.customer_email ?? fallback;
+}
+
+function slaBadgeClassName(slaStatus: CaseSlaStatus | null): string {
+  if (!slaStatus) {
+    return "workspace-case-sla-badge workspace-case-sla-badge--not-set";
+  }
+  return `workspace-case-sla-badge workspace-case-sla-badge--${slaStatus.replace(/_/g, "-")}`;
+}
+
+function formatSlaStatusLabel(
+  slaStatus: CaseSlaStatus | null,
+  translate: (key: string) => string,
+): string {
+  if (!slaStatus) {
+    return translate("notSet");
+  }
+  return translate(`slaStatusOptions.${slaStatus}`);
 }
 
 export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
@@ -117,6 +134,14 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
                     </Link>
                   </h2>
                   <dl className="account-details">
+                    <div>
+                      <dt>{t("slaStatusLabel")}</dt>
+                      <dd>
+                        <span className={slaBadgeClassName(item.sla_status)}>
+                          {formatSlaStatusLabel(item.sla_status, t)}
+                        </span>
+                      </dd>
+                    </div>
                     <div>
                       <dt>{t("statusLabel")}</dt>
                       <dd>{item.status}</dd>

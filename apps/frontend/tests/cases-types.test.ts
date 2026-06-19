@@ -16,6 +16,11 @@ test("case types export UniversalCaseRead", () => {
   const readEnd = typesSource.indexOf("export type UniversalCaseCreateRequest");
   const readBlock = typesSource.slice(readStart, readEnd);
   assert.match(readBlock, /customer_id: string \| null/);
+  assert.match(readBlock, /first_response_due_at: string \| null/);
+  assert.match(readBlock, /first_response_at: string \| null/);
+  assert.match(readBlock, /resolution_due_at: string \| null/);
+  assert.match(readBlock, /resolved_at: string \| null/);
+  assert.match(readBlock, /sla_status: CaseSlaStatus \| null/);
 });
 
 test("case types export UniversalCaseCreateRequest", () => {
@@ -151,4 +156,9 @@ test("case status, priority and source unions match backend enums", () => {
   assert.match(typesSource, /export type CaseSource/);
   assert.match(typesSource, /"manual"/);
   assert.match(typesSource, /"import"/);
+});
+
+test("case SLA status union matches backend enum", () => {
+  assert.match(typesSource, /export type CaseSlaStatus/);
+  assert.match(typesSource, /"on_track" \| "at_risk" \| "breached"/);
 });

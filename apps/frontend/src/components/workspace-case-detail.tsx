@@ -31,6 +31,7 @@ import type {
   CaseCommentUpdateRequest,
   CaseTag,
   CasePriority,
+  CaseSlaStatus,
   CaseSource,
   CaseStatus,
   UniversalCaseRead,
@@ -73,6 +74,34 @@ function formatDateTime(value: string, locale: string): string {
 
 function formatOptional(value: string | null, fallback: string): string {
   return value ?? fallback;
+}
+
+function slaBadgeClassName(slaStatus: CaseSlaStatus | null): string {
+  if (!slaStatus) {
+    return "workspace-case-sla-badge workspace-case-sla-badge--not-set";
+  }
+  return `workspace-case-sla-badge workspace-case-sla-badge--${slaStatus.replace(/_/g, "-")}`;
+}
+
+function formatSlaStatusLabel(
+  slaStatus: CaseSlaStatus | null,
+  translate: (key: string) => string,
+): string {
+  if (!slaStatus) {
+    return translate("notSet");
+  }
+  return translate(`slaStatusOptions.${slaStatus}`);
+}
+
+function formatOptionalDateTime(
+  value: string | null,
+  locale: string,
+  notSetLabel: string,
+): string {
+  if (!value) {
+    return notSetLabel;
+  }
+  return formatDateTime(value, locale);
 }
 
 function normalizeOptionalText(value: string): string | null {
@@ -1440,6 +1469,60 @@ export function WorkspaceCaseDetail({
           <dd>{formatDateTime(caseItem.updated_at, locale)}</dd>
         </div>
       </dl>
+
+      <section className="workspace-panel workspace-case-sla-panel">
+        <h2>{t("slaTitle")}</h2>
+        <dl className="account-details">
+          <div>
+            <dt>{t("slaStatusLabel")}</dt>
+            <dd>
+              <span className={slaBadgeClassName(caseItem.sla_status)}>
+                {formatSlaStatusLabel(caseItem.sla_status, t)}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>{t("firstResponseDueLabel")}</dt>
+            <dd>
+              {formatOptionalDateTime(
+                caseItem.first_response_due_at,
+                locale,
+                t("notSet"),
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{t("firstResponseAtLabel")}</dt>
+            <dd>
+              {formatOptionalDateTime(
+                caseItem.first_response_at,
+                locale,
+                t("notSet"),
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{t("resolutionDueLabel")}</dt>
+            <dd>
+              {formatOptionalDateTime(
+                caseItem.resolution_due_at,
+                locale,
+                t("notSet"),
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{t("resolvedAtLabel")}</dt>
+            <dd>
+              {formatOptionalDateTime(
+                caseItem.resolved_at,
+                locale,
+                t("notSet"),
+              )}
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       <form
         className="workspace-form workspace-case-update-form"

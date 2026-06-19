@@ -266,6 +266,13 @@
         "customerLabel": "მომხმარებელი",
         "createdAtLabel": "შექმნის თარიღი",
         "noCustomer": "—",
+        "slaStatusLabel": "SLA სტატუსი",
+        "notSet": "არ არის დაყენებული",
+        "slaStatusOptions": {
+          "on_track": "გრაფიკზე",
+          "at_risk": "რისკში",
+          "breached": "დარღვეული"
+        },
         "create": {
           "title": "ახალი ქეისი",
           "description": "შექმენით Universal Case ამ workspace-ში.",
@@ -329,6 +336,18 @@
           "customerLinkNoChanges": "მომხმარებლის კავშირში ცვლილებები არ არის.",
           "customerLinkSaving": "მომხმარებლის კავშირი ინახება...",
           "customerLinkSave": "მომხმარებლის კავშირის შენახვა",
+          "slaTitle": "SLA",
+          "slaStatusLabel": "SLA სტატუსი",
+          "firstResponseDueLabel": "პირველი პასუხის ვადა",
+          "firstResponseAtLabel": "პირველი პასუხის დრო",
+          "resolutionDueLabel": "გადაწყვეტის ვადა",
+          "resolvedAtLabel": "გადაწყვეტის დრო",
+          "notSet": "არ არის დაყენებული",
+          "slaStatusOptions": {
+            "on_track": "გრაფიკზე",
+            "at_risk": "რისკში",
+            "breached": "დარღვეული"
+          },
           "externalReferenceLabel": "გარე მითითება",
           "createdByLabel": "შემქმნელი",
           "assignedToLabel": "მიმაგრებული",
