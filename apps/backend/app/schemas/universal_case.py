@@ -123,6 +123,15 @@ class UniversalCaseRead(BaseModel):
     updated_at: datetime
 
 
+class UniversalCaseListResponse(BaseModel):
+    """Paginated universal case list response."""
+
+    items: list[UniversalCaseRead]
+    total: int = Field(ge=0)
+    limit: int = Field(ge=1)
+    offset: int = Field(ge=0)
+
+
 class UniversalCaseDeleteRead(BaseModel):
     """Delete universal case response."""
 

@@ -13,7 +13,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.case_tags import get_workspace_case_tag_or_404
@@ -48,6 +48,7 @@ from app.schemas.case_tag import CaseTagDetachRead, CaseTagRead
 from app.schemas.universal_case import (
     UniversalCaseCreate,
     UniversalCaseDeleteRead,
+    UniversalCaseListResponse,
     UniversalCaseRead,
     UniversalCaseUpdate,
 )
@@ -91,6 +92,9 @@ router = APIRouter(
     tags=["universal-cases"],
 )
 
+CASE_LIST_DEFAULT_LIMIT = 50
+CASE_LIST_MAX_LIMIT = 100
+
 
 def _envelope(data: dict | list) -> dict:
     return {"data": data, "meta": {}, "error": None}
@@ -129,6 +133,32 @@ async def _require_workspace_customer(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=CUSTOMER_NOT_IN_WORKSPACE_MESSAGE,
         )
+
+
+def _case_list_filter_conditions(
+    workspace_id: UUID,
+    *,
+    status: CaseStatus | None = None,
+    priority: CasePriority | None = None,
+    source: CaseSource | None = None,
+    assigned_to_user_id: UUID | None = None,
+    customer_id: UUID | None = None,
+    sla_status: SlaStatus | None = None,
+) -> list:
+    conditions = [UniversalCase.workspace_id == workspace_id]
+    if status is not None:
+        conditions.append(UniversalCase.status == status)
+    if priority is not None:
+        conditions.append(UniversalCase.priority == priority)
+    if source is not None:
+        conditions.append(UniversalCase.source == source)
+    if assigned_to_user_id is not None:
+        conditions.append(UniversalCase.assigned_to_user_id == assigned_to_user_id)
+    if customer_id is not None:
+        conditions.append(UniversalCase.customer_id == customer_id)
+    if sla_status is not None:
+        conditions.append(UniversalCase.sla_status == sla_status)
+    return conditions
 
 
 async def _get_workspace_case_or_404(
@@ -260,6 +290,8 @@ async def list_cases(
     assigned_to_user_id: UUID | None = Query(default=None),
     customer_id: UUID | None = Query(default=None),
     sla_status: SlaStatus | None = Query(default=None),
+    limit: int = Query(default=CASE_LIST_DEFAULT_LIMIT, ge=1, le=CASE_LIST_MAX_LIMIT),
+    offset: int = Query(default=0, ge=0),
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
@@ -273,25 +305,36 @@ async def list_cases(
             workspace_id,
             assigned_to_user_id,
         )
-    stmt = select(UniversalCase).where(UniversalCase.workspace_id == workspace_id)
-    if status is not None:
-        stmt = stmt.where(UniversalCase.status == status)
-    if priority is not None:
-        stmt = stmt.where(UniversalCase.priority == priority)
-    if source is not None:
-        stmt = stmt.where(UniversalCase.source == source)
-    if assigned_to_user_id is not None:
-        stmt = stmt.where(UniversalCase.assigned_to_user_id == assigned_to_user_id)
-    if customer_id is not None:
-        stmt = stmt.where(UniversalCase.customer_id == customer_id)
-    if sla_status is not None:
-        stmt = stmt.where(UniversalCase.sla_status == sla_status)
-    result = await session.scalars(stmt.order_by(UniversalCase.created_at.desc()))
+    conditions = _case_list_filter_conditions(
+        workspace_id,
+        status=status,
+        priority=priority,
+        source=source,
+        assigned_to_user_id=assigned_to_user_id,
+        customer_id=customer_id,
+        sla_status=sla_status,
+    )
+    total = await session.scalar(
+        select(func.count()).select_from(UniversalCase).where(*conditions)
+    ) or 0
+    result = await session.scalars(
+        select(UniversalCase)
+        .where(*conditions)
+        .order_by(UniversalCase.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
     items = [
         UniversalCaseRead.model_validate(item).model_dump(mode="json")
         for item in result.all()
     ]
-    return _envelope(items)
+    payload = UniversalCaseListResponse(
+        items=items,
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+    return _envelope(payload.model_dump(mode="json"))
 
 
 @router.get("/{case_id}")

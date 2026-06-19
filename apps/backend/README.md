@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 60: Universal Case list backend filters)
+**Phase 1 — SaaS Base** (Step 64: Universal Cases list backend pagination)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional filters: `status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, and `sla_status`. Frontend case filter UI includes Assigned user filter from Step 63.
+`GET /api/v1/workspaces/{workspace_id}/cases` supports `limit` (default 50, max 100) and `offset` (default 0) pagination. Pagination combines with Step 60 filters. Response includes `items`, `total`, `limit`, and `offset`. Frontend pagination UI is not implemented yet.
 
-Phase 1 / Step 64 has **not started**.
+Phase 1 / Step 65 has **not started**.
 
 ## Auth API
 
@@ -34,7 +34,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/v1/workspaces/{workspace_id}/cases` | Create case (active members only) |
-| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first; optional filters: `status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, `sla_status` |
+| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first; optional filters (`status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, `sla_status`) and pagination (`limit`, `offset`); returns `items`, `total`, `limit`, `offset` |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source, customer metadata and assignment |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |

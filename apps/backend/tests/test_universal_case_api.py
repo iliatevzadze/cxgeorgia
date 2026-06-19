@@ -20,7 +20,14 @@ from app.models.enums import (
 from app.models.universal_case import UniversalCase
 from app.models.user import User
 from app.models.workspace_membership import WorkspaceMembership
-from tests.conftest import auth_headers, login_user, register_user, response_data
+from tests.conftest import (
+    auth_headers,
+    list_case_items,
+    list_cases_page,
+    login_user,
+    register_user,
+    response_data,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -278,7 +285,7 @@ async def test_list_cases_for_workspace_member(client: AsyncClient) -> None:
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == case_id
 
@@ -310,7 +317,7 @@ async def test_list_cases_excludes_other_workspace_cases(
         f"/api/v1/workspaces/{workspace_a}/cases",
         headers=headers,
     )
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["title"] == "Case in A"
     assert items[0]["workspace_id"] == workspace_a
@@ -343,7 +350,7 @@ async def test_list_cases_sorted_newest_first(
         f"/api/v1/workspaces/{workspace_id}/cases",
         headers=headers,
     )
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert [item["id"] for item in items] == [second_id, first_id]
 
 
@@ -395,7 +402,7 @@ async def test_list_cases_without_customer_id_returns_all_workspace_cases(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert {item["id"] for item in items} == {
         linked_a_id,
         linked_b_id,
@@ -427,7 +434,7 @@ async def test_list_cases_with_valid_customer_id_returns_only_linked_cases(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == linked_case_id
     assert items[0]["customer_id"] == customer_id
@@ -476,7 +483,7 @@ async def test_list_cases_with_customer_id_excludes_other_customer_cases(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == linked_a_id
 
@@ -509,7 +516,7 @@ async def test_list_cases_with_customer_id_excludes_unlinked_cases(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == linked_case_id
 
@@ -611,7 +618,7 @@ async def test_list_cases_filter_by_status(client: AsyncClient) -> None:
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == open_id
 
@@ -643,7 +650,7 @@ async def test_list_cases_filter_by_priority(client: AsyncClient) -> None:
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == high_id
 
@@ -675,7 +682,7 @@ async def test_list_cases_filter_by_source(client: AsyncClient) -> None:
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == email_id
 
@@ -702,7 +709,7 @@ async def test_list_cases_filter_by_assigned_to_user_id(client: AsyncClient) -> 
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == assigned_id
 
@@ -742,7 +749,7 @@ async def test_list_cases_filter_by_sla_status(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == str(at_risk_case.id)
 
@@ -789,7 +796,7 @@ async def test_list_cases_combine_status_and_priority_filters(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == match_id
 
@@ -840,7 +847,7 @@ async def test_list_cases_combine_customer_id_and_status_filters(
         headers=headers,
     )
     assert list_response.status_code == 200
-    items = response_data(list_response)
+    items = list_case_items(list_response)
     assert len(items) == 1
     assert items[0]["id"] == match_id
 
@@ -921,6 +928,280 @@ async def test_list_cases_with_filters_non_member_returns_404(
     response = await client.get(
         f"/api/v1/workspaces/{workspace_id}/cases",
         params={"priority": CasePriority.HIGH.value},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_list_cases_without_explicit_pagination_returns_default_metadata(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-default-page-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Default Page Workspace")
+    await _create_case(client, headers, workspace_id, title="Paged case")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert page["limit"] == 50
+    assert page["offset"] == 0
+    assert page["total"] == 1
+    assert len(page["items"]) == 1
+
+
+async def test_list_cases_limit_returns_only_requested_number(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-limit-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Limit Workspace")
+    for index in range(3):
+        await _create_case(
+            client,
+            headers,
+            workspace_id,
+            title=f"Limit case {index}",
+        )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 2},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert len(page["items"]) == 2
+    assert page["total"] == 3
+    assert page["limit"] == 2
+    assert page["offset"] == 0
+
+
+async def test_list_cases_offset_skips_earlier_cases(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-offset-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Offset Workspace")
+    first_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Offset first",
+    )
+    second_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Offset second",
+    )
+    first_case = await db_session.get(UniversalCase, UUID(first_id))
+    assert first_case is not None
+    first_case.created_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 1, "offset": 1},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert page["total"] == 2
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == first_id
+    assert second_id != first_id
+
+
+async def test_list_cases_limit_and_offset_preserve_newest_first_order(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-page-order-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Page Order Workspace")
+    older_id = await _create_case(client, headers, workspace_id, title="Older case")
+    newest_id = await _create_case(client, headers, workspace_id, title="Newer case")
+    older_case = await db_session.get(UniversalCase, UUID(older_id))
+    assert older_case is not None
+    older_case.created_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 1, "offset": 0},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == newest_id
+
+
+async def test_list_cases_excessive_limit_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-max-limit-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Max Limit Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 101},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_negative_offset_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-negative-offset-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Negative Offset Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"offset": -1},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_zero_limit_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-zero-limit-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Zero Limit Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 0},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_negative_limit_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-negative-limit-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Negative Limit Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": -1},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_pagination_combines_with_status_filter(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-page-status-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Page Status Workspace")
+    open_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Open for page",
+        status=CaseStatus.OPEN.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Pending for page",
+        status=CaseStatus.PENDING.value,
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"status": CaseStatus.OPEN.value, "limit": 1},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert page["total"] == 1
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == open_id
+
+
+async def test_list_cases_pagination_combines_with_customer_id_filter(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-page-customer-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Page Customer Workspace")
+    customer_id = await _create_customer(client, headers, workspace_id)
+    linked_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked for page",
+        customer_id=customer_id,
+    )
+    await _create_case(client, headers, workspace_id, title="Unlinked for page")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": customer_id, "limit": 1},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert page["total"] == 1
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == linked_id
+
+
+async def test_list_cases_with_pagination_unauthenticated_returns_401(
+    client: AsyncClient,
+) -> None:
+    response = await client.get(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases",
+        params={"limit": 10, "offset": 0},
+    )
+    assert response.status_code == 401
+
+
+async def test_list_cases_with_pagination_non_member_returns_404(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-owner-list-page-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Private Page List")
+
+    other_email = f"case-nonmember-list-page-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"limit": 10, "offset": 0},
         headers=other_headers,
     )
     assert response.status_code == 404
@@ -1998,7 +2279,7 @@ async def test_delete_case_list_excludes_deleted_case(client: AsyncClient) -> No
         headers=headers,
     )
     assert response.status_code == 200
-    items = response_data(response)
+    items = list_case_items(response)
     ids = {item["id"] for item in items}
     assert case_id not in ids
     assert other_case_id in ids

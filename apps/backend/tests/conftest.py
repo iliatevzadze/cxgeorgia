@@ -55,6 +55,21 @@ def response_data(response) -> dict:
     return response.json()["data"]
 
 
+def list_cases_page(response) -> dict:
+    """Return paginated Universal Cases list payload from the API envelope."""
+    data = response_data(response)
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert "total" in data
+    assert "limit" in data
+    assert "offset" in data
+    return data
+
+
+def list_case_items(response) -> list:
+    return list_cases_page(response)["items"]
+
+
 async def register_user(
     client: AsyncClient,
     *,
