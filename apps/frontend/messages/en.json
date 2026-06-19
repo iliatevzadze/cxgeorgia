@@ -288,6 +288,7 @@
         "allPriorities": "All priorities",
         "allSources": "All sources",
         "allSlaStatuses": "All SLA statuses",
+        "allCustomers": "All customers",
         "clearFilters": "Clear filters",
         "create": {
           "title": "New case",

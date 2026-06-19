@@ -1097,6 +1097,11 @@ a {
   margin-bottom: 1rem;
 }
 
+.workspace-cases-filter-error {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
 .workspace-customers-page {
   display: flex;
   flex-direction: column;

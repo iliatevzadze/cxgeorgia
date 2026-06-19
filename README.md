@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 61: Universal Case list frontend filters)
+**Phase 1 — SaaS Base** (Step 62: Case list Customer filter)
 
-The Cases list page includes filter controls for status, priority, source, and SLA status. Filters use backend Step 60 query parameters.
+The Cases list page includes a Customer filter. It uses the backend Step 60 `customer_id` query parameter.
 
-Phase 1 / Step 62 has **not started**.
+Phase 1 / Step 63 has **not started**.
 
 ## Confirmed stack
 
@@ -340,7 +340,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Customer case-history frontend visibility (Phase 1 / Step 59)
 - [x] Universal Case list backend filters (Phase 1 / Step 60)
 - [x] Universal Case list frontend filters (Phase 1 / Step 61)
-- [ ] Phase 1 / Step 62 (not started)
+- [x] Case list Customer filter (Phase 1 / Step 62)
+- [ ] Phase 1 / Step 63 (not started)
 
 ## License
 

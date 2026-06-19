@@ -18,6 +18,8 @@ import type {
   UniversalCaseRead,
 } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { listCustomers } from "@/lib/customers/api";
+import type { Customer } from "@/lib/customers/types";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCasesListProps = {
@@ -29,6 +31,7 @@ type CaseListFilterState = {
   priority: CasePriority | "";
   source: CaseSource | "";
   sla_status: CaseSlaStatus | "";
+  customer_id: string;
 };
 
 const EMPTY_FILTERS: CaseListFilterState = {
@@ -36,6 +39,7 @@ const EMPTY_FILTERS: CaseListFilterState = {
   priority: "",
   source: "",
   sla_status: "",
+  customer_id: "",
 };
 
 const STATUS_OPTIONS: CaseStatus[] = [
@@ -81,7 +85,17 @@ function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
   if (state.sla_status) {
     filters.sla_status = state.sla_status;
   }
+  if (state.customer_id) {
+    filters.customer_id = state.customer_id;
+  }
   return filters;
+}
+
+function formatCustomerOptionLabel(customer: Customer): string {
+  if (customer.email) {
+    return `${customer.display_name} (${customer.email})`;
+  }
+  return customer.display_name;
 }
 
 function formatCreatedAt(value: string, locale: string): string {
@@ -127,6 +141,65 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [filters, setFilters] = useState<CaseListFilterState>(EMPTY_FILTERS);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isCustomersLoading, setIsCustomersLoading] = useState(true);
+  const [customersLoadError, setCustomersLoadError] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCustomers() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+        return;
+      }
+
+      setIsCustomersLoading(true);
+      setCustomersLoadError(null);
+
+      try {
+        const items = await listCustomers(workspaceId, token, {
+          status: "active",
+        });
+        if (isMounted) {
+          setCustomers(items);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setCustomers([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setCustomersLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setCustomersLoadError(tCommon("notFound"));
+          } else {
+            setCustomersLoadError(t("create.customersLoadError"));
+          }
+        } else {
+          setCustomersLoadError(t("create.customersLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+      }
+    }
+
+    void loadCustomers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, t, tCommon]);
 
   const loadCases = useCallback(async () => {
     const token = getAccessToken();
@@ -281,6 +354,33 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="auth-field">
+              <span>{t("customerLabel")}</span>
+              {customersLoadError ? (
+                <p className="workspace-error workspace-cases-filter-error" role="alert">
+                  {customersLoadError}
+                </p>
+              ) : null}
+              {isCustomersLoading ? (
+                <p className="workspace-status">{t("create.customersLoading")}</p>
+              ) : (
+                <select
+                  name="customerFilter"
+                  value={filters.customer_id}
+                  disabled={isLoading || Boolean(customersLoadError)}
+                  onChange={(event) =>
+                    handleFilterChange("customer_id", event.target.value)
+                  }
+                >
+                  <option value="">{t("allCustomers")}</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {formatCustomerOptionLabel(customer)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </label>
             <button
               type="button"

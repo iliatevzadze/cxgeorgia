@@ -172,6 +172,7 @@ test("required workspace keys exist in both locales", () => {
     "workspaces.app.cases.allPriorities",
     "workspaces.app.cases.allSources",
     "workspaces.app.cases.allSlaStatuses",
+    "workspaces.app.cases.allCustomers",
     "workspaces.app.cases.clearFilters",
     "workspaces.app.cases.create.title",
     "workspaces.app.cases.create.description",
