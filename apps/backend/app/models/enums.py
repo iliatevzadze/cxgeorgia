@@ -69,3 +69,8 @@ class CaseActivityType(StrEnum):
     COMMENT_DELETED = "comment_deleted"
     TAG_ATTACHED = "tag_attached"
     TAG_DETACHED = "tag_detached"
+
+
+class CustomerStatus(StrEnum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"

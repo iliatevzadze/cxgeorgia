@@ -1,4 +1,4 @@
-"""Tests for case QA Alembic migration metadata."""
+"""Tests for customer Alembic migration metadata."""
 
 from pathlib import Path
 
@@ -17,7 +17,7 @@ def test_alembic_head_is_0013() -> None:
     assert _alembic_script().get_current_head() == "0013"
 
 
-def test_0012_migration_revises_0011() -> None:
-    revision = _alembic_script().get_revision("0012")
+def test_0013_migration_revises_0012() -> None:
+    revision = _alembic_script().get_revision("0013")
     assert revision is not None
-    assert revision.down_revision == "0011"
+    assert revision.down_revision == "0012"

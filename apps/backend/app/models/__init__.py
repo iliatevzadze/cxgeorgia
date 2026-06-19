@@ -8,11 +8,13 @@ from app.models.case_comment import CaseComment
 from app.models.case_qa_criteria_score import CaseQaCriteriaScore
 from app.models.case_qa_review import CaseQaReview
 from app.models.case_tag import CaseTag, UniversalCaseTag
+from app.models.customer import Customer
 from app.models.enums import (
     CaseActivityType,
     CasePriority,
     CaseSource,
     CaseStatus,
+    CustomerStatus,
     QaReviewStatus,
     UserStatus,
     WorkspaceMemberRole,
@@ -37,6 +39,8 @@ __all__ = [
     "CasePriority",
     "CaseSource",
     "CaseStatus",
+    "Customer",
+    "CustomerStatus",
     "QaReviewStatus",
     "UniversalCase",
     "UniversalCaseTag",

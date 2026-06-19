@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 50: Agent Workforce backend API)
+**Phase 1 — SaaS Base** (Step 53: Customer Records backend foundation)
 
-Agents can clock in/out and workforce metrics can be listed through the Step 44 service layer via new API routes.
+Workspace-scoped customer records can be managed through the backend API. Customer frontend UI is not implemented yet.
 
-Phase 1 / Step 53 has **not started**.
+Phase 1 / Step 54 has **not started**.
 
 ## Auth API
 
@@ -85,18 +85,28 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | GET | `/api/v1/workspaces/{workspace_id}/agent-workforce/active-shifts` | List active shifts in workspace (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/agent-workforce/case-metrics` | List agent case metrics with optional `user_id` / `case_id` filters (active members only) |
 
+## Customer Records API (Phase 1 / Step 53)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/workspaces/{workspace_id}/customers` | List customers with optional `search` and `status` filters (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/customers` | Create customer (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/customers/{customer_id}` | Get customer by id (active members only) |
+| PATCH | `/api/v1/workspaces/{workspace_id}/customers/{customer_id}` | Update customer, including archive via `status: archived` (active members only) |
+| DELETE | `/api/v1/workspaces/{workspace_id}/customers/{customer_id}` | Hard-delete customer (active members only) |
+
 All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
 File storage is configured via `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` and `STORAGE_BUCKET_DEFAULT` (legacy `MINIO_*` env vars are also accepted).
 
-Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`, `case_attachments`, `agent_shifts`, `agent_case_metrics`, `case_qa_reviews`, `case_qa_criteria_scores`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`, `CaseAttachment`, `AgentShift`, `AgentCaseMetric`, `CaseQaReview`, `CaseQaCriteriaScore`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. Universal Case SLA fields: `first_response_due_at`, `first_response_at`, `resolution_due_at`, `resolved_at`, `sla_status`. All case and activity rows include `workspace_id` for tenant isolation.
+Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`, `case_attachments`, `agent_shifts`, `agent_case_metrics`, `case_qa_reviews`, `case_qa_criteria_scores`, `customers`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`, `CaseAttachment`, `AgentShift`, `AgentCaseMetric`, `CaseQaReview`, `CaseQaCriteriaScore`, `Customer`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`, `customer_status`. Universal Case SLA fields: `first_response_due_at`, `first_response_at`, `resolution_due_at`, `resolved_at`, `sla_status`. All case and activity rows include `workspace_id` for tenant isolation.
 
 Case create, update, assignment changes, comment create/edit/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0012
+alembic upgrade head   # applies through 0013
 alembic current
 ```
 
