@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 72: Saved case views UI)
+**Phase 1 — SaaS Base** (Step 73: Saved case views edit/delete UI)
 
-Cases list includes saved views: load/apply views and save the current filter, sort and page-size setup.
+Cases list saved views support rename, description update and delete. Load/apply/save behavior from Step 72 remains. Default-view UI is not implemented yet.
 
-Phase 1 / Step 73 has **not started**.
+Phase 1 / Step 74 has **not started**.
 
 ## What exists now
 

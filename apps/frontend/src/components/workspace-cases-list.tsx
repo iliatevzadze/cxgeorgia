@@ -23,7 +23,9 @@ import {
 } from "@/lib/cases/list-url-state";
 import {
   createCaseListView,
+  deleteCaseListView,
   listCaseListViews,
+  updateCaseListView,
 } from "@/lib/cases/saved-views-api";
 import type {
   CaseListViewFilters,
@@ -223,6 +225,20 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [isSavingView, setIsSavingView] = useState(false);
   const [saveViewError, setSaveViewError] = useState<string | null>(null);
   const [saveViewSuccess, setSaveViewSuccess] = useState<string | null>(null);
+  const [isEditingView, setIsEditingView] = useState(false);
+  const [editViewName, setEditViewName] = useState("");
+  const [editViewDescription, setEditViewDescription] = useState("");
+  const [isUpdatingView, setIsUpdatingView] = useState(false);
+  const [updateViewError, setUpdateViewError] = useState<string | null>(null);
+  const [updateViewSuccess, setUpdateViewSuccess] = useState<string | null>(
+    null,
+  );
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  const [isDeletingView, setIsDeletingView] = useState(false);
+  const [deleteViewError, setDeleteViewError] = useState<string | null>(null);
+  const [deleteViewSuccess, setDeleteViewSuccess] = useState<string | null>(
+    null,
+  );
 
   const replaceListUrl = useCallback(
     (next: {
@@ -525,6 +541,152 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     });
   }
 
+  function handleSavedViewSelectChange(value: string) {
+    setSelectedSavedViewId(value);
+    setIsEditingView(false);
+    setIsDeleteConfirming(false);
+    setUpdateViewError(null);
+    setUpdateViewSuccess(null);
+    setDeleteViewError(null);
+    setDeleteViewSuccess(null);
+  }
+
+  function handleStartEditView() {
+    const view = savedViews.find((item) => item.id === selectedSavedViewId);
+    if (!view) {
+      return;
+    }
+
+    setEditViewName(view.name);
+    setEditViewDescription(view.description ?? "");
+    setIsEditingView(true);
+    setIsDeleteConfirming(false);
+    setUpdateViewError(null);
+    setUpdateViewSuccess(null);
+  }
+
+  function handleCancelEditView() {
+    setIsEditingView(false);
+    setUpdateViewError(null);
+    setUpdateViewSuccess(null);
+  }
+
+  async function handleUpdateView() {
+    const trimmedName = editViewName.trim();
+    if (!trimmedName) {
+      setUpdateViewError(t("viewNameRequired"));
+      setUpdateViewSuccess(null);
+      return;
+    }
+
+    if (!selectedSavedViewId) {
+      setUpdateViewError(t("noSavedViewSelected"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setUpdateViewError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsUpdatingView(true);
+    setUpdateViewError(null);
+    setUpdateViewSuccess(null);
+
+    const trimmedDescription = editViewDescription.trim();
+
+    try {
+      await updateCaseListView(
+        workspaceId,
+        selectedSavedViewId,
+        {
+          name: trimmedName,
+          description: trimmedDescription || null,
+        },
+        token,
+      );
+      await loadSavedViews();
+      setIsEditingView(false);
+      setUpdateViewSuccess(t("savedViewUpdated"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 422 && typeof error.message === "string") {
+          setUpdateViewError(error.message);
+        } else if (error.status === 401 || error.status === 403) {
+          setUpdateViewError(tCommon("accessDenied"));
+        } else if (error.status === 404) {
+          setUpdateViewError(tCommon("notFound"));
+        } else {
+          setUpdateViewError(t("updateViewFailed"));
+        }
+      } else {
+        setUpdateViewError(t("updateViewFailed"));
+      }
+    } finally {
+      setIsUpdatingView(false);
+    }
+  }
+
+  function handleStartDeleteView() {
+    if (!selectedSavedViewId) {
+      return;
+    }
+
+    setIsDeleteConfirming(true);
+    setIsEditingView(false);
+    setDeleteViewError(null);
+    setDeleteViewSuccess(null);
+  }
+
+  function handleCancelDeleteView() {
+    setIsDeleteConfirming(false);
+    setDeleteViewError(null);
+  }
+
+  async function handleConfirmDeleteView() {
+    if (!selectedSavedViewId) {
+      setDeleteViewError(t("noSavedViewSelected"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setDeleteViewError(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsDeletingView(true);
+    setDeleteViewError(null);
+    setDeleteViewSuccess(null);
+
+    const deletedViewId = selectedSavedViewId;
+
+    try {
+      await deleteCaseListView(workspaceId, deletedViewId, token);
+      await loadSavedViews();
+      setSelectedSavedViewId("");
+      setIsDeleteConfirming(false);
+      setDeleteViewSuccess(t("savedViewDeleted"));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 422 && typeof error.message === "string") {
+          setDeleteViewError(error.message);
+        } else if (error.status === 401 || error.status === 403) {
+          setDeleteViewError(tCommon("accessDenied"));
+        } else if (error.status === 404) {
+          setDeleteViewError(tCommon("notFound"));
+        } else {
+          setDeleteViewError(t("deleteViewFailed"));
+        }
+      } else {
+        setDeleteViewError(t("deleteViewFailed"));
+      }
+    } finally {
+      setIsDeletingView(false);
+    }
+  }
+
   async function handleSaveView() {
     const trimmedName = saveViewName.trim();
     if (!trimmedName) {
@@ -772,7 +934,9 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
                   name="savedViewSelect"
                   value={selectedSavedViewId}
                   disabled={isLoading}
-                  onChange={(event) => setSelectedSavedViewId(event.target.value)}
+                  onChange={(event) =>
+                    handleSavedViewSelectChange(event.target.value)
+                  }
                 >
                   <option value="">{t("selectSavedView")}</option>
                   {savedViews.map((view) => (
@@ -793,6 +957,116 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
             >
               {t("applyView")}
             </button>
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={
+                isLoading ||
+                !selectedSavedViewId ||
+                isSavedViewsLoading ||
+                isUpdatingView ||
+                isDeletingView
+              }
+              onClick={handleStartEditView}
+            >
+              {t("editSelectedView")}
+            </button>
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={
+                isLoading ||
+                !selectedSavedViewId ||
+                isSavedViewsLoading ||
+                isUpdatingView ||
+                isDeletingView
+              }
+              onClick={handleStartDeleteView}
+            >
+              {t("deleteSelectedView")}
+            </button>
+
+            {isEditingView ? (
+              <>
+                <h3>{t("editSelectedView")}</h3>
+                <label className="auth-field">
+                  <span>{t("viewNameLabel")}</span>
+                  <input
+                    type="text"
+                    name="editViewName"
+                    value={editViewName}
+                    disabled={isUpdatingView}
+                    onChange={(event) => setEditViewName(event.target.value)}
+                  />
+                </label>
+                <label className="auth-field">
+                  <span>{t("viewDescriptionLabel")}</span>
+                  <input
+                    type="text"
+                    name="editViewDescription"
+                    value={editViewDescription}
+                    disabled={isUpdatingView}
+                    onChange={(event) =>
+                      setEditViewDescription(event.target.value)
+                    }
+                  />
+                </label>
+                {updateViewError ? (
+                  <p className="workspace-error" role="alert">
+                    {updateViewError}
+                  </p>
+                ) : null}
+                {updateViewSuccess ? (
+                  <p className="workspace-status">{updateViewSuccess}</p>
+                ) : null}
+                <button
+                  type="button"
+                  className="auth-submit"
+                  disabled={isUpdatingView || isLoading}
+                  onClick={() => void handleUpdateView()}
+                >
+                  {isUpdatingView ? t("updatingView") : t("saveViewChanges")}
+                </button>
+                <button
+                  type="button"
+                  className="auth-submit"
+                  disabled={isUpdatingView}
+                  onClick={handleCancelEditView}
+                >
+                  {t("cancelEdit")}
+                </button>
+              </>
+            ) : null}
+
+            {isDeleteConfirming ? (
+              <>
+                <p className="workspace-status">{t("deleteConfirmationText")}</p>
+                {deleteViewError ? (
+                  <p className="workspace-error" role="alert">
+                    {deleteViewError}
+                  </p>
+                ) : null}
+                {deleteViewSuccess ? (
+                  <p className="workspace-status">{deleteViewSuccess}</p>
+                ) : null}
+                <button
+                  type="button"
+                  className="auth-submit"
+                  disabled={isDeletingView || isLoading}
+                  onClick={() => void handleConfirmDeleteView()}
+                >
+                  {isDeletingView ? t("deletingView") : t("confirmDelete")}
+                </button>
+                <button
+                  type="button"
+                  className="auth-submit"
+                  disabled={isDeletingView}
+                  onClick={handleCancelDeleteView}
+                >
+                  {t("cancelDelete")}
+                </button>
+              </>
+            ) : null}
 
             <h3>{t("saveCurrentView")}</h3>
             <label className="auth-field">

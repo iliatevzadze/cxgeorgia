@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 72: Saved case views UI)
+**Phase 1 — SaaS Base** (Step 73: Saved case views edit/delete UI)
 
-Users can load, apply and save workspace case list views from the Cases page. Edit/delete saved-view UI is not implemented yet.
+Users can rename, update description and delete saved case list views from the Cases page. Default-view UI is not implemented yet.
 
-Phase 1 / Step 73 has **not started**.
+Phase 1 / Step 74 has **not started**.
 
 ## Confirmed stack
 
@@ -351,7 +351,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Saved case list views backend (Phase 1 / Step 70)
 - [x] Saved case views frontend API (Phase 1 / Step 71)
 - [x] Saved case views UI (Phase 1 / Step 72)
-- [ ] Phase 1 / Step 73 (not started)
+- [x] Saved case views edit/delete UI (Phase 1 / Step 73)
+- [ ] Phase 1 / Step 74 (not started)
 
 ## License
 
