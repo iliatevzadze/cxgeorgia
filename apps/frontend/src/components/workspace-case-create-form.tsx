@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -8,6 +8,8 @@ import { ApiError } from "@/lib/api/errors";
 import { createCase } from "@/lib/cases/api";
 import type { CasePriority, CaseSource } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { listCustomers } from "@/lib/customers/api";
+import type { Customer } from "@/lib/customers/types";
 
 const PRIORITY_OPTIONS: CasePriority[] = ["low", "normal", "high", "urgent"];
 const SOURCE_OPTIONS: CaseSource[] = [
@@ -29,11 +31,19 @@ function trimOptional(value: string): string | undefined {
   return trimmed || undefined;
 }
 
+function formatCustomerOptionLabel(customer: Customer): string {
+  if (customer.email) {
+    return `${customer.display_name} (${customer.email})`;
+  }
+  return customer.display_name;
+}
+
 const defaultFormState = {
   title: "",
   description: "",
   priority: "normal" as CasePriority,
   source: "manual" as CaseSource,
+  customerId: "",
   customerName: "",
   customerEmail: "",
   externalReference: "",
@@ -51,6 +61,65 @@ export function WorkspaceCaseCreateForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isCustomersLoading, setIsCustomersLoading] = useState(true);
+  const [customersLoadError, setCustomersLoadError] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCustomers() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+        return;
+      }
+
+      setIsCustomersLoading(true);
+      setCustomersLoadError(null);
+
+      try {
+        const items = await listCustomers(workspaceId, token, {
+          status: "active",
+        });
+        if (isMounted) {
+          setCustomers(items);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setCustomers([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setCustomersLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setCustomersLoadError(tCommon("notFound"));
+          } else {
+            setCustomersLoadError(t("customersLoadError"));
+          }
+        } else {
+          setCustomersLoadError(t("customersLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+      }
+    }
+
+    void loadCustomers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, t, tCommon]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,6 +142,7 @@ export function WorkspaceCaseCreateForm({
     setIsSubmitting(true);
 
     try {
+      const customerId = form.customerId || null;
       await createCase(
         workspaceId,
         {
@@ -82,6 +152,7 @@ export function WorkspaceCaseCreateForm({
           source: form.source,
           customer_name: trimOptional(form.customerName),
           customer_email: trimOptional(form.customerEmail),
+          ...(customerId ? { customer_id: customerId } : {}),
           external_reference: trimOptional(form.externalReference),
         },
         token,
@@ -198,6 +269,37 @@ export function WorkspaceCaseCreateForm({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="auth-field">
+          <span>{t("selectCustomer")}</span>
+          {customersLoadError ? (
+            <p className="workspace-error" role="alert">
+              {customersLoadError}
+            </p>
+          ) : null}
+          {isCustomersLoading ? (
+            <p className="workspace-status">{t("customersLoading")}</p>
+          ) : (
+            <select
+              name="customerId"
+              value={form.customerId}
+              disabled={Boolean(customersLoadError)}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  customerId: event.target.value,
+                }))
+              }
+            >
+              <option value="">{t("noCustomer")}</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {formatCustomerOptionLabel(customer)}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
 
         <label className="auth-field">

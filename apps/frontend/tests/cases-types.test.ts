@@ -12,6 +12,10 @@ const typesSource = readFileSync(
 
 test("case types export UniversalCaseRead", () => {
   assert.match(typesSource, /export type UniversalCaseRead/);
+  const readStart = typesSource.indexOf("export type UniversalCaseRead");
+  const readEnd = typesSource.indexOf("export type UniversalCaseCreateRequest");
+  const readBlock = typesSource.slice(readStart, readEnd);
+  assert.match(readBlock, /customer_id: string \| null/);
 });
 
 test("case types export UniversalCaseCreateRequest", () => {
@@ -22,6 +26,7 @@ test("case types export UniversalCaseCreateRequest", () => {
   assert.match(typesSource, /source\?: CaseSource/);
   assert.match(typesSource, /customer_name\?: string/);
   assert.match(typesSource, /customer_email\?: string/);
+  assert.match(typesSource, /customer_id\?: string \| null/);
   assert.match(typesSource, /external_reference\?: string/);
 });
 
@@ -37,6 +42,7 @@ test("case types export UniversalCaseUpdateRequest with allowed optional fields"
   assert.match(updateBlock, /source\?: CaseSource/);
   assert.match(updateBlock, /customer_name\?: string \| null/);
   assert.match(updateBlock, /customer_email\?: string \| null/);
+  assert.match(updateBlock, /customer_id\?: string \| null/);
   assert.match(updateBlock, /external_reference\?: string \| null/);
   assert.match(updateBlock, /assigned_to_user_id\?: string \| null/);
   assert.doesNotMatch(updateBlock, /\bid\?:/);

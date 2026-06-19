@@ -20,6 +20,7 @@ export type UniversalCaseRead = {
   source: CaseSource;
   customer_name: string | null;
   customer_email: string | null;
+  customer_id: string | null;
   external_reference: string | null;
   created_by_user_id: string | null;
   assigned_to_user_id: string | null;
@@ -34,6 +35,7 @@ export type UniversalCaseCreateRequest = {
   source?: CaseSource;
   customer_name?: string;
   customer_email?: string;
+  customer_id?: string | null;
   external_reference?: string;
 };
 
@@ -45,6 +47,7 @@ export type UniversalCaseUpdateRequest = {
   source?: CaseSource;
   customer_name?: string | null;
   customer_email?: string | null;
+  customer_id?: string | null;
   external_reference?: string | null;
   assigned_to_user_id?: string | null;
 };

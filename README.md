@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 55: Case–Customer backend linking)
+**Phase 1 — SaaS Base** (Step 56: Case–Customer frontend linking)
 
-Universal Cases can optionally link to workspace Customer Records on the backend. Customer-case frontend linking is not implemented yet.
+Users can link and unlink customers from cases in the UI when creating or viewing a case.
 
-Phase 1 / Step 56 has **not started**.
+Phase 1 / Step 57 has **not started**.
 
 ## Confirmed stack
 
@@ -334,7 +334,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Customer Records backend foundation (Phase 1 / Step 53)
 - [x] Customer Records frontend UI (Phase 1 / Step 54)
 - [x] Case–Customer backend linking (Phase 1 / Step 55)
-- [ ] Phase 1 / Step 56 (not started)
+- [x] Case–Customer frontend linking (Phase 1 / Step 56)
+- [ ] Phase 1 / Step 57 (not started)
 
 ## License
 

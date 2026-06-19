@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 55: Case–Customer backend linking)
 
-Universal Cases can optionally link to workspace Customer Records via `customer_id`. Customer-case frontend linking is not implemented yet.
+Universal Cases can optionally link to workspace Customer Records via `customer_id`. Frontend customer-case linking is available from Step 56.
 
-Phase 1 / Step 56 has **not started**.
+Phase 1 / Step 57 has **not started**.
 
 ## Auth API
 

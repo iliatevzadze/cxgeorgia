@@ -37,6 +37,8 @@ import type {
   UniversalCaseUpdateRequest,
 } from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { listCustomers } from "@/lib/customers/api";
+import type { Customer } from "@/lib/customers/types";
 import { listWorkspaceMemberships } from "@/lib/workspaces/api";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 import type { WorkspaceMembershipRead } from "@/lib/workspaces/types";
@@ -80,6 +82,34 @@ function normalizeOptionalText(value: string): string | null {
 
 function formatMemberLabel(membership: WorkspaceMembershipRead): string {
   return `${membership.user_id} (${membership.role})`;
+}
+
+function formatCustomerOptionLabel(customer: Customer): string {
+  if (customer.email) {
+    return `${customer.display_name} (${customer.email})`;
+  }
+  return customer.display_name;
+}
+
+function findLinkedCustomer(
+  customerId: string | null,
+  customers: Customer[],
+): Customer | null {
+  if (!customerId) {
+    return null;
+  }
+  return customers.find((customer) => customer.id === customerId) ?? null;
+}
+
+function formatLinkedCustomerDisplay(
+  customerId: string | null,
+  customers: Customer[],
+): string {
+  if (!customerId) {
+    return "";
+  }
+  const customer = findLinkedCustomer(customerId, customers);
+  return customer?.display_name ?? customerId;
 }
 
 function formatAssignmentDisplay(
@@ -166,6 +196,7 @@ export function WorkspaceCaseDetail({
   caseId,
 }: WorkspaceCaseDetailProps) {
   const t = useTranslations("workspaces.app.cases.detail");
+  const tCustomers = useTranslations("workspaces.app.customers");
   const tCommon = useTranslations("workspaces.common");
   const locale = useLocale();
   const router = useRouter();
@@ -276,6 +307,22 @@ export function WorkspaceCaseDetail({
   const [activitiesLoadError, setActivitiesLoadError] = useState<string | null>(
     null,
   );
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isCustomersLoading, setIsCustomersLoading] = useState(true);
+  const [customersLoadError, setCustomersLoadError] = useState<string | null>(
+    null,
+  );
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [isLinkingCustomer, setIsLinkingCustomer] = useState(false);
+  const [customerLinkValidationError, setCustomerLinkValidationError] = useState<
+    string | null
+  >(null);
+  const [customerLinkErrorMessage, setCustomerLinkErrorMessage] = useState<
+    string | null
+  >(null);
+  const [customerLinkSuccessMessage, setCustomerLinkSuccessMessage] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -307,6 +354,7 @@ export function WorkspaceCaseDetail({
           setCustomerEmail(item.customer_email ?? "");
           setExternalReference(item.external_reference ?? "");
           setSelectedAssigneeId(item.assigned_to_user_id ?? "");
+          setSelectedCustomerId(item.customer_id ?? "");
         }
       } catch (error) {
         if (!isMounted) {
@@ -380,6 +428,60 @@ export function WorkspaceCaseDetail({
       isMounted = false;
     };
   }, [workspaceId, caseId, t, tCommon]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCustomers() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+        return;
+      }
+
+      setIsCustomersLoading(true);
+      setCustomersLoadError(null);
+
+      try {
+        const items = await listCustomers(workspaceId, token, {
+          status: "active",
+        });
+        if (isMounted) {
+          setCustomers(items);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setCustomers([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setCustomersLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setCustomersLoadError(tCommon("notFound"));
+          } else {
+            setCustomersLoadError(t("customersLoadError"));
+          }
+        } else {
+          setCustomersLoadError(t("customersLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsCustomersLoading(false);
+        }
+      }
+    }
+
+    void loadCustomers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, t, tCommon]);
 
   useEffect(() => {
     if (!caseItem) {
@@ -609,6 +711,13 @@ export function WorkspaceCaseDetail({
   const hasAssignmentChanges =
     caseItem !== null &&
     normalizedSelectedAssignee !== caseItem.assigned_to_user_id;
+  const normalizedSelectedCustomer = selectedCustomerId || null;
+  const hasCustomerLinkChanges =
+    caseItem !== null &&
+    normalizedSelectedCustomer !== caseItem.customer_id;
+  const linkedCustomer = caseItem
+    ? findLinkedCustomer(caseItem.customer_id, customers)
+    : null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -732,6 +841,58 @@ export function WorkspaceCaseDetail({
       }
     } finally {
       setIsAssigning(false);
+    }
+  }
+
+  async function handleCustomerLinkSubmit() {
+    if (!caseItem) {
+      return;
+    }
+
+    setCustomerLinkValidationError(null);
+    setCustomerLinkErrorMessage(null);
+    setCustomerLinkSuccessMessage(null);
+
+    if (!hasCustomerLinkChanges) {
+      setCustomerLinkValidationError(t("customerLinkNoChanges"));
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setCustomerLinkErrorMessage(tCommon("accessDenied"));
+      return;
+    }
+
+    setIsLinkingCustomer(true);
+
+    try {
+      const updated = await updateCase(
+        workspaceId,
+        caseId,
+        { customer_id: normalizedSelectedCustomer },
+        token,
+      );
+      setCaseItem(updated);
+      setSelectedCustomerId(updated.customer_id ?? "");
+      setCustomerLinkSuccessMessage(t("customerLinkSuccess"));
+      await reloadActivities();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          setCustomerLinkErrorMessage(tCommon("notFound"));
+        } else if (error.status === 401 || error.status === 403) {
+          setCustomerLinkErrorMessage(tCommon("accessDenied"));
+        } else if (error.status === 422) {
+          setCustomerLinkValidationError(t("customerLinkError"));
+        } else {
+          setCustomerLinkErrorMessage(t("customerLinkError"));
+        }
+      } else {
+        setCustomerLinkErrorMessage(t("customerLinkError"));
+      }
+    } finally {
+      setIsLinkingCustomer(false);
     }
   }
 
@@ -1160,6 +1321,7 @@ export function WorkspaceCaseDetail({
     detachingTagId !== null ||
     isSubmitting ||
     isAssigning ||
+    isLinkingCustomer ||
     isDeleting ||
     isCommentSubmitting ||
     deletingCommentId !== null ||
@@ -1220,6 +1382,28 @@ export function WorkspaceCaseDetail({
         <div>
           <dt>{t("sourceLabel")}</dt>
           <dd>{t(`sourceOptions.${caseItem.source}`)}</dd>
+        </div>
+        <div>
+          <dt>{t("linkedCustomerLabel")}</dt>
+          <dd>
+            {caseItem.customer_id ? (
+              <div className="workspace-case-linked-customer">
+                <p>{formatLinkedCustomerDisplay(caseItem.customer_id, customers)}</p>
+                {linkedCustomer?.email ? (
+                  <p>
+                    {tCustomers("email")}: {linkedCustomer.email}
+                  </p>
+                ) : null}
+                {linkedCustomer?.phone ? (
+                  <p>
+                    {tCustomers("phone")}: {linkedCustomer.phone}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              t("noCustomerLinked")
+            )}
+          </dd>
         </div>
         <div>
           <dt>{t("customerNameLabel")}</dt>
@@ -1440,6 +1624,7 @@ export function WorkspaceCaseDetail({
                 value={selectedAssigneeId}
                 disabled={
                   isAssigning ||
+                  isLinkingCustomer ||
                   isSubmitting ||
                   isDeleting ||
                   isCommentSubmitting ||
@@ -1464,6 +1649,7 @@ export function WorkspaceCaseDetail({
               className="auth-submit"
               disabled={
                 isAssigning ||
+                isLinkingCustomer ||
                 isSubmitting ||
                 isDeleting ||
                 isCommentSubmitting ||
@@ -1476,6 +1662,88 @@ export function WorkspaceCaseDetail({
               onClick={() => void handleAssignmentSubmit()}
             >
               {isAssigning ? t("assignmentSaving") : t("assignmentSave")}
+            </button>
+          </>
+        )}
+      </section>
+
+      <section className="workspace-panel workspace-case-customer-panel">
+        <h2>{t("changeCustomer")}</h2>
+        <p className="workspace-description">{t("unlinkCustomer")}</p>
+
+        {customerLinkValidationError ? (
+          <p className="workspace-error" role="alert">
+            {customerLinkValidationError}
+          </p>
+        ) : null}
+
+        {customerLinkErrorMessage ? (
+          <p className="workspace-error" role="alert">
+            {customerLinkErrorMessage}
+          </p>
+        ) : null}
+
+        {customerLinkSuccessMessage ? (
+          <p className="workspace-success" role="status">
+            {customerLinkSuccessMessage}
+          </p>
+        ) : null}
+
+        {customersLoadError ? (
+          <p className="workspace-error" role="alert">
+            {customersLoadError}
+          </p>
+        ) : null}
+
+        {isCustomersLoading ? (
+          <p className="workspace-status">{t("customersLoading")}</p>
+        ) : (
+          <>
+            <label className="auth-field">
+              <span>{t("selectCustomer")}</span>
+              <select
+                name="customerId"
+                value={selectedCustomerId}
+                disabled={
+                  isLinkingCustomer ||
+                  isSubmitting ||
+                  isAssigning ||
+                  isDeleting ||
+                  isCommentSubmitting ||
+                  deletingCommentId !== null ||
+                  editingCommentId !== null ||
+                  isCommentEditSaving ||
+                  Boolean(customersLoadError)
+                }
+                onChange={(event) => setSelectedCustomerId(event.target.value)}
+              >
+                <option value="">{t("noCustomer")}</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {formatCustomerOptionLabel(customer)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={
+                isLinkingCustomer ||
+                isSubmitting ||
+                isAssigning ||
+                isDeleting ||
+                isCommentSubmitting ||
+                deletingCommentId !== null ||
+                editingCommentId !== null ||
+                isCommentEditSaving ||
+                Boolean(customersLoadError) ||
+                !hasCustomerLinkChanges
+              }
+              onClick={() => void handleCustomerLinkSubmit()}
+            >
+              {isLinkingCustomer ? t("customerLinkSaving") : t("customerLinkSave")}
             </button>
           </>
         )}
@@ -1813,6 +2081,7 @@ export function WorkspaceCaseDetail({
                                 isCommentSubmitting ||
                                 isSubmitting ||
                                 isAssigning ||
+                                isLinkingCustomer ||
                                 isDeleting
                               }
                               onClick={() => handleCommentEditClick(comment)}
@@ -1829,6 +2098,7 @@ export function WorkspaceCaseDetail({
                                 isCommentSubmitting ||
                                 isSubmitting ||
                                 isAssigning ||
+                                isLinkingCustomer ||
                                 isDeleting
                               }
                               onClick={() =>
@@ -1880,6 +2150,7 @@ export function WorkspaceCaseDetail({
                 isCommentSubmitting ||
                 isSubmitting ||
                 isAssigning ||
+                isLinkingCustomer ||
                 isDeleting ||
                 deletingCommentId !== null ||
                 editingCommentId !== null ||
@@ -1898,6 +2169,7 @@ export function WorkspaceCaseDetail({
                 isCommentSubmitting ||
                 isSubmitting ||
                 isAssigning ||
+                isLinkingCustomer ||
                 isDeleting ||
                 deletingCommentId !== null ||
                 editingCommentId !== null ||
@@ -1915,6 +2187,7 @@ export function WorkspaceCaseDetail({
               isCommentSubmitting ||
               isSubmitting ||
               isAssigning ||
+              isLinkingCustomer ||
               isDeleting ||
               deletingCommentId !== null ||
               editingCommentId !== null ||
@@ -2017,7 +2290,7 @@ export function WorkspaceCaseDetail({
           <button
             type="button"
             className="auth-submit workspace-case-delete-trigger"
-            disabled={isDeleting || isSubmitting || isAssigning || isCommentSubmitting || deletingCommentId !== null || editingCommentId !== null || isCommentEditSaving}
+            disabled={isDeleting || isSubmitting || isAssigning || isLinkingCustomer || isCommentSubmitting || deletingCommentId !== null || editingCommentId !== null || isCommentEditSaving}
             onClick={() => {
               setDeleteErrorMessage(null);
               setShowDeleteConfirm(true);
