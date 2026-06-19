@@ -6,6 +6,7 @@ from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.case_qa_criteria_score import CaseQaCriteriaScore
 from app.models.case_qa_review import CaseQaReview
@@ -34,11 +35,49 @@ def _validate_score(score: int) -> None:
         raise InvalidQaScoreError("Score must be between 0 and 100")
 
 
+async def list_qa_reviews_for_case(
+    session: AsyncSession,
+    workspace_id: UUID,
+    case_id: UUID,
+) -> list[CaseQaReview]:
+    """Return QA reviews for a workspace case, newest first."""
+    result = await session.scalars(
+        select(CaseQaReview)
+        .where(
+            CaseQaReview.workspace_id == workspace_id,
+            CaseQaReview.case_id == case_id,
+        )
+        .options(selectinload(CaseQaReview.criteria_scores))
+        .order_by(CaseQaReview.created_at.desc())
+    )
+    return list(result.all())
+
+
+async def get_qa_review_for_case(
+    session: AsyncSession,
+    workspace_id: UUID,
+    case_id: UUID,
+    review_id: UUID,
+) -> CaseQaReview | None:
+    """Return a QA review scoped to a workspace case, if it exists."""
+    return await session.scalar(
+        select(CaseQaReview)
+        .where(
+            CaseQaReview.id == review_id,
+            CaseQaReview.workspace_id == workspace_id,
+            CaseQaReview.case_id == case_id,
+        )
+        .options(selectinload(CaseQaReview.criteria_scores))
+    )
+
+
 async def create_qa_review(
     session: AsyncSession,
     case_id: UUID,
     reviewer_id: UUID,
     agent_id: UUID,
+    *,
+    overall_comment: str | None = None,
 ) -> CaseQaReview:
     """Create a pending QA review for a case."""
     case = await session.get(UniversalCase, case_id)
@@ -52,6 +91,7 @@ async def create_qa_review(
         reviewed_agent_user_id=agent_id,
         score=0,
         status=QaReviewStatus.PENDING,
+        overall_comment=overall_comment,
     )
     session.add(review)
     await session.flush()

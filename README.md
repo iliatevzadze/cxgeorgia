@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
+**Phase 1 — SaaS Base** (Step 48: QA Review backend API)
 
-The workspace app dashboard displays read-only operational aggregates from the Step 46 backend API.
+QA reviews can be created, scored, approved and rejected through the backend API. QA frontend UI is not implemented yet.
 
-Phase 1 / Step 48 has **not started**.
+Phase 1 / Step 49 has **not started**.
 
 ## Confirmed stack
 
@@ -326,7 +326,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] QA / Ticket Evaluation system (Phase 1 / Step 45)
 - [x] Operations Dashboard backend API (Phase 1 / Step 46)
 - [x] Operations Dashboard frontend UI (Phase 1 / Step 47)
-- [ ] Phase 1 / Step 48 (not started)
+- [x] QA Review backend API (Phase 1 / Step 48)
+- [ ] Phase 1 / Step 49 (not started)
 
 ## License
 

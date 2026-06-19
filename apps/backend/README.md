@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
+**Phase 1 — SaaS Base** (Step 48: QA Review backend API)
 
-The workspace app dashboard at `/app/dashboard` consumes `GET /operations/dashboard` and displays case, SLA, agent, and QA summaries.
+QA reviews can be created, scored, approved and rejected through the backend API. QA frontend UI is not implemented yet.
 
-Phase 1 / Step 48 has **not started**.
+Phase 1 / Step 49 has **not started**.
 
 ## Auth API
 
@@ -64,6 +64,16 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/v1/workspaces/{workspace_id}/operations/dashboard` | Read-only operational aggregates (active members only) |
+
+## Case QA API (Phase 1 / Step 48)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews` | List QA reviews for a case (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews` | Create QA review for a case (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/criteria` | Add criterion score to a review (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/approve` | Approve pending review (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/reject` | Reject pending review (active members only) |
 
 All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
