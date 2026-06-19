@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { CaseAttachments } from "@/components/case-attachments";
 import { CaseQaReviews } from "@/components/case-qa-reviews";
 import { Link, useRouter } from "@/i18n/navigation";
 
@@ -1974,6 +1975,8 @@ export function WorkspaceCaseDetail({
           </>
         )}
       </section>
+
+      <CaseAttachments workspaceId={workspaceId} caseId={caseId} />
 
       <CaseQaReviews
         workspaceId={workspaceId}

@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 51: Agent Workforce frontend UI)
+**Phase 1 — SaaS Base** (Step 52: Case Attachments frontend UI)
 
-Users can clock in/out and view workforce metrics from the workspace app dashboard.
+Users can view, upload, and delete attachments from the case detail page.
 
-Phase 1 / Step 52 has **not started**.
+Phase 1 / Step 53 has **not started**.
 
 ## What exists now
 
@@ -23,7 +23,7 @@ Phase 1 / Step 52 has **not started**.
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
 - Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
 - Agent Workforce panel on the dashboard: clock in/out, active shifts and case metrics
-- Case detail update, assignment, comments (list/create/edit/delete), tags, activity timeline, QA reviews and case delete controls
+- Case detail update, assignment, comments (list/create/edit/delete), tags, attachments, activity timeline, QA reviews and case delete controls
 - Workspace app placeholder routes: customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`

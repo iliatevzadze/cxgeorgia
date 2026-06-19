@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 51: Agent Workforce frontend UI)
+**Phase 1 — SaaS Base** (Step 52: Case Attachments frontend UI)
 
-Users can clock in/out and view workforce metrics from the workspace app dashboard.
+Users can view, upload, and delete attachments from the case detail page.
 
-Phase 1 / Step 52 has **not started**.
+Phase 1 / Step 53 has **not started**.
 
 ## Confirmed stack
 
@@ -330,7 +330,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] QA Review frontend UI (Phase 1 / Step 49)
 - [x] Agent Workforce backend API (Phase 1 / Step 50)
 - [x] Agent Workforce frontend UI (Phase 1 / Step 51)
-- [ ] Phase 1 / Step 52 (not started)
+- [x] Case Attachments frontend UI (Phase 1 / Step 52)
+- [ ] Phase 1 / Step 53 (not started)
 
 ## License
 
