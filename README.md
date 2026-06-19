@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 68: Case list backend sorting)
+**Phase 1 — SaaS Base** (Step 69: Case list sorting UI)
 
-Universal Cases list supports optional `sort_by` and `sort_order` query parameters, combined with existing filters and pagination. Frontend sorting UI is not implemented yet.
+The Cases list includes sort field and direction controls. Sorting state is persisted in the URL and uses backend `sort_by` and `sort_order` parameters from Step 68.
 
-Phase 1 / Step 69 has **not started**.
+Phase 1 / Step 70 has **not started**.
 
 ## Confirmed stack
 
@@ -347,7 +347,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Case list page-size selection (Phase 1 / Step 66)
 - [x] Case list URL state (Phase 1 / Step 67)
 - [x] Case list backend sorting (Phase 1 / Step 68)
-- [ ] Phase 1 / Step 69 (not started)
+- [x] Case list sorting UI (Phase 1 / Step 69)
+- [ ] Phase 1 / Step 70 (not started)
 
 ## License
 

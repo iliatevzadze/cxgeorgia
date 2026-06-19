@@ -107,6 +107,8 @@ test("clear filters removes filter params but keeps selected limit references", 
     },
     25,
     0,
+    "created_at",
+    "desc",
     new URLSearchParams({ status: "open", foo: "bar" }),
   );
   assert.equal(params.get("status"), null);
@@ -126,6 +128,8 @@ test("unknown query params are preserved when rebuilding URL", () => {
     },
     50,
     10,
+    "created_at",
+    "desc",
     new URLSearchParams({ foo: "bar", status: "pending" }),
   );
   assert.equal(params.get("foo"), "bar");

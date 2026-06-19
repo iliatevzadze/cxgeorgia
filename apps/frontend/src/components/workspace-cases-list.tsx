@@ -13,12 +13,16 @@ import { listCases } from "@/lib/cases/api";
 import {
   buildCaseListSearchParams,
   CASE_LIST_PAGE_SIZE_OPTIONS,
+  CASE_LIST_SORT_BY_OPTIONS,
+  CASE_LIST_SORT_ORDER_OPTIONS,
   EMPTY_CASE_LIST_FILTERS,
   parseCaseListUrlState,
   type CaseListFilterState,
 } from "@/lib/cases/list-url-state";
 import type {
   CaseListFilters,
+  CaseListSortBy,
+  CaseListSortOrder,
   CasePriority,
   CaseSlaStatus,
   CaseSource,
@@ -140,7 +144,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { filters, pageSize, offset } = parseCaseListUrlState(
+  const { filters, pageSize, offset, sortBy, sortOrder } = parseCaseListUrlState(
     new URLSearchParams(searchParams.toString()),
   );
 
@@ -167,11 +171,15 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       filters: CaseListFilterState;
       pageSize: number;
       offset: number;
+      sortBy: CaseListSortBy;
+      sortOrder: CaseListSortOrder;
     }) => {
       const params = buildCaseListSearchParams(
         next.filters,
         next.pageSize,
         next.offset,
+        next.sortBy,
+        next.sortOrder,
         new URLSearchParams(searchParams.toString()),
       );
       const query = params.toString();
@@ -302,6 +310,8 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
         ...buildCaseListFilters(filters),
         limit: pageSize,
         offset,
+        sort_by: sortBy,
+        sort_order: sortOrder,
       });
       setCases(page.items);
       setListTotal(page.total);
@@ -320,14 +330,14 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, filters, offset, pageSize, t, tCommon]);
+  }, [workspaceId, filters, offset, pageSize, sortBy, sortOrder, t, tCommon]);
 
   useEffect(() => {
     void loadCases();
   }, [loadCases, refreshToken]);
 
   function handleCaseCreated() {
-    replaceListUrl({ filters, pageSize, offset: 0 });
+    replaceListUrl({ filters, pageSize, offset: 0, sortBy, sortOrder });
     setRefreshToken((current) => current + 1);
   }
 
@@ -342,6 +352,8 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       },
       pageSize,
       offset: 0,
+      sortBy,
+      sortOrder,
     });
   }
 
@@ -350,6 +362,8 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       filters: EMPTY_CASE_LIST_FILTERS,
       pageSize,
       offset: 0,
+      sortBy,
+      sortOrder,
     });
   }
 
@@ -358,6 +372,28 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       filters,
       pageSize: Number(value),
       offset: 0,
+      sortBy,
+      sortOrder,
+    });
+  }
+
+  function handleSortByChange(value: string) {
+    replaceListUrl({
+      filters,
+      pageSize,
+      offset: 0,
+      sortBy: value as CaseListSortBy,
+      sortOrder,
+    });
+  }
+
+  function handleSortOrderChange(value: string) {
+    replaceListUrl({
+      filters,
+      pageSize,
+      offset: 0,
+      sortBy,
+      sortOrder: value as CaseListSortOrder,
     });
   }
 
@@ -366,6 +402,8 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       filters,
       pageSize,
       offset: Math.max(0, offset - pageSize),
+      sortBy,
+      sortOrder,
     });
   }
 
@@ -374,6 +412,8 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
       filters,
       pageSize,
       offset: offset + pageSize,
+      sortBy,
+      sortOrder,
     });
   }
 
@@ -546,6 +586,42 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
           <p className="workspace-cases-total">
             {t("totalCasesLabel")}: {listTotal}
           </p>
+
+          <div
+            className="workspace-cases-sorting"
+            aria-label={t("sortCases")}
+          >
+            <label className="auth-field">
+              <span>{t("sortByLabel")}</span>
+              <select
+                name="sortBy"
+                value={sortBy}
+                disabled={isLoading}
+                onChange={(event) => handleSortByChange(event.target.value)}
+              >
+                {CASE_LIST_SORT_BY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`sortByOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="auth-field">
+              <span>{t("sortOrderLabel")}</span>
+              <select
+                name="sortOrder"
+                value={sortOrder}
+                disabled={isLoading}
+                onChange={(event) => handleSortOrderChange(event.target.value)}
+              >
+                {CASE_LIST_SORT_ORDER_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`sortOrderOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {cases.length === 0 ? (
             <div className="workspace-empty">

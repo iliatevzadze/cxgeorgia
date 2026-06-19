@@ -12,6 +12,15 @@ export type CaseSource =
 
 export type CaseSlaStatus = "on_track" | "at_risk" | "breached";
 
+export type CaseListSortBy =
+  | "created_at"
+  | "updated_at"
+  | "priority"
+  | "status"
+  | "sla_status";
+
+export type CaseListSortOrder = "asc" | "desc";
+
 export type UniversalCaseRead = {
   id: string;
   workspace_id: string;
@@ -140,6 +149,8 @@ export type CaseListFilters = {
   assigned_to_user_id?: string;
   customer_id?: string;
   sla_status?: CaseSlaStatus;
+  sort_by?: CaseListSortBy;
+  sort_order?: CaseListSortOrder;
   limit?: number;
   offset?: number;
 };

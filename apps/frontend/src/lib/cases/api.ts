@@ -60,6 +60,12 @@ export async function listCases(
   if (filters.sla_status) {
     params.set("sla_status", filters.sla_status);
   }
+  if (filters.sort_by) {
+    params.set("sort_by", filters.sort_by);
+  }
+  if (filters.sort_order) {
+    params.set("sort_order", filters.sort_order);
+  }
   if (filters.limit !== undefined) {
     params.set("limit", String(filters.limit));
   }

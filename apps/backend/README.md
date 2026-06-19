@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 68: Case list backend sorting)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` supports optional `sort_by` (`created_at`, `updated_at`, `priority`, `status`, `sla_status`) and `sort_order` (`asc`, `desc`). Defaults: `created_at` / `desc`. Sorting combines with filters and pagination. Frontend sorting UI is not implemented yet.
+`GET /api/v1/workspaces/{workspace_id}/cases` supports optional `sort_by` (`created_at`, `updated_at`, `priority`, `status`, `sla_status`) and `sort_order` (`asc`, `desc`). Defaults: `created_at` / `desc`. Frontend sorting UI from Step 69 uses these parameters.
 
-Phase 1 / Step 69 has **not started**.
+Phase 1 / Step 70 has **not started**.
 
 ## Auth API
 

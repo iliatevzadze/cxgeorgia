@@ -299,6 +299,20 @@
         "pageLabel": "გვერდი",
         "pageSizeLabel": "გვერდის ზომა",
         "casesPerPageLabel": "ქეისები გვერდზე",
+        "sortCases": "ქეისების სორტირება",
+        "sortByLabel": "სორტირება",
+        "sortOrderLabel": "სორტირების თანმიმდევრობა",
+        "sortByOptions": {
+          "created_at": "შექმნის თარიღი",
+          "updated_at": "განახლების თარიღი",
+          "priority": "პრიორიტეტი",
+          "status": "სტატუსი",
+          "sla_status": "SLA სტატუსი"
+        },
+        "sortOrderOptions": {
+          "desc": "კლებადობით",
+          "asc": "ზრდადობით"
+        },
         "create": {
           "title": "ახალი ქეისი",
           "description": "შექმენით Universal Case ამ workspace-ში.",

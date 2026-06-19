@@ -1,4 +1,6 @@
 import type {
+  CaseListSortBy,
+  CaseListSortOrder,
   CasePriority,
   CaseSlaStatus,
   CaseSource,
@@ -32,16 +34,33 @@ export const CASE_LIST_FILTER_QUERY_KEYS = [
   "assigned_to_user_id",
 ] as const;
 
+export const CASE_LIST_SORT_QUERY_KEYS = ["sort_by", "sort_order"] as const;
+
 export const CASE_LIST_PAGINATION_QUERY_KEYS = ["limit", "offset"] as const;
 
 export const CASE_LIST_QUERY_KEYS = [
   ...CASE_LIST_FILTER_QUERY_KEYS,
+  ...CASE_LIST_SORT_QUERY_KEYS,
   ...CASE_LIST_PAGINATION_QUERY_KEYS,
 ] as const;
 
 export const CASE_LIST_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 export const CASE_LIST_DEFAULT_PAGE_SIZE = 50;
+
+export const CASE_LIST_SORT_BY_OPTIONS: CaseListSortBy[] = [
+  "created_at",
+  "updated_at",
+  "priority",
+  "status",
+  "sla_status",
+];
+
+export const CASE_LIST_SORT_ORDER_OPTIONS: CaseListSortOrder[] = ["desc", "asc"];
+
+export const CASE_LIST_DEFAULT_SORT_BY: CaseListSortBy = "created_at";
+
+export const CASE_LIST_DEFAULT_SORT_ORDER: CaseListSortOrder = "desc";
 
 const STATUS_VALUES: CaseStatus[] = ["open", "pending", "resolved", "closed"];
 const PRIORITY_VALUES: CasePriority[] = ["low", "normal", "high", "urgent"];
@@ -92,6 +111,26 @@ export function parseCaseListOffsetParam(value: string | null): number {
   return parsed;
 }
 
+export function parseCaseListSortByParam(value: string | null): CaseListSortBy {
+  if (!value) {
+    return CASE_LIST_DEFAULT_SORT_BY;
+  }
+  return CASE_LIST_SORT_BY_OPTIONS.includes(value as CaseListSortBy)
+    ? (value as CaseListSortBy)
+    : CASE_LIST_DEFAULT_SORT_BY;
+}
+
+export function parseCaseListSortOrderParam(
+  value: string | null,
+): CaseListSortOrder {
+  if (!value) {
+    return CASE_LIST_DEFAULT_SORT_ORDER;
+  }
+  return CASE_LIST_SORT_ORDER_OPTIONS.includes(value as CaseListSortOrder)
+    ? (value as CaseListSortOrder)
+    : CASE_LIST_DEFAULT_SORT_ORDER;
+}
+
 export function parseCaseListFiltersFromSearchParams(
   searchParams: URLSearchParams,
 ): CaseListFilterState {
@@ -112,11 +151,15 @@ export function parseCaseListUrlState(searchParams: URLSearchParams): {
   filters: CaseListFilterState;
   pageSize: number;
   offset: number;
+  sortBy: CaseListSortBy;
+  sortOrder: CaseListSortOrder;
 } {
   return {
     filters: parseCaseListFiltersFromSearchParams(searchParams),
     pageSize: parseCaseListLimitParam(searchParams.get("limit")),
     offset: parseCaseListOffsetParam(searchParams.get("offset")),
+    sortBy: parseCaseListSortByParam(searchParams.get("sort_by")),
+    sortOrder: parseCaseListSortOrderParam(searchParams.get("sort_order")),
   };
 }
 
@@ -124,6 +167,8 @@ export function buildCaseListSearchParams(
   filters: CaseListFilterState,
   pageSize: number,
   offset: number,
+  sortBy: CaseListSortBy,
+  sortOrder: CaseListSortOrder,
   currentSearchParams: URLSearchParams,
 ): URLSearchParams {
   const params = new URLSearchParams();
@@ -152,6 +197,12 @@ export function buildCaseListSearchParams(
   }
   if (filters.assigned_to_user_id) {
     params.set("assigned_to_user_id", filters.assigned_to_user_id);
+  }
+  if (sortBy !== CASE_LIST_DEFAULT_SORT_BY) {
+    params.set("sort_by", sortBy);
+  }
+  if (sortOrder !== CASE_LIST_DEFAULT_SORT_ORDER) {
+    params.set("sort_order", sortOrder);
   }
   if (pageSize !== CASE_LIST_DEFAULT_PAGE_SIZE) {
     params.set("limit", String(pageSize));

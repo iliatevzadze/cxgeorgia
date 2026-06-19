@@ -299,6 +299,20 @@
         "pageLabel": "Page",
         "pageSizeLabel": "Page size",
         "casesPerPageLabel": "Cases per page",
+        "sortCases": "Sort cases",
+        "sortByLabel": "Sort by",
+        "sortOrderLabel": "Sort order",
+        "sortByOptions": {
+          "created_at": "Created date",
+          "updated_at": "Updated date",
+          "priority": "Priority",
+          "status": "Status",
+          "sla_status": "SLA status"
+        },
+        "sortOrderOptions": {
+          "desc": "Descending",
+          "asc": "Ascending"
+        },
         "create": {
           "title": "New case",
           "description": "Create a Universal Case in this workspace.",
