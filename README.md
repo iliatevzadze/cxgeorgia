@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 53: Customer Records backend foundation)
+**Phase 1 — SaaS Base** (Step 54: Customer Records frontend UI)
 
-Workspace-scoped customer records can be managed through the backend API. Customer frontend UI is not implemented yet.
+Users can manage customers from the workspace app: list, search, create, update, and delete.
 
-Phase 1 / Step 54 has **not started**.
+Phase 1 / Step 55 has **not started**.
 
 ## Confirmed stack
 
@@ -332,7 +332,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Agent Workforce frontend UI (Phase 1 / Step 51)
 - [x] Case Attachments frontend UI (Phase 1 / Step 52)
 - [x] Customer Records backend foundation (Phase 1 / Step 53)
-- [ ] Phase 1 / Step 54 (not started)
+- [x] Customer Records frontend UI (Phase 1 / Step 54)
+- [ ] Phase 1 / Step 55 (not started)
 
 ## License
 

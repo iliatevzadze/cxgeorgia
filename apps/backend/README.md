@@ -8,7 +8,7 @@ FastAPI REST API for the Georgian CX Platform.
 
 Workspace-scoped customer records can be managed through the backend API. Customer frontend UI is not implemented yet.
 
-Phase 1 / Step 54 has **not started**.
+Phase 1 / Step 55 has **not started**.
 
 ## Auth API
 

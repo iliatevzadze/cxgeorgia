@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 52: Case Attachments frontend UI)
+**Phase 1 — SaaS Base** (Step 54: Customer Records frontend UI)
 
-Users can view, upload, and delete attachments from the case detail page.
+Users can manage customers from the workspace app: list, search, create, update, and delete.
 
-Phase 1 / Step 53 has **not started**.
+Phase 1 / Step 55 has **not started**.
 
 ## What exists now
 
@@ -23,8 +23,9 @@ Phase 1 / Step 53 has **not started**.
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
 - Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
 - Agent Workforce panel on the dashboard: clock in/out, active shifts and case metrics
+- Workspace app Customers page with list, search, create, update and delete
 - Case detail update, assignment, comments (list/create/edit/delete), tags, attachments, activity timeline, QA reviews and case delete controls
-- Workspace app placeholder routes: customers, settings
+- Workspace app placeholder routes: settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
 - `AuthProvider`, `useAuth`, `useWorkspaces`, and `useWorkspace` hooks
@@ -35,7 +36,7 @@ Phase 1 / Step 53 has **not started**.
 ## What does not exist yet
 
 - Activity create/edit/delete UI
-- Product customers, settings
+- Product settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
 - React Query, SWR, or component libraries
@@ -65,7 +66,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
 | `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with update, assignment, comments, tags, activity timeline and delete |
 | `/ka/workspaces/{id}/app/dashboard`, `/en/...` | Operations dashboard and Agent Workforce panel |
-| `/ka/workspaces/{id}/app/customers`, etc. | Placeholder module routes (not implemented) |
+| `/ka/workspaces/{id}/app/customers`, `/en/...` | Customer records list and management |
 
 ## API integration
 
@@ -113,6 +114,9 @@ apps/frontend/
 │       │   ├── api.ts
 │       │   └── types.ts
 │       ├── agent-workforce/
+│       │   ├── api.ts
+│       │   └── types.ts
+│       ├── customers/
 │       │   ├── api.ts
 │       │   └── types.ts
 │       └── workspaces/

@@ -1050,3 +1050,85 @@ a {
   font-size: 0.875rem;
 }
 
+.workspace-customers-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.workspace-customers-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.workspace-customers-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-customers-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-customers-item {
+  margin: 0;
+}
+
+.workspace-customers-select {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.workspace-customers-select.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.workspace-customers-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workspace-customers-item-name {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.workspace-customers-delete-button {
+  margin-top: 1rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  color: #b91c1c;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.workspace-customers-delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workspace-customers-create-panel,
+.workspace-customers-edit-panel {
+  margin-top: 0;
+}
+

@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { WorkspaceAppPlaceholder } from "@/components/workspace-app-placeholder";
+import { WorkspaceCustomers } from "@/components/workspace-customers";
 import { WorkspaceAppSectionPanel } from "@/components/workspace-app-section-panel";
 
 type WorkspaceAppCustomersPageProps = {
@@ -19,7 +19,7 @@ export default async function WorkspaceAppCustomersPage({
         workspaceId={workspaceId}
         activeSection="customers"
       >
-        <WorkspaceAppPlaceholder section="customers" />
+        <WorkspaceCustomers workspaceId={workspaceId} />
       </WorkspaceAppSectionPanel>
     </main>
   );
