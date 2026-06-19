@@ -67,10 +67,10 @@ test("case list UI includes total cases label", () => {
 });
 
 test("filters reset pagination offset references", () => {
-  assert.match(componentSource, /setOffset\(0\)/);
+  assert.match(componentSource, /replaceListUrl/);
   assert.match(componentSource, /handleFilterChange/);
   assert.match(componentSource, /handleClearFilters/);
-  assert.match(componentSource, /offset/);
+  assert.match(componentSource, /offset: 0/);
 });
 
 test("previous and next pagination labels exist", () => {

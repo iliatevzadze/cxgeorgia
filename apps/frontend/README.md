@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 66: Case list page-size selection)
+**Phase 1 — SaaS Base** (Step 67: Case list URL state)
 
-The Cases list page includes a page-size selector (10, 25, 50, 100) using the backend `limit` query parameter.
+Case list filters, page size, and offset are persisted in URL query parameters.
 
-Phase 1 / Step 67 has **not started**.
+Phase 1 / Step 68 has **not started**.
 
 ## What exists now
 

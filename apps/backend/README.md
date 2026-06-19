@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 64: Universal Cases list backend pagination)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` supports `limit` (default 50, max 100) and `offset` (default 0) pagination. Frontend page-size selection uses `limit` from Step 66.
+`GET /api/v1/workspaces/{workspace_id}/cases` supports `limit` (default 50, max 100) and `offset` (default 0) pagination. Frontend URL state for filters and pagination from Step 67.
 
-Phase 1 / Step 67 has **not started**.
+Phase 1 / Step 68 has **not started**.
 
 ## Auth API
 

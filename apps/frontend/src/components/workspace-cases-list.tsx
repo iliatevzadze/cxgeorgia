@@ -2,13 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 import { WorkspaceCaseCreateForm } from "@/components/workspace-case-create-form";
 import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
+import {
+  buildCaseListSearchParams,
+  CASE_LIST_PAGE_SIZE_OPTIONS,
+  EMPTY_CASE_LIST_FILTERS,
+  parseCaseListUrlState,
+  type CaseListFilterState,
+} from "@/lib/cases/list-url-state";
 import type {
   CaseListFilters,
   CasePriority,
@@ -26,24 +34,6 @@ import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCasesListProps = {
   workspaceId: string;
-};
-
-type CaseListFilterState = {
-  status: CaseStatus | "";
-  priority: CasePriority | "";
-  source: CaseSource | "";
-  sla_status: CaseSlaStatus | "";
-  customer_id: string;
-  assigned_to_user_id: string;
-};
-
-const EMPTY_FILTERS: CaseListFilterState = {
-  status: "",
-  priority: "",
-  source: "",
-  sla_status: "",
-  customer_id: "",
-  assigned_to_user_id: "",
 };
 
 const STATUS_OPTIONS: CaseStatus[] = [
@@ -74,10 +64,6 @@ const SLA_STATUS_OPTIONS: CaseSlaStatus[] = [
   "at_risk",
   "breached",
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
-
-const DEFAULT_PAGE_SIZE = 50;
 
 function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
   const filters: CaseListFilters = {};
@@ -150,15 +136,19 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const t = useTranslations("workspaces.app.cases");
   const tCommon = useTranslations("workspaces.common");
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const { filters, pageSize, offset } = parseCaseListUrlState(
+    new URLSearchParams(searchParams.toString()),
+  );
 
   const [cases, setCases] = useState<UniversalCaseRead[]>([]);
   const [listTotal, setListTotal] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
-  const [filters, setFilters] = useState<CaseListFilterState>(EMPTY_FILTERS);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isCustomersLoading, setIsCustomersLoading] = useState(true);
   const [customersLoadError, setCustomersLoadError] = useState<string | null>(
@@ -170,6 +160,24 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [isMembershipsLoading, setIsMembershipsLoading] = useState(true);
   const [assigneesLoadError, setAssigneesLoadError] = useState<string | null>(
     null,
+  );
+
+  const replaceListUrl = useCallback(
+    (next: {
+      filters: CaseListFilterState;
+      pageSize: number;
+      offset: number;
+    }) => {
+      const params = buildCaseListSearchParams(
+        next.filters,
+        next.pageSize,
+        next.offset,
+        new URLSearchParams(searchParams.toString()),
+      );
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, router, searchParams],
   );
 
   useEffect(() => {
@@ -290,18 +298,13 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     setErrorMessage(null);
 
     try {
-      const page = await listCases(
-        workspaceId,
-        token,
-        {
-          ...buildCaseListFilters(filters),
-          limit: pageSize,
-          offset,
-        },
-      );
+      const page = await listCases(workspaceId, token, {
+        ...buildCaseListFilters(filters),
+        limit: pageSize,
+        offset,
+      });
       setCases(page.items);
       setListTotal(page.total);
-      setOffset(page.offset);
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 404) {
@@ -324,7 +327,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   }, [loadCases, refreshToken]);
 
   function handleCaseCreated() {
-    setOffset(0);
+    replaceListUrl({ filters, pageSize, offset: 0 });
     setRefreshToken((current) => current + 1);
   }
 
@@ -332,29 +335,46 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     field: keyof CaseListFilterState,
     value: string,
   ) {
-    setOffset(0);
-    setFilters((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    replaceListUrl({
+      filters: {
+        ...filters,
+        [field]: value,
+      },
+      pageSize,
+      offset: 0,
+    });
   }
 
   function handleClearFilters() {
-    setOffset(0);
-    setFilters(EMPTY_FILTERS);
+    replaceListUrl({
+      filters: EMPTY_CASE_LIST_FILTERS,
+      pageSize,
+      offset: 0,
+    });
   }
 
   function handlePageSizeChange(value: string) {
-    setOffset(0);
-    setPageSize(Number(value));
+    replaceListUrl({
+      filters,
+      pageSize: Number(value),
+      offset: 0,
+    });
   }
 
   function handlePreviousPage() {
-    setOffset((current) => Math.max(0, current - pageSize));
+    replaceListUrl({
+      filters,
+      pageSize,
+      offset: Math.max(0, offset - pageSize),
+    });
   }
 
   function handleNextPage() {
-    setOffset((current) => current + pageSize);
+    replaceListUrl({
+      filters,
+      pageSize,
+      offset: offset + pageSize,
+    });
   }
 
   const canGoPrevious = offset > 0;
@@ -589,7 +609,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
                 aria-label={t("casesPerPageLabel")}
                 onChange={(event) => handlePageSizeChange(event.target.value)}
               >
-                {PAGE_SIZE_OPTIONS.map((size) => (
+                {CASE_LIST_PAGE_SIZE_OPTIONS.map((size) => (
                   <option key={size} value={size}>
                     {size}
                   </option>

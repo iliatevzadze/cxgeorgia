@@ -4,9 +4,18 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import {
+  CASE_LIST_DEFAULT_PAGE_SIZE,
+  CASE_LIST_PAGE_SIZE_OPTIONS,
+} from "../src/lib/cases/list-url-state";
+
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const componentSource = readFileSync(
   join(rootDir, "src/components/workspace-cases-list.tsx"),
+  "utf-8",
+);
+const urlStateSource = readFileSync(
+  join(rootDir, "src/lib/cases/list-url-state.ts"),
   "utf-8",
 );
 const enMessages = JSON.parse(
@@ -24,20 +33,27 @@ test("case list UI includes page-size labels", () => {
 });
 
 test("page-size options 10, 25, 50, 100 exist", () => {
-  assert.match(componentSource, /PAGE_SIZE_OPTIONS/);
-  assert.match(componentSource, /10,\s*25,\s*50,\s*100/);
+  assert.match(urlStateSource, /CASE_LIST_PAGE_SIZE_OPTIONS/);
+  assert.deepEqual([...CASE_LIST_PAGE_SIZE_OPTIONS], [10, 25, 50, 100]);
 });
 
 test("default page size is 50", () => {
-  assert.match(componentSource, /DEFAULT_PAGE_SIZE = 50/);
-  assert.match(componentSource, /useState\(DEFAULT_PAGE_SIZE\)/);
+  assert.equal(CASE_LIST_DEFAULT_PAGE_SIZE, 50);
+  assert.match(componentSource, /parseCaseListUrlState/);
 });
 
 test("changing page size updates limit and resets offset references", () => {
   assert.match(componentSource, /handlePageSizeChange/);
-  assert.match(componentSource, /limit: pageSize/);
-  assert.match(componentSource, /setOffset\(0\)/);
-  assert.match(componentSource, /setPageSize/);
+  assert.match(componentSource, /replaceListUrl/);
+  const pageSizeChangeStart = componentSource.indexOf(
+    "function handlePageSizeChange",
+  );
+  const previousPageStart = componentSource.indexOf("function handlePreviousPage");
+  const pageSizeChangeBlock = componentSource.slice(
+    pageSizeChangeStart,
+    previousPageStart,
+  );
+  assert.match(pageSizeChangeBlock, /offset: 0/);
 });
 
 test("filters keep selected limit and reset offset references", () => {
@@ -47,19 +63,15 @@ test("filters keep selected limit and reset offset references", () => {
   const filterChangeBlock = componentSource.slice(filterChangeStart, clearFiltersStart);
   const clearFiltersBlock = componentSource.slice(clearFiltersStart, pageSizeChangeStart);
 
-  assert.match(componentSource, /handleFilterChange/);
-  assert.match(componentSource, /handleClearFilters/);
-  assert.match(filterChangeBlock, /setOffset\(0\)/);
-  assert.match(clearFiltersBlock, /setOffset\(0\)/);
-  assert.doesNotMatch(filterChangeBlock, /setPageSize/);
-  assert.doesNotMatch(clearFiltersBlock, /setPageSize/);
+  assert.match(filterChangeBlock, /offset: 0/);
+  assert.match(clearFiltersBlock, /offset: 0/);
+  assert.match(clearFiltersBlock, /pageSize/);
+  assert.doesNotMatch(filterChangeBlock, /pageSize: Number/);
 });
 
 test("previous and next pagination references selected limit", () => {
-  assert.match(componentSource, /handlePreviousPage/);
-  assert.match(componentSource, /handleNextPage/);
-  assert.match(componentSource, /current - pageSize/);
-  assert.match(componentSource, /current \+ pageSize/);
+  assert.match(componentSource, /offset - pageSize/);
+  assert.match(componentSource, /offset \+ pageSize/);
   assert.match(componentSource, /offset \+ pageSize < listTotal/);
 });
 

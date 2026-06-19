@@ -79,7 +79,7 @@ test("cases list UI includes All options", () => {
 test("cases list UI includes clear filters behavior references", () => {
   assert.match(componentSource, /clearFilters/);
   assert.match(componentSource, /handleClearFilters/);
-  assert.match(componentSource, /EMPTY_FILTERS/);
+  assert.match(componentSource, /EMPTY_CASE_LIST_FILTERS/);
   assert.match(componentSource, /buildCaseListFilters/);
   assert.match(componentSource, /listCases/);
 });

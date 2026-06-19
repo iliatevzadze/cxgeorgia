@@ -17,6 +17,10 @@ const workspacesApiSource = readFileSync(
   join(rootDir, "src/lib/workspaces/api.ts"),
   "utf-8",
 );
+const listUrlStateSource = readFileSync(
+  join(rootDir, "src/lib/cases/list-url-state.ts"),
+  "utf-8",
+);
 const enMessages = JSON.parse(
   readFileSync(join(rootDir, "messages/en.json"), "utf-8"),
 );
@@ -58,8 +62,8 @@ test("All assignees option exists", () => {
 
 test("clear filters includes assigned_to_user_id reset references", () => {
   assert.match(componentSource, /handleClearFilters/);
-  assert.match(componentSource, /EMPTY_FILTERS/);
-  assert.match(componentSource, /assigned_to_user_id: ""/);
+  assert.match(componentSource, /EMPTY_CASE_LIST_FILTERS/);
+  assert.match(listUrlStateSource, /assigned_to_user_id: ""/);
 });
 
 test("assignee load failure state exists", () => {

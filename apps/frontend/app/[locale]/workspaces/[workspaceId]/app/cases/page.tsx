@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 
 import { WorkspaceAppSectionPanel } from "@/components/workspace-app-section-panel";
@@ -16,7 +17,9 @@ export default async function WorkspaceAppCasesPage({
   return (
     <main className="page workspace-app-page">
       <WorkspaceAppSectionPanel workspaceId={workspaceId} activeSection="cases">
-        <WorkspaceCasesList workspaceId={workspaceId} />
+        <Suspense fallback={null}>
+          <WorkspaceCasesList workspaceId={workspaceId} />
+        </Suspense>
       </WorkspaceAppSectionPanel>
     </main>
   );

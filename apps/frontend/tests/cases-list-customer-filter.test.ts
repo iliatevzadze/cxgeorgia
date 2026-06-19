@@ -17,6 +17,10 @@ const customersApiSource = readFileSync(
   join(rootDir, "src/lib/customers/api.ts"),
   "utf-8",
 );
+const listUrlStateSource = readFileSync(
+  join(rootDir, "src/lib/cases/list-url-state.ts"),
+  "utf-8",
+);
 const enMessages = JSON.parse(
   readFileSync(join(rootDir, "messages/en.json"), "utf-8"),
 );
@@ -55,8 +59,8 @@ test("All customers option exists", () => {
 
 test("clear filters includes customer filter reset references", () => {
   assert.match(componentSource, /handleClearFilters/);
-  assert.match(componentSource, /EMPTY_FILTERS/);
-  assert.match(componentSource, /customer_id: ""/);
+  assert.match(componentSource, /EMPTY_CASE_LIST_FILTERS/);
+  assert.match(listUrlStateSource, /customer_id: ""/);
 });
 
 test("customer load failure state exists", () => {
