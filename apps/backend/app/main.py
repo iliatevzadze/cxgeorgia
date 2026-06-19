@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.agent_workforce import router as agent_workforce_router
 from app.api.auth import router as auth_router
 from app.api.case_qa import router as case_qa_router
 from app.api.case_tags import router as case_tags_router
@@ -25,6 +26,7 @@ def create_app() -> FastAPI:
     application.include_router(case_tags_router)
     application.include_router(universal_cases_router)
     application.include_router(case_qa_router)
+    application.include_router(agent_workforce_router)
     application.include_router(operations_dashboard_router)
     return application
 

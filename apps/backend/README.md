@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 49: QA Review frontend UI)
+**Phase 1 — SaaS Base** (Step 50: Agent Workforce backend API)
 
-The case detail page includes QA review management UI backed by the Step 48 API.
+Agents can clock in/out and workforce metrics can be listed through the Step 44 service layer via new API routes.
 
-Phase 1 / Step 50 has **not started**.
+Phase 1 / Step 51 has **not started**.
 
 ## Auth API
 
@@ -74,6 +74,16 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/criteria` | Add criterion score to a review (active members only) |
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/approve` | Approve pending review (active members only) |
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/qa-reviews/{review_id}/reject` | Reject pending review (active members only) |
+
+## Agent Workforce API (Phase 1 / Step 50)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/workspaces/{workspace_id}/agent-workforce/clock-in` | Start active shift for current user (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/agent-workforce/clock-out` | Close active shift for current user (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/agent-workforce/me/active-shift` | Current user's active shift or null (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/agent-workforce/active-shifts` | List active shifts in workspace (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/agent-workforce/case-metrics` | List agent case metrics with optional `user_id` / `case_id` filters (active members only) |
 
 All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 

@@ -186,3 +186,39 @@ async def record_agent_message(
     metric.messages_count += 1
     await session.flush()
     return metric
+
+
+async def list_active_workspace_shifts(
+    session: AsyncSession,
+    workspace_id: UUID,
+) -> list[AgentShift]:
+    """Return active shifts in a workspace, newest clock-in first."""
+    result = await session.scalars(
+        select(AgentShift)
+        .where(
+            AgentShift.workspace_id == workspace_id,
+            AgentShift.is_active.is_(True),
+        )
+        .order_by(AgentShift.clock_in_at.desc())
+    )
+    return list(result.all())
+
+
+async def list_workspace_case_metrics(
+    session: AsyncSession,
+    workspace_id: UUID,
+    *,
+    user_id: UUID | None = None,
+    case_id: UUID | None = None,
+) -> list[AgentCaseMetric]:
+    """Return workspace agent case metrics with optional filters."""
+    query = select(AgentCaseMetric).where(
+        AgentCaseMetric.workspace_id == workspace_id,
+    )
+    if user_id is not None:
+        query = query.where(AgentCaseMetric.user_id == user_id)
+    if case_id is not None:
+        query = query.where(AgentCaseMetric.case_id == case_id)
+    query = query.order_by(AgentCaseMetric.assigned_at.desc().nullslast())
+    result = await session.scalars(query)
+    return list(result.all())

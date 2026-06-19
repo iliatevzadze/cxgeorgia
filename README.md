@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 49: QA Review frontend UI)
+**Phase 1 — SaaS Base** (Step 50: Agent Workforce backend API)
 
-QA reviews can be managed from the case detail page: list, create, score, approve and reject.
+Agents can clock in/out and workforce metrics can be listed through the backend API. Agent Workforce frontend UI is not implemented yet.
 
-Phase 1 / Step 50 has **not started**.
+Phase 1 / Step 51 has **not started**.
 
 ## Confirmed stack
 
@@ -328,7 +328,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Operations Dashboard frontend UI (Phase 1 / Step 47)
 - [x] QA Review backend API (Phase 1 / Step 48)
 - [x] QA Review frontend UI (Phase 1 / Step 49)
-- [ ] Phase 1 / Step 50 (not started)
+- [x] Agent Workforce backend API (Phase 1 / Step 50)
+- [ ] Phase 1 / Step 51 (not started)
 
 ## License
 
