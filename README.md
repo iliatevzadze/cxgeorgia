@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 57: Read-only SLA frontend visibility)
+**Phase 1 — SaaS Base** (Step 58: Customer case-history backend filtering)
 
-Users can view SLA status and timestamps on case list and case detail. SLA calculation remains backend-owned.
+The Universal Cases list endpoint supports optional `customer_id` filtering for customer case history. Frontend customer case-history UI is not implemented yet.
 
-Phase 1 / Step 58 has **not started**.
+Phase 1 / Step 59 has **not started**.
 
 ## Confirmed stack
 
@@ -336,7 +336,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Case–Customer backend linking (Phase 1 / Step 55)
 - [x] Case–Customer frontend linking (Phase 1 / Step 56)
 - [x] Read-only SLA frontend visibility (Phase 1 / Step 57)
-- [ ] Phase 1 / Step 58 (not started)
+- [x] Customer case-history backend filtering (Phase 1 / Step 58)
+- [ ] Phase 1 / Step 59 (not started)
 
 ## License
 

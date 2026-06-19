@@ -8,6 +8,7 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Query,
     Response,
     UploadFile,
     status,
@@ -247,16 +248,18 @@ async def create_case(
 @router.get("")
 async def list_cases(
     workspace_id: UUID,
+    customer_id: UUID | None = Query(default=None),
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """List universal cases in the workspace, newest first."""
     _ = membership
-    result = await session.scalars(
-        select(UniversalCase)
-        .where(UniversalCase.workspace_id == workspace_id)
-        .order_by(UniversalCase.created_at.desc())
-    )
+    if customer_id is not None:
+        await _require_workspace_customer(session, workspace_id, customer_id)
+    stmt = select(UniversalCase).where(UniversalCase.workspace_id == workspace_id)
+    if customer_id is not None:
+        stmt = stmt.where(UniversalCase.customer_id == customer_id)
+    result = await session.scalars(stmt.order_by(UniversalCase.created_at.desc()))
     items = [
         UniversalCaseRead.model_validate(item).model_dump(mode="json")
         for item in result.all()

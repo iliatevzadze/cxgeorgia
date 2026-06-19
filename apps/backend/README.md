@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 55: Case–Customer backend linking)
+**Phase 1 — SaaS Base** (Step 58: Customer case-history backend filtering)
 
-Universal Cases can optionally link to workspace Customer Records via `customer_id`. Frontend customer-case linking and read-only SLA visibility are available from Steps 56–57.
+`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional `customer_id` to list cases linked to a customer. Frontend customer case-history UI is not implemented yet.
 
-Phase 1 / Step 58 has **not started**.
+Phase 1 / Step 59 has **not started**.
 
 ## Auth API
 
@@ -34,7 +34,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/v1/workspaces/{workspace_id}/cases` | Create case (active members only) |
-| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first |
+| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first; optional `customer_id` filter for customer case history |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source, customer metadata and assignment |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |

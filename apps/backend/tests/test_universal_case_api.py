@@ -44,10 +44,14 @@ async def _create_case(
     workspace_id: str,
     *,
     title: str = "Patch test case",
+    customer_id: str | None = None,
 ) -> str:
+    payload: dict[str, object] = {"title": title}
+    if customer_id is not None:
+        payload["customer_id"] = customer_id
     response = await client.post(
         f"/api/v1/workspaces/{workspace_id}/cases",
-        json={"title": title},
+        json=payload,
         headers=headers,
     )
     assert response.status_code == 201
@@ -328,6 +332,243 @@ async def test_list_cases_sorted_newest_first(
     )
     items = response_data(list_response)
     assert [item["id"] for item in items] == [second_id, first_id]
+
+
+async def test_list_cases_without_customer_id_returns_all_workspace_cases(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-all-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "All Cases Workspace")
+    customer_a_id = await _create_customer(
+        client,
+        headers,
+        workspace_id,
+        display_name="Customer A",
+        email="customer-a@example.com",
+    )
+    customer_b_id = await _create_customer(
+        client,
+        headers,
+        workspace_id,
+        display_name="Customer B",
+        email="customer-b@example.com",
+    )
+    linked_a_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked to A",
+        customer_id=customer_a_id,
+    )
+    linked_b_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked to B",
+        customer_id=customer_b_id,
+    )
+    unlinked_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Unlinked case",
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert {item["id"] for item in items} == {
+        linked_a_id,
+        linked_b_id,
+        unlinked_id,
+    }
+
+
+async def test_list_cases_with_valid_customer_id_returns_only_linked_cases(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-filter-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Filter Workspace")
+    customer_id = await _create_customer(client, headers, workspace_id)
+    linked_case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Customer case",
+        customer_id=customer_id,
+    )
+    await _create_case(client, headers, workspace_id, title="Unlinked case")
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": customer_id},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == linked_case_id
+    assert items[0]["customer_id"] == customer_id
+
+
+async def test_list_cases_with_customer_id_excludes_other_customer_cases(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-exclude-other-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Exclude Other Workspace")
+    customer_a_id = await _create_customer(
+        client,
+        headers,
+        workspace_id,
+        display_name="Filter Customer",
+        email="filter-customer@example.com",
+    )
+    customer_b_id = await _create_customer(
+        client,
+        headers,
+        workspace_id,
+        display_name="Other Customer",
+        email="other-customer@example.com",
+    )
+    linked_a_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Case for filter customer",
+        customer_id=customer_a_id,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Case for other customer",
+        customer_id=customer_b_id,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": customer_a_id},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == linked_a_id
+
+
+async def test_list_cases_with_customer_id_excludes_unlinked_cases(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-exclude-unlinked-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Exclude Unlinked Workspace",
+    )
+    customer_id = await _create_customer(client, headers, workspace_id)
+    linked_case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked only",
+        customer_id=customer_id,
+    )
+    await _create_case(client, headers, workspace_id, title="No customer")
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": customer_id},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == linked_case_id
+
+
+async def test_list_cases_with_cross_workspace_customer_id_blocked(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-list-cross-owner-{uuid.uuid4()}@example.com",
+    )
+    other_headers = await auth_headers(
+        client,
+        f"case-list-cross-other-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "List Cross Workspace",
+    )
+    other_workspace_id = await _create_workspace(
+        client,
+        other_headers,
+        "Other List Workspace",
+    )
+    other_customer_id = await _create_customer(
+        client,
+        other_headers,
+        other_workspace_id,
+        email="list-cross@example.com",
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": other_customer_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Customer must belong to this workspace"
+
+
+async def test_list_cases_with_customer_id_unauthenticated_returns_401(
+    client: AsyncClient,
+) -> None:
+    response = await client.get(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases",
+        params={"customer_id": str(uuid.uuid4())},
+    )
+    assert response.status_code == 401
+
+
+async def test_list_cases_with_customer_id_non_member_returns_404(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-owner-list-filter-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Private Filter List")
+    customer_id = await _create_customer(client, owner_headers, workspace_id)
+
+    other_email = f"case-nonmember-list-filter-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"customer_id": customer_id},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
 
 
 async def test_get_case_detail_for_workspace_member(client: AsyncClient) -> None:
