@@ -24,6 +24,7 @@ from app.db.base import Base
 from app.models.enums import CustomerStatus
 
 if TYPE_CHECKING:
+    from app.models.universal_case import UniversalCase
     from app.models.workspace import Workspace
 
 
@@ -90,3 +91,6 @@ class Customer(Base):
     )
 
     workspace: Mapped[Workspace] = relationship(back_populates="customers")
+    universal_cases: Mapped[list[UniversalCase]] = relationship(
+        back_populates="customer",
+    )

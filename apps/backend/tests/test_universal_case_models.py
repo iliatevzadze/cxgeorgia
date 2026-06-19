@@ -30,6 +30,7 @@ def test_universal_cases_columns() -> None:
         "external_reference",
         "created_by_user_id",
         "assigned_to_user_id",
+        "customer_id",
         "created_at",
         "updated_at",
         "first_response_due_at",
@@ -52,6 +53,10 @@ def test_universal_cases_assigned_to_user_fk() -> None:
     assert _foreign_key_targets("universal_cases", "assigned_to_user_id") == {"users"}
 
 
+def test_universal_cases_customer_fk() -> None:
+    assert _foreign_key_targets("universal_cases", "customer_id") == {"customers"}
+
+
 def test_universal_cases_indexes() -> None:
     indexes = Base.metadata.tables["universal_cases"].indexes
     index_columns = {tuple(index.columns.keys()) for index in indexes}
@@ -59,11 +64,19 @@ def test_universal_cases_indexes() -> None:
     assert ("workspace_id", "status") in index_columns
     assert ("sla_status",) in index_columns
     assert ("resolution_due_at",) in index_columns
+    assert ("customer_id",) in index_columns
 
 
 def test_universal_case_workspace_relationship() -> None:
     assert UniversalCase.workspace.property.back_populates == "universal_cases"
     assert Workspace.universal_cases.property.back_populates == "workspace"
+
+
+def test_universal_case_customer_relationship() -> None:
+    from app.models.customer import Customer
+
+    assert UniversalCase.customer.property.back_populates == "universal_cases"
+    assert Customer.universal_cases.property.back_populates == "customer"
 
 
 def test_case_status_enum_values() -> None:

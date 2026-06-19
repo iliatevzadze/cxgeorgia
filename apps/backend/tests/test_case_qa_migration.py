@@ -13,8 +13,8 @@ def _alembic_script() -> ScriptDirectory:
     return ScriptDirectory.from_config(config)
 
 
-def test_alembic_head_is_0013() -> None:
-    assert _alembic_script().get_current_head() == "0013"
+def test_alembic_head_is_0014() -> None:
+    assert _alembic_script().get_current_head() == "0014"
 
 
 def test_0012_migration_revises_0011() -> None:

@@ -20,6 +20,7 @@ class UniversalCaseCreate(BaseModel):
     customer_email: str | None = Field(default=None, max_length=320)
     external_reference: str | None = Field(default=None, max_length=255)
     assigned_to_user_id: UUID | None = None
+    customer_id: UUID | None = None
 
     @field_validator("title", mode="before")
     @classmethod
@@ -43,6 +44,7 @@ class UniversalCaseUpdate(BaseModel):
     customer_email: str | None = Field(default=None, max_length=320)
     external_reference: str | None = Field(default=None, max_length=255)
     assigned_to_user_id: UUID | None = None
+    customer_id: UUID | None = None
 
     @field_validator("title", mode="before")
     @classmethod
@@ -89,8 +91,8 @@ class UniversalCaseUpdate(BaseModel):
         if not self.model_fields_set:
             raise ValueError(
                 "At least one of title, description, status, priority, source, "
-                "customer_name, customer_email, external_reference or "
-                "assigned_to_user_id must be provided"
+                "customer_name, customer_email, external_reference, "
+                "assigned_to_user_id or customer_id must be provided"
             )
         if "title" in self.model_fields_set and self.title is None:
             raise ValueError("Title must not be null")
@@ -116,6 +118,7 @@ class UniversalCaseRead(BaseModel):
     external_reference: str | None
     created_by_user_id: UUID | None
     assigned_to_user_id: UUID | None
+    customer_id: UUID | None
     created_at: datetime
     updated_at: datetime
 

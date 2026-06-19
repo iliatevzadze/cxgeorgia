@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 53: Customer Records backend foundation)
+**Phase 1 — SaaS Base** (Step 55: Case–Customer backend linking)
 
-Workspace-scoped customer records can be managed through the backend API. Customer frontend UI is not implemented yet.
+Universal Cases can optionally link to workspace Customer Records via `customer_id`. Customer-case frontend linking is not implemented yet.
 
-Phase 1 / Step 55 has **not started**.
+Phase 1 / Step 56 has **not started**.
 
 ## Auth API
 
@@ -95,6 +95,8 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | PATCH | `/api/v1/workspaces/{workspace_id}/customers/{customer_id}` | Update customer, including archive via `status: archived` (active members only) |
 | DELETE | `/api/v1/workspaces/{workspace_id}/customers/{customer_id}` | Hard-delete customer (active members only) |
 
+Universal Cases may optionally include `customer_id` on create and PATCH. The customer must belong to the same workspace; deleting a customer sets linked case `customer_id` to null.
+
 All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
 File storage is configured via `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` and `STORAGE_BUCKET_DEFAULT` (legacy `MINIO_*` env vars are also accepted).
@@ -106,7 +108,7 @@ Case create, update, assignment changes, comment create/edit/delete automaticall
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0013
+alembic upgrade head   # applies through 0014
 alembic current
 ```
 

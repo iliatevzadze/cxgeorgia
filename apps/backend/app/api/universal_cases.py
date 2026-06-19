@@ -66,6 +66,7 @@ from app.services.case_attachment_upload import (
     create_case_attachment_with_file,
     sanitize_file_name,
 )
+from app.services.customer_service import get_customer
 from app.services.sla_service import (
     mark_first_response,
     mark_resolved,
@@ -104,6 +105,22 @@ async def _require_active_workspace_assignee(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Assignee must be an active member of this workspace",
+        )
+
+
+CUSTOMER_NOT_IN_WORKSPACE_MESSAGE = "Customer must belong to this workspace"
+
+
+async def _require_workspace_customer(
+    session: AsyncSession,
+    workspace_id: UUID,
+    customer_id: UUID,
+) -> None:
+    customer = await get_customer(session, workspace_id, customer_id)
+    if customer is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=CUSTOMER_NOT_IN_WORKSPACE_MESSAGE,
         )
 
 
@@ -194,6 +211,9 @@ async def create_case(
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Create a universal case in the workspace."""
+    if body.customer_id is not None:
+        await _require_workspace_customer(session, workspace_id, body.customer_id)
+
     case = UniversalCase(
         workspace_id=workspace_id,
         title=body.title,
@@ -206,6 +226,7 @@ async def create_case(
         external_reference=body.external_reference,
         created_by_user_id=membership.user_id,
         assigned_to_user_id=body.assigned_to_user_id,
+        customer_id=body.customer_id,
     )
     session.add(case)
     await session.flush()
@@ -313,6 +334,14 @@ async def update_case(
                 body.assigned_to_user_id,
             )
         case.assigned_to_user_id = body.assigned_to_user_id
+    if "customer_id" in body.model_fields_set:
+        if body.customer_id is not None:
+            await _require_workspace_customer(
+                session,
+                workspace_id,
+                body.customer_id,
+            )
+        case.customer_id = body.customer_id
 
     if (
         "assigned_to_user_id" in body.model_fields_set

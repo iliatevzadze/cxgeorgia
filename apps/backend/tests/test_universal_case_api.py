@@ -82,6 +82,26 @@ async def _add_active_workspace_member(
     return str(user.id)
 
 
+async def _create_customer(
+    client: AsyncClient,
+    headers: dict[str, str],
+    workspace_id: str,
+    *,
+    display_name: str = "Linked Customer",
+    email: str | None = "linked@example.com",
+) -> str:
+    payload: dict[str, object] = {"display_name": display_name}
+    if email is not None:
+        payload["email"] = email
+    response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/customers",
+        json=payload,
+        headers=headers,
+    )
+    assert response.status_code == 201
+    return response_data(response)["id"]
+
+
 async def test_create_case_unauthenticated_returns_401(client: AsyncClient) -> None:
     response = await client.post(
         f"/api/v1/workspaces/{uuid.uuid4()}/cases",
@@ -1477,3 +1497,179 @@ async def test_delete_case_does_not_delete_other_case_in_workspace(
     )
     assert detail_response.status_code == 200
     assert response_data(detail_response)["title"] == "Keep this"
+
+
+async def test_create_case_without_customer_still_works(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-no-customer-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "No Customer Case")
+    response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Unlinked case"},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    assert response_data(response)["customer_id"] is None
+
+
+async def test_create_case_with_valid_customer_id(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-with-customer-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Linked Case Create")
+    customer_id = await _create_customer(client, headers, workspace_id)
+
+    response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Linked case", "customer_id": customer_id},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    data = response_data(response)
+    assert data["customer_id"] == customer_id
+
+
+async def test_create_case_with_cross_workspace_customer_id_blocked(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-cross-customer-owner-{uuid.uuid4()}@example.com",
+    )
+    other_headers = await auth_headers(
+        client,
+        f"case-cross-customer-other-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Case Customer Cross")
+    other_workspace_id = await _create_workspace(
+        client,
+        other_headers,
+        "Other Customer Workspace",
+    )
+    other_customer_id = await _create_customer(
+        client,
+        other_headers,
+        other_workspace_id,
+        email="other-ws@example.com",
+    )
+
+    response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Blocked link", "customer_id": other_customer_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Customer must belong to this workspace"
+
+
+async def test_patch_case_to_valid_customer_id(client: AsyncClient) -> None:
+    headers = await auth_headers(client, f"case-patch-link-{uuid.uuid4()}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Patch Link Customer")
+    customer_id = await _create_customer(client, headers, workspace_id)
+    case_id = await _create_case(client, headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_id": customer_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_id"] == customer_id
+
+
+async def test_patch_case_to_null_unlinks_customer(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-patch-unlink-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Patch Unlink Customer")
+    customer_id = await _create_customer(client, headers, workspace_id)
+    case_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked for unlink",
+    )
+
+    link_response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_id": customer_id},
+        headers=headers,
+    )
+    assert link_response.status_code == 200
+    assert response_data(link_response)["customer_id"] == customer_id
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_id": None},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response_data(response)["customer_id"] is None
+
+
+async def test_patch_case_to_cross_workspace_customer_id_blocked(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-patch-cross-customer-owner-{uuid.uuid4()}@example.com",
+    )
+    other_headers = await auth_headers(
+        client,
+        f"case-patch-cross-customer-other-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Patch Customer Cross",
+    )
+    other_workspace_id = await _create_workspace(
+        client,
+        other_headers,
+        "Patch Other Customer Workspace",
+    )
+    other_customer_id = await _create_customer(
+        client,
+        other_headers,
+        other_workspace_id,
+        email="patch-other@example.com",
+    )
+    case_id = await _create_case(client, owner_headers, workspace_id)
+
+    response = await client.patch(
+        f"/api/v1/workspaces/{workspace_id}/cases/{case_id}",
+        json={"customer_id": other_customer_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Customer must belong to this workspace"
+
+
+async def test_deleting_customer_sets_case_customer_id_to_null(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-delete-customer-null-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Delete Customer Null FK")
+    customer_id = await _create_customer(client, headers, workspace_id)
+    create_response = await client.post(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        json={"title": "Case with customer", "customer_id": customer_id},
+        headers=headers,
+    )
+    assert create_response.status_code == 201
+    case_id = response_data(create_response)["id"]
+
+    delete_response = await client.delete(
+        f"/api/v1/workspaces/{workspace_id}/customers/{customer_id}",
+        headers=headers,
+    )
+    assert delete_response.status_code == 200
+
+    case = await db_session.get(UniversalCase, UUID(case_id))
+    assert case is not None
+    assert case.customer_id is None

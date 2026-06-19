@@ -20,6 +20,7 @@ CASE_UPDATED_FIELDS = frozenset(
         "customer_name",
         "customer_email",
         "external_reference",
+        "customer_id",
     }
 )
 
@@ -36,6 +37,7 @@ def snapshot_case(case: UniversalCase) -> dict[str, Any]:
         "customer_email": case.customer_email,
         "external_reference": case.external_reference,
         "assigned_to_user_id": case.assigned_to_user_id,
+        "customer_id": case.customer_id,
     }
 
 
@@ -116,6 +118,8 @@ def _patch_fields_in_body(body: UniversalCaseUpdate) -> set[str]:
         fields.add("external_reference")
     if "assigned_to_user_id" in body.model_fields_set:
         fields.add("assigned_to_user_id")
+    if "customer_id" in body.model_fields_set:
+        fields.add("customer_id")
     return fields
 
 

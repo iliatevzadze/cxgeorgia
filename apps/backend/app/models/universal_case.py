@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from app.models.case_comment import CaseComment
     from app.models.case_qa_review import CaseQaReview
     from app.models.case_tag import CaseTag
+    from app.models.customer import Customer
     from app.models.workspace import Workspace
 
 
@@ -45,6 +46,7 @@ class UniversalCase(Base):
         Index("ix_universal_cases_workspace_id_status", "workspace_id", "status"),
         Index("ix_universal_cases_sla_status", "sla_status"),
         Index("ix_universal_cases_resolution_due_at", "resolution_due_at"),
+        Index("ix_universal_cases_customer_id", "customer_id"),
     )
 
     id: Mapped[UUID] = mapped_column(
@@ -98,6 +100,11 @@ class UniversalCase(Base):
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
     )
+    customer_id: Mapped[UUID | None] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("customers.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -135,6 +142,7 @@ class UniversalCase(Base):
     )
 
     workspace: Mapped[Workspace] = relationship(back_populates="universal_cases")
+    customer: Mapped[Customer | None] = relationship(back_populates="universal_cases")
     comments: Mapped[list[CaseComment]] = relationship(
         back_populates="case",
         cascade="all, delete-orphan",
