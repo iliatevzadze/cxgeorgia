@@ -4,13 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 39: Universal Case tag activity recording)
+**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
 
-Tag attach and detach actions appear in the case activity timeline.
+The workspace app dashboard displays read-only operational aggregates from the Step 46 backend API.
 
-SLA, attachments, and customer module are **not implemented**.
-
-Phase 1 / Step 40 has **not started**.
+Phase 1 / Step 48 has **not started**.
 
 ## What exists now
 
@@ -23,8 +21,9 @@ Phase 1 / Step 40 has **not started**.
 - Workspace pages: list, create, detail, memberships
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
+- Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
 - Case detail update, assignment, comments (list/create/edit/delete), tags, activity timeline and case delete controls
-- Workspace app placeholder routes: dashboard, customers, settings
+- Workspace app placeholder routes: customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`
 - `AuthProvider`, `useAuth`, `useWorkspaces`, and `useWorkspace` hooks
@@ -35,7 +34,7 @@ Phase 1 / Step 40 has **not started**.
 ## What does not exist yet
 
 - Activity create/edit/delete UI
-- Product dashboard, customers, settings
+- Product customers, settings
 - Workspace switcher or invitation UI
 - Advanced RBAC UI
 - React Query, SWR, or component libraries
@@ -64,7 +63,8 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
 | `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with update, assignment, comments, tags, activity timeline and delete |
-| `/ka/workspaces/{id}/app/dashboard`, etc. | Placeholder module routes (not implemented) |
+| `/ka/workspaces/{id}/app/dashboard`, `/en/...` | Operations dashboard (`GET /api/v1/workspaces/{id}/operations/dashboard`) |
+| `/ka/workspaces/{id}/app/customers`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration
 
@@ -106,6 +106,9 @@ apps/frontend/
 │       ├── api/
 │       ├── auth/
 │       ├── cases/
+│       │   ├── api.ts
+│       │   └── types.ts
+│       ├── operations/
 │       │   ├── api.ts
 │       │   └── types.ts
 │       └── workspaces/

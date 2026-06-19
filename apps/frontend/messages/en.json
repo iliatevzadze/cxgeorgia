@@ -162,6 +162,35 @@
         "notBuiltCustomers": "Customers module",
         "notBuiltIntegrations": "Integrations"
       },
+      "dashboard": {
+        "title": "Operations dashboard",
+        "description": "Read-only overview of case volume, SLA, agent workload and QA metrics.",
+        "loading": "Loading dashboard...",
+        "error": "Failed to load dashboard",
+        "empty": "No dashboard data yet",
+        "sections": {
+          "cases": "Cases",
+          "sla": "SLA",
+          "agents": "Agents",
+          "qa": "QA"
+        },
+        "metrics": {
+          "total": "Total",
+          "open": "Open",
+          "pending": "Pending",
+          "resolved": "Resolved",
+          "onTrack": "On track",
+          "atRisk": "At risk",
+          "breached": "Breached",
+          "activeShifts": "Active shifts",
+          "agentCaseMetrics": "Agent case metrics",
+          "agentMessages": "Agent messages",
+          "totalReviews": "Total reviews",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "averageScore": "Average score"
+        }
+      },
       "cases": {
         "title": "Cases",
         "description": "Create and view Universal Cases in this workspace.",

@@ -4,13 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 46: Operations Dashboard backend API)
+**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
 
-`GET /api/v1/workspaces/{workspace_id}/operations/dashboard` returns read-only aggregates for cases, SLA, agent workload, and QA reviews.
+The workspace app dashboard at `/app/dashboard` consumes `GET /operations/dashboard` and displays case, SLA, agent, and QA summaries.
 
-Frontend dashboard UI is not implemented yet.
-
-Phase 1 / Step 47 has **not started**.
+Phase 1 / Step 48 has **not started**.
 
 ## Auth API
 

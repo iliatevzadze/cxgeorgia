@@ -162,6 +162,35 @@
         "notBuiltCustomers": "მომხმარებლების მოდული",
         "notBuiltIntegrations": "ინტეგრაციები"
       },
+      "dashboard": {
+        "title": "ოპერაციების დაფა",
+        "description": "ქეისების მოცულობის, SLA-ს, აგენტების დატვირთვისა და QA მეტრიკების მიმოხილვა.",
+        "loading": "დაფის ჩატვირთვა...",
+        "error": "დაფის ჩატვირთვა ვერ მოხერხდა",
+        "empty": "დაფის მონაცემები ჯერ არ არის",
+        "sections": {
+          "cases": "ქეისები",
+          "sla": "SLA",
+          "agents": "აგენტები",
+          "qa": "QA"
+        },
+        "metrics": {
+          "total": "სულ",
+          "open": "ღია",
+          "pending": "მოლოდინში",
+          "resolved": "გადაწყვეტილი",
+          "onTrack": "გრაფიკზე",
+          "atRisk": "რისკში",
+          "breached": "დარღვეული",
+          "activeShifts": "აქტიური ცვლები",
+          "agentCaseMetrics": "აგენტის ქეისის მეტრიკები",
+          "agentMessages": "აგენტის შეტყობინებები",
+          "totalReviews": "შეფასებები სულ",
+          "approved": "დამტკიცებული",
+          "rejected": "უარყოფილი",
+          "averageScore": "საშუალო ქულა"
+        }
+      },
       "cases": {
         "title": "ქეისები",
         "description": "შექმენით და ნახეთ Universal Case-ები ამ workspace-ში.",

@@ -10,13 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 46: Operations Dashboard backend API)
+**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
 
-Read-only `/operations/dashboard` aggregates case volume, SLA status, agent workload, and QA metrics per workspace.
+The workspace app dashboard displays read-only operational aggregates from the Step 46 backend API.
 
-Frontend dashboard UI is not implemented yet.
-
-Phase 1 / Step 47 has **not started**.
+Phase 1 / Step 48 has **not started**.
 
 ## Confirmed stack
 
@@ -327,7 +325,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Agent Workforce Tracking foundation (Phase 1 / Step 44)
 - [x] QA / Ticket Evaluation system (Phase 1 / Step 45)
 - [x] Operations Dashboard backend API (Phase 1 / Step 46)
-- [ ] Phase 1 / Step 47 (not started)
+- [x] Operations Dashboard frontend UI (Phase 1 / Step 47)
+- [ ] Phase 1 / Step 48 (not started)
 
 ## License
 
