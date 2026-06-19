@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 68: Case list backend sorting)
+**Phase 1 — SaaS Base** (Step 70: Saved case list views backend)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` supports optional `sort_by` (`created_at`, `updated_at`, `priority`, `status`, `sla_status`) and `sort_order` (`asc`, `desc`). Defaults: `created_at` / `desc`. Frontend sorting UI from Step 69 uses these parameters.
+Workspace-scoped CRUD for saved case list views (`case_list_views` table). Stores filters, sorting and page-size preferences. Frontend saved-view UI is not implemented yet.
 
-Phase 1 / Step 70 has **not started**.
+Phase 1 / Step 71 has **not started**.
 
 ## Auth API
 
@@ -35,6 +35,11 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 |--------|------|-------------|
 | POST | `/api/v1/workspaces/{workspace_id}/cases` | Create case (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first by default; optional filters (`status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, `sla_status`), sorting (`sort_by`, `sort_order`), and pagination (`limit`, `offset`); returns `items`, `total`, `limit`, `offset` |
+| GET | `/api/v1/workspaces/{workspace_id}/case-list-views` | List saved case list views (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/case-list-views` | Create saved case list view (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/case-list-views/{view_id}` | Saved view detail (active members only) |
+| PATCH | `/api/v1/workspaces/{workspace_id}/case-list-views/{view_id}` | Update saved view (active members only) |
+| DELETE | `/api/v1/workspaces/{workspace_id}/case-list-views/{view_id}` | Delete saved view (active members only) |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source, customer metadata and assignment |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |
@@ -101,7 +106,7 @@ All case, comment, activity, tag and attachment endpoints require `Authorization
 
 File storage is configured via `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` and `STORAGE_BUCKET_DEFAULT` (legacy `MINIO_*` env vars are also accepted).
 
-Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`, `case_attachments`, `agent_shifts`, `agent_case_metrics`, `case_qa_reviews`, `case_qa_criteria_scores`, `customers`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`, `CaseAttachment`, `AgentShift`, `AgentCaseMetric`, `CaseQaReview`, `CaseQaCriteriaScore`, `Customer`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`, `customer_status`. Universal Case SLA fields: `first_response_due_at`, `first_response_at`, `resolution_due_at`, `resolved_at`, `sla_status`. All case and activity rows include `workspace_id` for tenant isolation.
+Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`, `case_attachments`, `agent_shifts`, `agent_case_metrics`, `case_qa_reviews`, `case_qa_criteria_scores`, `customers`, `case_list_views`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`, `CaseAttachment`, `AgentShift`, `AgentCaseMetric`, `CaseQaReview`, `CaseQaCriteriaScore`, `Customer`, `CaseListView`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`, `customer_status`. Universal Case SLA fields: `first_response_due_at`, `first_response_at`, `resolution_due_at`, `resolved_at`, `sla_status`. All case and activity rows include `workspace_id` for tenant isolation.
 
 Case create, update, assignment changes, comment create/edit/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 

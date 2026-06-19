@@ -5,6 +5,7 @@ from app.models.agent_shift import AgentShift
 from app.models.case_activity import CaseActivity
 from app.models.case_attachment import CaseAttachment
 from app.models.case_comment import CaseComment
+from app.models.case_list_view import CaseListView
 from app.models.case_qa_criteria_score import CaseQaCriteriaScore
 from app.models.case_qa_review import CaseQaReview
 from app.models.case_tag import CaseTag, UniversalCaseTag
@@ -33,6 +34,7 @@ __all__ = [
     "CaseActivityType",
     "CaseAttachment",
     "CaseComment",
+    "CaseListView",
     "CaseQaCriteriaScore",
     "CaseQaReview",
     "CaseTag",

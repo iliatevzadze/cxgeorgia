@@ -16,6 +16,7 @@ from app.models.enums import UserStatus
 if TYPE_CHECKING:
     from app.models.agent_case_metric import AgentCaseMetric
     from app.models.agent_shift import AgentShift
+    from app.models.case_list_view import CaseListView
     from app.models.case_qa_review import CaseQaReview
     from app.models.workspace_membership import WorkspaceMembership
 
@@ -76,4 +77,7 @@ class User(Base):
     qa_reviews_reviewed_agent: Mapped[list[CaseQaReview]] = relationship(
         back_populates="reviewed_agent",
         foreign_keys="CaseQaReview.reviewed_agent_user_id",
+    )
+    case_list_views: Mapped[list[CaseListView]] = relationship(
+        back_populates="created_by_user",
     )

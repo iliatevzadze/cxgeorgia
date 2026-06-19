@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from app.models.case_activity import CaseActivity
     from app.models.case_attachment import CaseAttachment
     from app.models.case_comment import CaseComment
+    from app.models.case_list_view import CaseListView
     from app.models.case_qa_review import CaseQaReview
     from app.models.case_tag import CaseTag
     from app.models.customer import Customer
@@ -94,6 +95,10 @@ class Workspace(Base):
         cascade="all, delete-orphan",
     )
     customers: Mapped[list[Customer]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    case_list_views: Mapped[list[CaseListView]] = relationship(
         back_populates="workspace",
         cascade="all, delete-orphan",
     )

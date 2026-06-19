@@ -19,8 +19,8 @@ def test_0004_migration_revises_0003() -> None:
     assert revision.down_revision == "0003"
 
 
-def test_alembic_head_is_0014() -> None:
-    assert _alembic_script().get_current_head() == "0014"
+def test_alembic_head_is_0015() -> None:
+    assert _alembic_script().get_current_head() == "0015"
 
 
 def test_0014_migration_revises_0013() -> None:

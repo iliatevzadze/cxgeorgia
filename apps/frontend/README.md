@@ -6,9 +6,9 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 **Phase 1 — SaaS Base** (Step 69: Case list sorting UI)
 
-The Cases list includes sort field and direction controls with URL-persisted `sort_by` and `sort_order` state.
+The Cases list includes sort field and direction controls with URL-persisted `sort_by` and `sort_order` state. Backend saved case list views from Step 70; frontend saved-view UI is not implemented yet.
 
-Phase 1 / Step 70 has **not started**.
+Phase 1 / Step 71 has **not started**.
 
 ## What exists now
 
