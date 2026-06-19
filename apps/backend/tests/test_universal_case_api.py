@@ -1207,6 +1207,344 @@ async def test_list_cases_with_pagination_non_member_returns_404(
     assert response.status_code == 404
 
 
+async def test_list_cases_sort_created_at_desc_returns_newest_first(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-created-desc-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Created Desc")
+    older_id = await _create_case(client, headers, workspace_id, title="Older")
+    newer_id = await _create_case(client, headers, workspace_id, title="Newer")
+    older_case = await db_session.get(UniversalCase, UUID(older_id))
+    assert older_case is not None
+    older_case.created_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "created_at", "sort_order": "desc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [newer_id, older_id]
+
+
+async def test_list_cases_sort_created_at_asc_returns_oldest_first(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-created-asc-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Created Asc")
+    older_id = await _create_case(client, headers, workspace_id, title="Older asc")
+    newer_id = await _create_case(client, headers, workspace_id, title="Newer asc")
+    older_case = await db_session.get(UniversalCase, UUID(older_id))
+    assert older_case is not None
+    older_case.created_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "created_at", "sort_order": "asc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [older_id, newer_id]
+
+
+async def test_list_cases_sort_updated_at(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-updated-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Updated")
+    stale_id = await _create_case(client, headers, workspace_id, title="Stale update")
+    fresh_id = await _create_case(client, headers, workspace_id, title="Fresh update")
+    stale_case = await db_session.get(UniversalCase, UUID(stale_id))
+    fresh_case = await db_session.get(UniversalCase, UUID(fresh_id))
+    assert stale_case is not None and fresh_case is not None
+    stale_case.updated_at = datetime.now(UTC) - timedelta(hours=2)
+    fresh_case.updated_at = datetime.now(UTC) - timedelta(hours=1)
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "updated_at", "sort_order": "asc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [stale_id, fresh_id]
+
+
+async def test_list_cases_sort_priority(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-priority-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Priority")
+    low_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Low priority sort",
+        priority=CasePriority.LOW.value,
+    )
+    high_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="High priority sort",
+        priority=CasePriority.HIGH.value,
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "priority", "sort_order": "desc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [high_id, low_id]
+
+
+async def test_list_cases_sort_status(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-status-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Status")
+    open_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Open status sort",
+        status=CaseStatus.OPEN.value,
+    )
+    closed_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Closed status sort",
+        status=CaseStatus.CLOSED.value,
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "status", "sort_order": "desc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [closed_id, open_id]
+
+
+async def test_list_cases_sort_sla_status(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    suffix = uuid.uuid4().hex[:12]
+    headers = await auth_headers(client, f"case-list-sort-sla-{suffix}@example.com")
+    workspace_id = await _create_workspace(client, headers, "Sort SLA")
+    user = await db_session.scalar(
+        select(User).where(User.email == f"case-list-sort-sla-{suffix}@example.com")
+    )
+    assert user is not None
+
+    on_track_case = UniversalCase(
+        workspace_id=UUID(workspace_id),
+        title="On track sort",
+        status=CaseStatus.OPEN,
+        sla_status=SlaStatus.ON_TRACK,
+        created_by_user_id=user.id,
+    )
+    breached_case = UniversalCase(
+        workspace_id=UUID(workspace_id),
+        title="Breached sort",
+        status=CaseStatus.OPEN,
+        sla_status=SlaStatus.BREACHED,
+        created_by_user_id=user.id,
+    )
+    db_session.add_all([on_track_case, breached_case])
+    await db_session.flush()
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "sla_status", "sort_order": "asc"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [
+        str(breached_case.id),
+        str(on_track_case.id),
+    ]
+
+
+async def test_list_cases_invalid_sort_by_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-invalid-sort-by-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Invalid Sort By")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "not-a-column"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_invalid_sort_order_returns_422(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-invalid-sort-order-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Invalid Sort Order")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_order": "sideways"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_sorting_combines_with_pagination(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-page-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Page")
+    low_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Low page sort",
+        priority=CasePriority.LOW.value,
+    )
+    high_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="High page sort",
+        priority=CasePriority.HIGH.value,
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={
+            "sort_by": "priority",
+            "sort_order": "desc",
+            "limit": 1,
+            "offset": 1,
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    page = list_cases_page(response)
+    assert page["total"] == 2
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == low_id
+    assert high_id != low_id
+
+
+async def test_list_cases_sorting_combines_with_status_filter(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-sort-status-filter-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Sort Status Filter")
+    low_open_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Low open sort",
+        status=CaseStatus.OPEN.value,
+        priority=CasePriority.LOW.value,
+    )
+    high_open_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="High open sort",
+        status=CaseStatus.OPEN.value,
+        priority=CasePriority.HIGH.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Pending not in filter",
+        status=CaseStatus.PENDING.value,
+        priority=CasePriority.URGENT.value,
+    )
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={
+            "status": CaseStatus.OPEN.value,
+            "sort_by": "priority",
+            "sort_order": "desc",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    items = list_case_items(response)
+    assert [item["id"] for item in items] == [high_open_id, low_open_id]
+
+
+async def test_list_cases_with_sort_params_unauthenticated_returns_401(
+    client: AsyncClient,
+) -> None:
+    response = await client.get(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases",
+        params={"sort_by": "created_at", "sort_order": "desc"},
+    )
+    assert response.status_code == 401
+
+
+async def test_list_cases_with_sort_params_non_member_returns_404(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-owner-list-sort-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, owner_headers, "Private Sort List")
+
+    other_email = f"case-nonmember-list-sort-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sort_by": "priority", "sort_order": "asc"},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
 async def test_get_case_detail_for_workspace_member(client: AsyncClient) -> None:
     headers = await auth_headers(client, f"case-detail-{uuid.uuid4()}@example.com")
     workspace_id = await _create_workspace(client, headers, "Detail Workspace")

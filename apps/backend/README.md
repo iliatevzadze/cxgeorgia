@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 64: Universal Cases list backend pagination)
+**Phase 1 — SaaS Base** (Step 68: Case list backend sorting)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` supports `limit` (default 50, max 100) and `offset` (default 0) pagination. Frontend URL state for filters and pagination from Step 67.
+`GET /api/v1/workspaces/{workspace_id}/cases` supports optional `sort_by` (`created_at`, `updated_at`, `priority`, `status`, `sla_status`) and `sort_order` (`asc`, `desc`). Defaults: `created_at` / `desc`. Sorting combines with filters and pagination. Frontend sorting UI is not implemented yet.
 
-Phase 1 / Step 68 has **not started**.
+Phase 1 / Step 69 has **not started**.
 
 ## Auth API
 
@@ -34,7 +34,7 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/v1/workspaces/{workspace_id}/cases` | Create case (active members only) |
-| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first; optional filters (`status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, `sla_status`) and pagination (`limit`, `offset`); returns `items`, `total`, `limit`, `offset` |
+| GET | `/api/v1/workspaces/{workspace_id}/cases` | List cases in workspace, newest first by default; optional filters (`status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, `sla_status`), sorting (`sort_by`, `sort_order`), and pagination (`limit`, `offset`); returns `items`, `total`, `limit`, `offset` |
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Case detail (workspace-scoped) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Update title, description, status, priority, source, customer metadata and assignment |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}` | Delete case (active members only) |

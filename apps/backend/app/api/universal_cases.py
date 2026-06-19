@@ -25,6 +25,8 @@ from app.models.case_attachment import CaseAttachment
 from app.models.case_comment import CaseComment
 from app.models.case_tag import CaseTag, UniversalCaseTag
 from app.models.enums import (
+    CaseListSortBy,
+    CaseListSortOrder,
     CasePriority,
     CaseSource,
     CaseStatus,
@@ -161,6 +163,25 @@ def _case_list_filter_conditions(
     return conditions
 
 
+_CASE_LIST_SORT_COLUMNS = {
+    CaseListSortBy.CREATED_AT: UniversalCase.created_at,
+    CaseListSortBy.UPDATED_AT: UniversalCase.updated_at,
+    CaseListSortBy.PRIORITY: UniversalCase.priority,
+    CaseListSortBy.STATUS: UniversalCase.status,
+    CaseListSortBy.SLA_STATUS: UniversalCase.sla_status,
+}
+
+
+def _case_list_order_by(
+    sort_by: CaseListSortBy,
+    sort_order: CaseListSortOrder,
+):
+    column = _CASE_LIST_SORT_COLUMNS[sort_by]
+    if sort_order == CaseListSortOrder.DESC:
+        return column.desc()
+    return column.asc()
+
+
 async def _get_workspace_case_or_404(
     session: AsyncSession,
     workspace_id: UUID,
@@ -290,6 +311,8 @@ async def list_cases(
     assigned_to_user_id: UUID | None = Query(default=None),
     customer_id: UUID | None = Query(default=None),
     sla_status: SlaStatus | None = Query(default=None),
+    sort_by: CaseListSortBy = Query(default=CaseListSortBy.CREATED_AT),
+    sort_order: CaseListSortOrder = Query(default=CaseListSortOrder.DESC),
     limit: int = Query(default=CASE_LIST_DEFAULT_LIMIT, ge=1, le=CASE_LIST_MAX_LIMIT),
     offset: int = Query(default=0, ge=0),
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
@@ -320,7 +343,7 @@ async def list_cases(
     result = await session.scalars(
         select(UniversalCase)
         .where(*conditions)
-        .order_by(UniversalCase.created_at.desc())
+        .order_by(_case_list_order_by(sort_by, sort_order))
         .limit(limit)
         .offset(offset)
     )

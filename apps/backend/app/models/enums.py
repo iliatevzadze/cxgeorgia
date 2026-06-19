@@ -53,6 +53,19 @@ class SlaStatus(StrEnum):
     BREACHED = "breached"
 
 
+class CaseListSortBy(StrEnum):
+    CREATED_AT = "created_at"
+    UPDATED_AT = "updated_at"
+    PRIORITY = "priority"
+    STATUS = "status"
+    SLA_STATUS = "sla_status"
+
+
+class CaseListSortOrder(StrEnum):
+    ASC = "asc"
+    DESC = "desc"
+
+
 class QaReviewStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"

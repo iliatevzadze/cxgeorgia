@@ -6,9 +6,9 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 **Phase 1 — SaaS Base** (Step 67: Case list URL state)
 
-Case list filters, page size, and offset are persisted in URL query parameters.
+Case list filters, page size, and offset are persisted in URL query parameters. Backend sorting (`sort_by`, `sort_order`) is available; frontend sorting UI is not implemented yet.
 
-Phase 1 / Step 68 has **not started**.
+Phase 1 / Step 69 has **not started**.
 
 ## What exists now
 
