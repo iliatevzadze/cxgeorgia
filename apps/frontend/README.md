@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 62: Case list Customer filter)
+**Phase 1 — SaaS Base** (Step 63: Case list Assigned user filter)
 
-The Cases list page includes a Customer filter using active customers and the backend Step 60 `customer_id` query parameter.
+The Cases list page includes an Assigned user filter using workspace memberships and the backend Step 60 `assigned_to_user_id` query parameter.
 
-Phase 1 / Step 63 has **not started**.
+Phase 1 / Step 64 has **not started**.
 
 ## What exists now
 

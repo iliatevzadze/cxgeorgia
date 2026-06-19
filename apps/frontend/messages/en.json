@@ -289,6 +289,9 @@
         "allSources": "All sources",
         "allSlaStatuses": "All SLA statuses",
         "allCustomers": "All customers",
+        "assignedUserLabel": "Assigned user",
+        "allAssignees": "All assignees",
+        "assigneesLoadError": "Failed to load assignees",
         "clearFilters": "Clear filters",
         "create": {
           "title": "New case",

@@ -289,6 +289,9 @@
         "allSources": "ყველა წყარო",
         "allSlaStatuses": "ყველა SLA სტატუსი",
         "allCustomers": "ყველა მომხმარებელი",
+        "assignedUserLabel": "მიმაგრებული მომხმარებელი",
+        "allAssignees": "ყველა მიმაგრებული",
+        "assigneesLoadError": "მიმაგრებულების ჩატვირთვა ვერ მოხერხდა",
         "clearFilters": "ფილტრების გასუფთავება",
         "create": {
           "title": "ახალი ქეისი",

@@ -20,6 +20,8 @@ import type {
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { listCustomers } from "@/lib/customers/api";
 import type { Customer } from "@/lib/customers/types";
+import { listWorkspaceMemberships } from "@/lib/workspaces/api";
+import type { WorkspaceMembershipRead } from "@/lib/workspaces/types";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCasesListProps = {
@@ -32,6 +34,7 @@ type CaseListFilterState = {
   source: CaseSource | "";
   sla_status: CaseSlaStatus | "";
   customer_id: string;
+  assigned_to_user_id: string;
 };
 
 const EMPTY_FILTERS: CaseListFilterState = {
@@ -40,6 +43,7 @@ const EMPTY_FILTERS: CaseListFilterState = {
   source: "",
   sla_status: "",
   customer_id: "",
+  assigned_to_user_id: "",
 };
 
 const STATUS_OPTIONS: CaseStatus[] = [
@@ -88,7 +92,14 @@ function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
   if (state.customer_id) {
     filters.customer_id = state.customer_id;
   }
+  if (state.assigned_to_user_id) {
+    filters.assigned_to_user_id = state.assigned_to_user_id;
+  }
   return filters;
+}
+
+function formatMemberLabel(membership: WorkspaceMembershipRead): string {
+  return `${membership.user_id} (${membership.role})`;
 }
 
 function formatCustomerOptionLabel(customer: Customer): string {
@@ -146,6 +157,13 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [customersLoadError, setCustomersLoadError] = useState<string | null>(
     null,
   );
+  const [memberships, setMemberships] = useState<WorkspaceMembershipRead[]>(
+    [],
+  );
+  const [isMembershipsLoading, setIsMembershipsLoading] = useState(true);
+  const [assigneesLoadError, setAssigneesLoadError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -195,6 +213,58 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     }
 
     void loadCustomers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, t, tCommon]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMemberships() {
+      const token = getAccessToken();
+      if (!token) {
+        if (isMounted) {
+          setIsMembershipsLoading(false);
+        }
+        return;
+      }
+
+      setIsMembershipsLoading(true);
+      setAssigneesLoadError(null);
+
+      try {
+        const items = await listWorkspaceMemberships(workspaceId, token);
+        if (isMounted) {
+          setMemberships(items.filter((item) => item.status === "active"));
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setMemberships([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403) {
+            setAssigneesLoadError(tCommon("accessDenied"));
+          } else if (error.status === 404) {
+            setAssigneesLoadError(tCommon("notFound"));
+          } else {
+            setAssigneesLoadError(t("assigneesLoadError"));
+          }
+        } else {
+          setAssigneesLoadError(t("assigneesLoadError"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsMembershipsLoading(false);
+        }
+      }
+    }
+
+    void loadMemberships();
 
     return () => {
       isMounted = false;
@@ -377,6 +447,33 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
                   {customers.map((customer) => (
                     <option key={customer.id} value={customer.id}>
                       {formatCustomerOptionLabel(customer)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </label>
+            <label className="auth-field">
+              <span>{t("assignedUserLabel")}</span>
+              {assigneesLoadError ? (
+                <p className="workspace-error workspace-cases-filter-error" role="alert">
+                  {assigneesLoadError}
+                </p>
+              ) : null}
+              {isMembershipsLoading ? (
+                <p className="workspace-status">{t("detail.assignmentLoading")}</p>
+              ) : (
+                <select
+                  name="assigneeFilter"
+                  value={filters.assigned_to_user_id}
+                  disabled={isLoading || Boolean(assigneesLoadError)}
+                  onChange={(event) =>
+                    handleFilterChange("assigned_to_user_id", event.target.value)
+                  }
+                >
+                  <option value="">{t("allAssignees")}</option>
+                  {memberships.map((membership) => (
+                    <option key={membership.id} value={membership.user_id}>
+                      {formatMemberLabel(membership)}
                     </option>
                   ))}
                 </select>
