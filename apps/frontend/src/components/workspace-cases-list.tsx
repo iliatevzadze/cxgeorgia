@@ -9,13 +9,80 @@ import { Link } from "@/i18n/navigation";
 import { WorkspaceCaseCreateForm } from "@/components/workspace-case-create-form";
 import { ApiError } from "@/lib/api/errors";
 import { listCases } from "@/lib/cases/api";
-import type { CaseSlaStatus, UniversalCaseRead } from "@/lib/cases/types";
+import type {
+  CaseListFilters,
+  CasePriority,
+  CaseSlaStatus,
+  CaseSource,
+  CaseStatus,
+  UniversalCaseRead,
+} from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCasesListProps = {
   workspaceId: string;
 };
+
+type CaseListFilterState = {
+  status: CaseStatus | "";
+  priority: CasePriority | "";
+  source: CaseSource | "";
+  sla_status: CaseSlaStatus | "";
+};
+
+const EMPTY_FILTERS: CaseListFilterState = {
+  status: "",
+  priority: "",
+  source: "",
+  sla_status: "",
+};
+
+const STATUS_OPTIONS: CaseStatus[] = [
+  "open",
+  "pending",
+  "resolved",
+  "closed",
+];
+
+const PRIORITY_OPTIONS: CasePriority[] = [
+  "low",
+  "normal",
+  "high",
+  "urgent",
+];
+
+const SOURCE_OPTIONS: CaseSource[] = [
+  "manual",
+  "email",
+  "chat",
+  "phone",
+  "web",
+  "import",
+];
+
+const SLA_STATUS_OPTIONS: CaseSlaStatus[] = [
+  "on_track",
+  "at_risk",
+  "breached",
+];
+
+function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
+  const filters: CaseListFilters = {};
+  if (state.status) {
+    filters.status = state.status;
+  }
+  if (state.priority) {
+    filters.priority = state.priority;
+  }
+  if (state.source) {
+    filters.source = state.source;
+  }
+  if (state.sla_status) {
+    filters.sla_status = state.sla_status;
+  }
+  return filters;
+}
 
 function formatCreatedAt(value: string, locale: string): string {
   const date = new Date(value);
@@ -59,6 +126,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [filters, setFilters] = useState<CaseListFilterState>(EMPTY_FILTERS);
 
   const loadCases = useCallback(async () => {
     const token = getAccessToken();
@@ -72,7 +140,11 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     setErrorMessage(null);
 
     try {
-      const items = await listCases(workspaceId, token);
+      const items = await listCases(
+        workspaceId,
+        token,
+        buildCaseListFilters(filters),
+      );
       setCases(items);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -89,7 +161,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, t, tCommon]);
+  }, [workspaceId, filters, t, tCommon]);
 
   useEffect(() => {
     void loadCases();
@@ -97,6 +169,20 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
 
   function handleCaseCreated() {
     setRefreshToken((current) => current + 1);
+  }
+
+  function handleFilterChange(
+    field: keyof CaseListFilterState,
+    value: string,
+  ) {
+    setFilters((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  function handleClearFilters() {
+    setFilters(EMPTY_FILTERS);
   }
 
   return (
@@ -118,6 +204,93 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
         <section className="workspace-panel">
           <h1>{t("title")}</h1>
           <p className="workspace-description">{t("description")}</p>
+
+          <div
+            className="workspace-cases-filters"
+            aria-label={t("filterCases")}
+          >
+            <h2>{t("filtersLabel")}</h2>
+            <label className="auth-field">
+              <span>{t("statusLabel")}</span>
+              <select
+                name="statusFilter"
+                value={filters.status}
+                disabled={isLoading}
+                onChange={(event) =>
+                  handleFilterChange("status", event.target.value)
+                }
+              >
+                <option value="">{t("allStatuses")}</option>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`detail.statusOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="auth-field">
+              <span>{t("priorityLabel")}</span>
+              <select
+                name="priorityFilter"
+                value={filters.priority}
+                disabled={isLoading}
+                onChange={(event) =>
+                  handleFilterChange("priority", event.target.value)
+                }
+              >
+                <option value="">{t("allPriorities")}</option>
+                {PRIORITY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`create.priorityOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="auth-field">
+              <span>{t("sourceLabel")}</span>
+              <select
+                name="sourceFilter"
+                value={filters.source}
+                disabled={isLoading}
+                onChange={(event) =>
+                  handleFilterChange("source", event.target.value)
+                }
+              >
+                <option value="">{t("allSources")}</option>
+                {SOURCE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`create.sourceOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="auth-field">
+              <span>{t("slaStatusLabel")}</span>
+              <select
+                name="slaStatusFilter"
+                value={filters.sla_status}
+                disabled={isLoading}
+                onChange={(event) =>
+                  handleFilterChange("sla_status", event.target.value)
+                }
+              >
+                <option value="">{t("allSlaStatuses")}</option>
+                {SLA_STATUS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`slaStatusOptions.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={isLoading}
+              onClick={handleClearFilters}
+            >
+              {t("clearFilters")}
+            </button>
+          </div>
 
           {cases.length === 0 ? (
             <div className="workspace-empty">

@@ -134,5 +134,10 @@ export type CaseActivityRead = {
 };
 
 export type CaseListFilters = {
+  status?: CaseStatus;
+  priority?: CasePriority;
+  source?: CaseSource;
+  assigned_to_user_id?: string;
   customer_id?: string;
+  sla_status?: CaseSlaStatus;
 };

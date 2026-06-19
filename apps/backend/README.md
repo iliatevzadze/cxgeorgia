@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 60: Universal Case list backend filters)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional filters: `status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, and `sla_status`. Frontend case filter UI is not implemented yet.
+`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional filters: `status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, and `sla_status`. Frontend case filter UI is available from Step 61.
 
-Phase 1 / Step 61 has **not started**.
+Phase 1 / Step 62 has **not started**.
 
 ## Auth API
 

@@ -41,8 +41,23 @@ export async function listCases(
   filters: CaseListFilters = {},
 ): Promise<UniversalCaseRead[]> {
   const params = new URLSearchParams();
+  if (filters.status) {
+    params.set("status", filters.status);
+  }
+  if (filters.priority) {
+    params.set("priority", filters.priority);
+  }
+  if (filters.source) {
+    params.set("source", filters.source);
+  }
+  if (filters.assigned_to_user_id?.trim()) {
+    params.set("assigned_to_user_id", filters.assigned_to_user_id.trim());
+  }
   if (filters.customer_id?.trim()) {
     params.set("customer_id", filters.customer_id.trim());
+  }
+  if (filters.sla_status) {
+    params.set("sla_status", filters.sla_status);
   }
   const query = params.toString();
   const path = query

@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 59: Customer case-history frontend visibility)
+**Phase 1 — SaaS Base** (Step 61: Universal Case list frontend filters)
 
-The Customer Records page shows read-only linked case history for the selected customer using backend `customer_id` filtering.
+The Cases list page includes filter controls for status, priority, source, and SLA status. Filters use backend Step 60 query parameters.
 
-Phase 1 / Step 60 has **not started**.
+Phase 1 / Step 62 has **not started**.
 
 ## What exists now
 

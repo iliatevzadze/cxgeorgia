@@ -282,6 +282,13 @@
           "at_risk": "რისკში",
           "breached": "დარღვეული"
         },
+        "filtersLabel": "ფილტრები",
+        "filterCases": "ქეისების ფილტრაცია",
+        "allStatuses": "ყველა სტატუსი",
+        "allPriorities": "ყველა პრიორიტეტი",
+        "allSources": "ყველა წყარო",
+        "allSlaStatuses": "ყველა SLA სტატუსი",
+        "clearFilters": "ფილტრების გასუფთავება",
         "create": {
           "title": "ახალი ქეისი",
           "description": "შექმენით Universal Case ამ workspace-ში.",

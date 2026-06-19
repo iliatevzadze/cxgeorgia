@@ -282,6 +282,13 @@
           "at_risk": "At risk",
           "breached": "Breached"
         },
+        "filtersLabel": "Filters",
+        "filterCases": "Filter cases",
+        "allStatuses": "All statuses",
+        "allPriorities": "All priorities",
+        "allSources": "All sources",
+        "allSlaStatuses": "All SLA statuses",
+        "clearFilters": "Clear filters",
         "create": {
           "title": "New case",
           "description": "Create a Universal Case in this workspace.",
