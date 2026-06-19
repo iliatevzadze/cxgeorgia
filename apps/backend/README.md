@@ -4,13 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 45: QA / Ticket Evaluation system)
+**Phase 1 — SaaS Base** (Step 46: Operations Dashboard backend API)
 
-`case_qa_reviews` stores reviewer-based case evaluations with final scores and status. `case_qa_criteria_scores` holds per-criterion scores that roll up into the review score.
+`GET /api/v1/workspaces/{workspace_id}/operations/dashboard` returns read-only aggregates for cases, SLA, agent workload, and QA reviews.
 
-Full QA automation will come later.
+Frontend dashboard UI is not implemented yet.
 
-Phase 1 / Step 46 has **not started**.
+Phase 1 / Step 47 has **not started**.
 
 ## Auth API
 
@@ -60,6 +60,12 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | POST | `/api/v1/workspaces/{workspace_id}/case-tags` | Create workspace case tag (active members only) |
 | PATCH | `/api/v1/workspaces/{workspace_id}/case-tags/{tag_id}` | Update tag name, slug and/or color (active members only) |
 | DELETE | `/api/v1/workspaces/{workspace_id}/case-tags/{tag_id}` | Delete workspace case tag (active members only) |
+
+## Operations API (Phase 1 / Step 46)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/workspaces/{workspace_id}/operations/dashboard` | Read-only operational aggregates (active members only) |
 
 All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 

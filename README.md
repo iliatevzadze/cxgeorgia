@@ -10,13 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 45: QA / Ticket Evaluation system)
+**Phase 1 — SaaS Base** (Step 46: Operations Dashboard backend API)
 
-Structured QA reviews score agent performance per case using multi-criteria evaluation.
+Read-only `/operations/dashboard` aggregates case volume, SLA status, agent workload, and QA metrics per workspace.
 
-Full QA automation will come later.
+Frontend dashboard UI is not implemented yet.
 
-Phase 1 / Step 46 has **not started**.
+Phase 1 / Step 47 has **not started**.
 
 ## Confirmed stack
 
@@ -326,7 +326,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case SLA foundation (Phase 1 / Step 43)
 - [x] Agent Workforce Tracking foundation (Phase 1 / Step 44)
 - [x] QA / Ticket Evaluation system (Phase 1 / Step 45)
-- [ ] Phase 1 / Step 46 (not started)
+- [x] Operations Dashboard backend API (Phase 1 / Step 46)
+- [ ] Phase 1 / Step 47 (not started)
 
 ## License
 
