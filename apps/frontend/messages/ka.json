@@ -297,6 +297,8 @@
         "previousPage": "წინა",
         "nextPage": "შემდეგი",
         "pageLabel": "გვერდი",
+        "pageSizeLabel": "გვერდის ზომა",
+        "casesPerPageLabel": "ქეისები გვერდზე",
         "create": {
           "title": "ახალი ქეისი",
           "description": "შექმენით Universal Case ამ workspace-ში.",

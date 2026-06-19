@@ -75,6 +75,10 @@ const SLA_STATUS_OPTIONS: CaseSlaStatus[] = [
   "breached",
 ];
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
+const DEFAULT_PAGE_SIZE = 50;
+
 function buildCaseListFilters(state: CaseListFilterState): CaseListFilters {
   const filters: CaseListFilters = {};
   if (state.status) {
@@ -149,7 +153,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
 
   const [cases, setCases] = useState<UniversalCaseRead[]>([]);
   const [listTotal, setListTotal] = useState(0);
-  const [listLimit, setListLimit] = useState(50);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -291,12 +295,12 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
         token,
         {
           ...buildCaseListFilters(filters),
+          limit: pageSize,
           offset,
         },
       );
       setCases(page.items);
       setListTotal(page.total);
-      setListLimit(page.limit);
       setOffset(page.offset);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -313,7 +317,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, filters, offset, t, tCommon]);
+  }, [workspaceId, filters, offset, pageSize, t, tCommon]);
 
   useEffect(() => {
     void loadCases();
@@ -340,18 +344,23 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     setFilters(EMPTY_FILTERS);
   }
 
+  function handlePageSizeChange(value: string) {
+    setOffset(0);
+    setPageSize(Number(value));
+  }
+
   function handlePreviousPage() {
-    setOffset((current) => Math.max(0, current - listLimit));
+    setOffset((current) => Math.max(0, current - pageSize));
   }
 
   function handleNextPage() {
-    setOffset((current) => current + listLimit);
+    setOffset((current) => current + pageSize);
   }
 
   const canGoPrevious = offset > 0;
-  const canGoNext = offset + listLimit < listTotal;
+  const canGoNext = offset + pageSize < listTotal;
   const pageNumber =
-    listLimit > 0 ? Math.floor(offset / listLimit) + 1 : 1;
+    pageSize > 0 ? Math.floor(offset / pageSize) + 1 : 1;
 
   return (
     <div className="workspace-cases-page">
@@ -571,6 +580,22 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
             className="workspace-cases-pagination"
             aria-label={t("pageLabel")}
           >
+            <label className="auth-field">
+              <span>{t("pageSizeLabel")}</span>
+              <select
+                name="pageSize"
+                value={pageSize}
+                disabled={isLoading}
+                aria-label={t("casesPerPageLabel")}
+                onChange={(event) => handlePageSizeChange(event.target.value)}
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
               className="auth-submit"

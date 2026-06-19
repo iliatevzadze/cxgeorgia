@@ -297,6 +297,8 @@
         "previousPage": "Previous",
         "nextPage": "Next",
         "pageLabel": "Page",
+        "pageSizeLabel": "Page size",
+        "casesPerPageLabel": "Cases per page",
         "create": {
           "title": "New case",
           "description": "Create a Universal Case in this workspace.",

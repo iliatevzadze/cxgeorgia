@@ -181,6 +181,8 @@ test("required workspace keys exist in both locales", () => {
     "workspaces.app.cases.previousPage",
     "workspaces.app.cases.nextPage",
     "workspaces.app.cases.pageLabel",
+    "workspaces.app.cases.pageSizeLabel",
+    "workspaces.app.cases.casesPerPageLabel",
     "workspaces.app.cases.create.title",
     "workspaces.app.cases.create.description",
     "workspaces.app.cases.create.titleLabel",

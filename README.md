@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 65: Case list frontend pagination compatibility)
+**Phase 1 — SaaS Base** (Step 66: Case list page-size selection)
 
-The Cases list page consumes backend pagination (`data.items`, `total`, `limit`, `offset`) with simple Previous/Next controls.
+The Cases list page includes a page-size selector (10, 25, 50, 100) using the backend `limit` query parameter.
 
-Phase 1 / Step 66 has **not started**.
+Phase 1 / Step 67 has **not started**.
 
 ## Confirmed stack
 
@@ -344,7 +344,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Case list Assigned user filter (Phase 1 / Step 63)
 - [x] Universal Cases list backend pagination (Phase 1 / Step 64)
 - [x] Case list frontend pagination compatibility (Phase 1 / Step 65)
-- [ ] Phase 1 / Step 66 (not started)
+- [x] Case list page-size selection (Phase 1 / Step 66)
+- [ ] Phase 1 / Step 67 (not started)
 
 ## License
 

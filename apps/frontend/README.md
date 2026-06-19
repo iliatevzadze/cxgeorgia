@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 65: Case list frontend pagination compatibility)
+**Phase 1 — SaaS Base** (Step 66: Case list page-size selection)
 
-The Cases list page consumes paginated case list responses (`items`, `total`, `limit`, `offset`) with total count and Previous/Next controls.
+The Cases list page includes a page-size selector (10, 25, 50, 100) using the backend `limit` query parameter.
 
-Phase 1 / Step 66 has **not started**.
+Phase 1 / Step 67 has **not started**.
 
 ## What exists now
 
