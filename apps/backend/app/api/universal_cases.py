@@ -2,20 +2,35 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.case_tags import get_workspace_case_tag_or_404
 from app.api.workspace_deps import get_active_workspace_membership
+from app.core.config import get_settings
 from app.db.session import get_async_session
 from app.models.case_activity import CaseActivity
+from app.models.case_attachment import CaseAttachment
 from app.models.case_comment import CaseComment
 from app.models.case_tag import CaseTag, UniversalCaseTag
-from app.models.enums import WorkspaceMemberStatus
+from app.models.enums import CaseStatus, WorkspaceMemberStatus
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
 from app.schemas.case_activity import CaseActivityRead
+from app.schemas.case_attachment import (
+    CaseAttachmentDeleteRead,
+    CaseAttachmentRead,
+)
 from app.schemas.case_comment import (
     CaseCommentCreate,
     CaseCommentDeleteRead,
@@ -29,6 +44,12 @@ from app.schemas.universal_case import (
     UniversalCaseRead,
     UniversalCaseUpdate,
 )
+from app.services.agent_workforce_service import (
+    record_agent_message,
+    record_case_assignment,
+    record_case_first_response,
+    record_case_resolution,
+)
 from app.services.case_activity import (
     record_case_created_activity,
     record_case_patch_activities,
@@ -39,6 +60,23 @@ from app.services.case_activity import (
     record_tag_detached_activity,
     snapshot_case,
 )
+from app.services.case_attachment_upload import (
+    DUPLICATE_STORAGE_LOCATION_MESSAGE,
+    build_default_storage_key,
+    create_case_attachment_with_file,
+    sanitize_file_name,
+)
+from app.services.sla_service import (
+    mark_first_response,
+    mark_resolved,
+    update_sla_on_case_create,
+)
+from app.services.storage.file_storage import (
+    FileStorage,
+    delete_file,
+    get_file_storage,
+)
+from app.utils.file_utils import sha256_hex_from_upload
 
 router = APIRouter(
     prefix="/api/v1/workspaces/{workspace_id}/cases",
@@ -109,6 +147,45 @@ async def _get_workspace_case_comment_or_404(
     return comment
 
 
+async def _ensure_storage_location_available(
+    session: AsyncSession,
+    storage_bucket: str,
+    storage_key: str,
+) -> None:
+    existing = await session.scalar(
+        select(CaseAttachment.id).where(
+            CaseAttachment.storage_bucket == storage_bucket,
+            CaseAttachment.storage_key == storage_key,
+        )
+    )
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=DUPLICATE_STORAGE_LOCATION_MESSAGE,
+        )
+
+
+async def _get_workspace_case_attachment_or_404(
+    session: AsyncSession,
+    workspace_id: UUID,
+    case_id: UUID,
+    attachment_id: UUID,
+) -> CaseAttachment:
+    attachment = await session.scalar(
+        select(CaseAttachment).where(
+            CaseAttachment.id == attachment_id,
+            CaseAttachment.workspace_id == workspace_id,
+            CaseAttachment.case_id == case_id,
+        )
+    )
+    if attachment is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attachment not found",
+        )
+    return attachment
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_case(
     body: UniversalCaseCreate,
@@ -132,6 +209,9 @@ async def create_case(
     )
     session.add(case)
     await session.flush()
+    update_sla_on_case_create(case)
+    if body.assigned_to_user_id is not None:
+        await record_case_assignment(session, case, body.assigned_to_user_id)
     record_case_created_activity(
         session,
         workspace_id=workspace_id,
@@ -234,6 +314,13 @@ async def update_case(
             )
         case.assigned_to_user_id = body.assigned_to_user_id
 
+    if (
+        "assigned_to_user_id" in body.model_fields_set
+        and body.assigned_to_user_id is not None
+        and before["assigned_to_user_id"] != body.assigned_to_user_id
+    ):
+        await record_case_assignment(session, case, body.assigned_to_user_id)
+
     record_case_patch_activities(
         session,
         workspace_id=workspace_id,
@@ -242,6 +329,11 @@ async def update_case(
         before=before,
         body=body,
     )
+    mark_first_response(case)
+    await record_case_first_response(session, case, membership.user_id)
+    if body.status == CaseStatus.RESOLVED:
+        mark_resolved(case)
+        await record_case_resolution(session, case, membership.user_id)
     await session.commit()
     await session.refresh(case)
     return _envelope(UniversalCaseRead.model_validate(case).model_dump(mode="json"))
@@ -284,7 +376,7 @@ async def create_case_comment(
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Create a comment on a universal case in the workspace."""
-    await _get_workspace_case_or_404(session, workspace_id, case_id)
+    case = await _get_workspace_case_or_404(session, workspace_id, case_id)
 
     comment = CaseComment(
         workspace_id=workspace_id,
@@ -303,6 +395,9 @@ async def create_case_comment(
         comment_id=comment.id,
         is_internal=comment.is_internal,
     )
+    mark_first_response(case)
+    await record_case_first_response(session, case, membership.user_id)
+    await record_agent_message(session, case, membership.user_id)
     await session.commit()
     await session.refresh(comment)
     return _envelope(CaseCommentRead.model_validate(comment).model_dump(mode="json"))
@@ -543,4 +638,131 @@ async def detach_case_tag(
     await session.commit()
     return _envelope(
         CaseTagDetachRead(tag_id=tag_id, detached=True).model_dump(mode="json")
+    )
+
+
+@router.get("/{case_id}/attachments")
+async def list_case_attachments(
+    workspace_id: UUID,
+    case_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """List attachment metadata for a universal case, oldest first."""
+    _ = membership
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+
+    result = await session.scalars(
+        select(CaseAttachment)
+        .where(
+            CaseAttachment.workspace_id == workspace_id,
+            CaseAttachment.case_id == case_id,
+        )
+        .order_by(CaseAttachment.created_at.asc())
+    )
+    items = [
+        CaseAttachmentRead.model_validate(item).model_dump(mode="json")
+        for item in result.all()
+    ]
+    return _envelope(items)
+
+
+@router.post("/{case_id}/attachments", status_code=status.HTTP_201_CREATED)
+async def create_case_attachment(
+    workspace_id: UUID,
+    case_id: UUID,
+    file: UploadFile = File(...),
+    file_name: str | None = Form(None),
+    content_type: str | None = Form(None),
+    storage_bucket: str | None = Form(None),
+    storage_key: str | None = Form(None),
+    checksum_sha256: str | None = Form(None),
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+    storage: FileStorage = Depends(get_file_storage),
+) -> dict:
+    """Upload a file and create attachment metadata for a universal case."""
+    settings = get_settings()
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+
+    file_bytes, computed_checksum, size_bytes = await sha256_hex_from_upload(file)
+    if size_bytes == 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="File must not be empty",
+        )
+
+    resolved_file_name = sanitize_file_name(
+        file_name or file.filename or "attachment",
+    )
+    resolved_content_type = (
+        content_type.strip() if content_type and content_type.strip() else None
+    ) or (file.content_type or None)
+    resolved_bucket = (
+        storage_bucket.strip()
+        if storage_bucket and storage_bucket.strip()
+        else settings.storage_bucket_default
+    )
+    resolved_key = (
+        storage_key.strip()
+        if storage_key and storage_key.strip()
+        else build_default_storage_key(workspace_id, case_id, resolved_file_name)
+    )
+    resolved_checksum = (
+        checksum_sha256.strip()
+        if checksum_sha256 and checksum_sha256.strip()
+        else computed_checksum
+    )
+
+    await _ensure_storage_location_available(
+        session,
+        resolved_bucket,
+        resolved_key,
+    )
+
+    attachment = await create_case_attachment_with_file(
+        session,
+        storage,
+        workspace_id=workspace_id,
+        case_id=case_id,
+        uploaded_by_user_id=membership.user_id,
+        file_bytes=file_bytes,
+        file_name=resolved_file_name,
+        content_type=resolved_content_type,
+        storage_bucket=resolved_bucket,
+        storage_key=resolved_key,
+        checksum_sha256=resolved_checksum,
+        size_bytes=size_bytes,
+    )
+    return _envelope(
+        CaseAttachmentRead.model_validate(attachment).model_dump(mode="json")
+    )
+
+
+@router.delete("/{case_id}/attachments/{attachment_id}")
+async def delete_case_attachment(
+    workspace_id: UUID,
+    case_id: UUID,
+    attachment_id: UUID,
+    membership: WorkspaceMembership = Depends(get_active_workspace_membership),
+    session: AsyncSession = Depends(get_async_session),
+    storage: FileStorage = Depends(get_file_storage),
+) -> dict:
+    """Delete attachment metadata and stored file from a universal case."""
+    _ = membership
+    await _get_workspace_case_or_404(session, workspace_id, case_id)
+    attachment = await _get_workspace_case_attachment_or_404(
+        session,
+        workspace_id,
+        case_id,
+        attachment_id,
+    )
+    storage_bucket = attachment.storage_bucket
+    storage_key = attachment.storage_key
+
+    await session.delete(attachment)
+    await session.commit()
+    await delete_file(storage, storage_bucket, storage_key)
+    return _envelope(
+        CaseAttachmentDeleteRead(id=attachment_id, deleted=True).model_dump(mode="json")
     )

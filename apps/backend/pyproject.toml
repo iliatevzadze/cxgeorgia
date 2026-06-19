@@ -11,7 +11,9 @@ dependencies = [
     "email-validator",
     "fastapi",
     "pydantic-settings",
+    "python-multipart",
     "python-jose[cryptography]",
+    "minio",
     "sqlalchemy[asyncio]",
     "uvicorn[standard]",
 ]

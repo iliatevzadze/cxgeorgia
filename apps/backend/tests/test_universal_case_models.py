@@ -32,6 +32,11 @@ def test_universal_cases_columns() -> None:
         "assigned_to_user_id",
         "created_at",
         "updated_at",
+        "first_response_due_at",
+        "first_response_at",
+        "resolution_due_at",
+        "resolved_at",
+        "sla_status",
     }
 
 
@@ -52,6 +57,8 @@ def test_universal_cases_indexes() -> None:
     index_columns = {tuple(index.columns.keys()) for index in indexes}
     assert ("workspace_id",) in index_columns
     assert ("workspace_id", "status") in index_columns
+    assert ("sla_status",) in index_columns
+    assert ("resolution_due_at",) in index_columns
 
 
 def test_universal_case_workspace_relationship() -> None:

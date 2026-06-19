@@ -4,15 +4,13 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 40: Universal Case attachments database foundation)
+**Phase 1 — SaaS Base** (Step 45: QA / Ticket Evaluation system)
 
-The `case_attachments` table stores file metadata for Universal Cases.
+`case_qa_reviews` stores reviewer-based case evaluations with final scores and status. `case_qa_criteria_scores` holds per-criterion scores that roll up into the review score.
 
-Attachment upload/download API is **not implemented yet**.
+Full QA automation will come later.
 
-SLA and customer module are **not implemented**.
-
-Phase 1 / Step 41 has **not started**.
+Phase 1 / Step 46 has **not started**.
 
 ## Auth API
 
@@ -50,6 +48,9 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/tags` | List tags attached to case (active members only) |
 | POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/tags/{tag_id}` | Attach workspace tag to case (idempotent) |
 | DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/tags/{tag_id}` | Detach tag from case (active members only) |
+| GET | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/attachments` | List case attachment metadata, oldest first (active members only) |
+| POST | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/attachments` | Upload file and create attachment metadata (active members only) |
+| DELETE | `/api/v1/workspaces/{workspace_id}/cases/{case_id}/attachments/{attachment_id}` | Delete attachment metadata and stored file (active members only) |
 
 ## Case tag API (Phase 1 / Step 37)
 
@@ -60,16 +61,18 @@ All workspace endpoints require `Authorization: Bearer <token>`.
 | PATCH | `/api/v1/workspaces/{workspace_id}/case-tags/{tag_id}` | Update tag name, slug and/or color (active members only) |
 | DELETE | `/api/v1/workspaces/{workspace_id}/case-tags/{tag_id}` | Delete workspace case tag (active members only) |
 
-All case, comment, activity and tag endpoints require `Authorization: Bearer <token>` and active workspace membership.
+All case, comment, activity, tag and attachment endpoints require `Authorization: Bearer <token>` and active workspace membership.
 
-Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. All case and activity rows include `workspace_id` for tenant isolation.
+File storage is configured via `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` and `STORAGE_BUCKET_DEFAULT` (legacy `MINIO_*` env vars are also accepted).
+
+Database tables: `universal_cases`, `case_comments`, `case_activities`, `case_tags`, `universal_case_tags`, `case_attachments`, `agent_shifts`, `agent_case_metrics`, `case_qa_reviews`, `case_qa_criteria_scores`. Models: `UniversalCase`, `CaseComment`, `CaseActivity`, `CaseTag`, `UniversalCaseTag`, `CaseAttachment`, `AgentShift`, `AgentCaseMetric`, `CaseQaReview`, `CaseQaCriteriaScore`. Enums: `case_status`, `case_priority`, `case_source`, `case_activity_type`. Universal Case SLA fields: `first_response_due_at`, `first_response_at`, `resolution_due_at`, `resolved_at`, `sla_status`. All case and activity rows include `workspace_id` for tenant isolation.
 
 Case create, update, assignment changes, comment create/edit/delete automatically record `case_activities` rows. There is no public API to create or mutate activity records directly.
 
 ## Migrations
 
 ```bash
-alembic upgrade head   # applies through 0009
+alembic upgrade head   # applies through 0012
 alembic current
 ```
 

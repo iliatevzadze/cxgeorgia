@@ -14,6 +14,9 @@ from app.db.base import Base
 from app.models.enums import UserStatus
 
 if TYPE_CHECKING:
+    from app.models.agent_case_metric import AgentCaseMetric
+    from app.models.agent_shift import AgentShift
+    from app.models.case_qa_review import CaseQaReview
     from app.models.workspace_membership import WorkspaceMembership
 
 
@@ -57,4 +60,20 @@ class User(Base):
     memberships: Mapped[list[WorkspaceMembership]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+    agent_shifts: Mapped[list[AgentShift]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    agent_case_metrics: Mapped[list[AgentCaseMetric]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    qa_reviews_reviewed_by: Mapped[list[CaseQaReview]] = relationship(
+        back_populates="reviewed_by",
+        foreign_keys="CaseQaReview.reviewed_by_user_id",
+    )
+    qa_reviews_reviewed_agent: Mapped[list[CaseQaReview]] = relationship(
+        back_populates="reviewed_agent",
+        foreign_keys="CaseQaReview.reviewed_agent_user_id",
     )

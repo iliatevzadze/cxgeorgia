@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import computed_field
+from pydantic import AliasChoices, Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DatabaseMode = Literal["local", "docker"]
@@ -38,6 +38,26 @@ class Settings(BaseSettings):
     auth_secret_key: str = "change-me-local-development-secret"
     auth_algorithm: str = "HS256"
     auth_access_token_expire_minutes: int = 30
+
+    default_first_response_minutes: int = 60
+    default_resolution_minutes: int = 1440
+
+    storage_endpoint: str = Field(
+        default="http://localhost:9000",
+        validation_alias=AliasChoices("STORAGE_ENDPOINT", "MINIO_ENDPOINT"),
+    )
+    storage_access_key: str = Field(
+        default="minio_local_user",
+        validation_alias=AliasChoices("STORAGE_ACCESS_KEY", "MINIO_ROOT_USER"),
+    )
+    storage_secret_key: str = Field(
+        default="change_me_local_only",
+        validation_alias=AliasChoices("STORAGE_SECRET_KEY", "MINIO_ROOT_PASSWORD"),
+    )
+    storage_bucket_default: str = Field(
+        default="georgian-cx-local",
+        validation_alias=AliasChoices("STORAGE_BUCKET_DEFAULT", "MINIO_BUCKET_NAME"),
+    )
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -14,9 +14,12 @@ from app.db.base import Base
 from app.models.enums import WorkspaceStatus
 
 if TYPE_CHECKING:
+    from app.models.agent_case_metric import AgentCaseMetric
+    from app.models.agent_shift import AgentShift
     from app.models.case_activity import CaseActivity
     from app.models.case_attachment import CaseAttachment
     from app.models.case_comment import CaseComment
+    from app.models.case_qa_review import CaseQaReview
     from app.models.case_tag import CaseTag
     from app.models.universal_case import UniversalCase
     from app.models.workspace_membership import WorkspaceMembership
@@ -74,6 +77,18 @@ class Workspace(Base):
         cascade="all, delete-orphan",
     )
     case_attachments: Mapped[list[CaseAttachment]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    agent_shifts: Mapped[list[AgentShift]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    agent_case_metrics: Mapped[list[AgentCaseMetric]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    case_qa_reviews: Mapped[list[CaseQaReview]] = relationship(
         back_populates="workspace",
         cascade="all, delete-orphan",
     )

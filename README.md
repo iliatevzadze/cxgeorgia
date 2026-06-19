@@ -10,15 +10,13 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 40: Universal Case attachments database foundation)
+**Phase 1 — SaaS Base** (Step 45: QA / Ticket Evaluation system)
 
-The `case_attachments` table stores file metadata for Universal Cases.
+Structured QA reviews score agent performance per case using multi-criteria evaluation.
 
-Attachment upload/download API and attachment frontend UI are **not implemented yet**.
+Full QA automation will come later.
 
-SLA and customer module are **not implemented**.
-
-Phase 1 / Step 41 has **not started**.
+Phase 1 / Step 46 has **not started**.
 
 ## Confirmed stack
 
@@ -323,7 +321,12 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Universal Case tags frontend UI (Phase 1 / Step 38)
 - [x] Universal Case tag activity recording (Phase 1 / Step 39)
 - [x] Universal Case attachments database foundation (Phase 1 / Step 40)
-- [ ] Phase 1 / Step 41 (not started)
+- [x] Universal Case attachments backend metadata API (Phase 1 / Step 41)
+- [x] Universal Case attachments file storage layer (Phase 1 / Step 42)
+- [x] Universal Case SLA foundation (Phase 1 / Step 43)
+- [x] Agent Workforce Tracking foundation (Phase 1 / Step 44)
+- [x] QA / Ticket Evaluation system (Phase 1 / Step 45)
+- [ ] Phase 1 / Step 46 (not started)
 
 ## License
 

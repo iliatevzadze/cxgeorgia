@@ -47,6 +47,18 @@ class CaseSource(StrEnum):
     IMPORT = "import"
 
 
+class SlaStatus(StrEnum):
+    ON_TRACK = "on_track"
+    AT_RISK = "at_risk"
+    BREACHED = "breached"
+
+
+class QaReviewStatus(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 class CaseActivityType(StrEnum):
     CASE_CREATED = "case_created"
     CASE_UPDATED = "case_updated"
