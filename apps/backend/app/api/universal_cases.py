@@ -24,7 +24,13 @@ from app.models.case_activity import CaseActivity
 from app.models.case_attachment import CaseAttachment
 from app.models.case_comment import CaseComment
 from app.models.case_tag import CaseTag, UniversalCaseTag
-from app.models.enums import CaseStatus, WorkspaceMemberStatus
+from app.models.enums import (
+    CasePriority,
+    CaseSource,
+    CaseStatus,
+    SlaStatus,
+    WorkspaceMemberStatus,
+)
 from app.models.universal_case import UniversalCase
 from app.models.workspace_membership import WorkspaceMembership
 from app.schemas.case_activity import CaseActivityRead
@@ -248,7 +254,12 @@ async def create_case(
 @router.get("")
 async def list_cases(
     workspace_id: UUID,
+    status: CaseStatus | None = Query(default=None),
+    priority: CasePriority | None = Query(default=None),
+    source: CaseSource | None = Query(default=None),
+    assigned_to_user_id: UUID | None = Query(default=None),
     customer_id: UUID | None = Query(default=None),
+    sla_status: SlaStatus | None = Query(default=None),
     membership: WorkspaceMembership = Depends(get_active_workspace_membership),
     session: AsyncSession = Depends(get_async_session),
 ) -> dict:
@@ -256,9 +267,25 @@ async def list_cases(
     _ = membership
     if customer_id is not None:
         await _require_workspace_customer(session, workspace_id, customer_id)
+    if assigned_to_user_id is not None:
+        await _require_active_workspace_assignee(
+            session,
+            workspace_id,
+            assigned_to_user_id,
+        )
     stmt = select(UniversalCase).where(UniversalCase.workspace_id == workspace_id)
+    if status is not None:
+        stmt = stmt.where(UniversalCase.status == status)
+    if priority is not None:
+        stmt = stmt.where(UniversalCase.priority == priority)
+    if source is not None:
+        stmt = stmt.where(UniversalCase.source == source)
+    if assigned_to_user_id is not None:
+        stmt = stmt.where(UniversalCase.assigned_to_user_id == assigned_to_user_id)
     if customer_id is not None:
         stmt = stmt.where(UniversalCase.customer_id == customer_id)
+    if sla_status is not None:
+        stmt = stmt.where(UniversalCase.sla_status == sla_status)
     result = await session.scalars(stmt.order_by(UniversalCase.created_at.desc()))
     items = [
         UniversalCaseRead.model_validate(item).model_dump(mode="json")

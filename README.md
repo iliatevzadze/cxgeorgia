@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 59: Customer case-history frontend visibility)
+**Phase 1 — SaaS Base** (Step 60: Universal Case list backend filters)
 
-Users can view linked cases on the Customer Records page. Customer history uses backend `customer_id` case filtering.
+`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional filters: `status`, `priority`, `source`, `assigned_to_user_id`, `customer_id`, and `sla_status`. Frontend case filter UI is not implemented yet.
 
-Phase 1 / Step 60 has **not started**.
+Phase 1 / Step 61 has **not started**.
 
 ## Confirmed stack
 
@@ -338,7 +338,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Read-only SLA frontend visibility (Phase 1 / Step 57)
 - [x] Customer case-history backend filtering (Phase 1 / Step 58)
 - [x] Customer case-history frontend visibility (Phase 1 / Step 59)
-- [ ] Phase 1 / Step 60 (not started)
+- [x] Universal Case list backend filters (Phase 1 / Step 60)
+- [ ] Phase 1 / Step 61 (not started)
 
 ## License
 

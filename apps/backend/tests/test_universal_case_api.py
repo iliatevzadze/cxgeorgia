@@ -13,6 +13,7 @@ from app.models.enums import (
     CasePriority,
     CaseSource,
     CaseStatus,
+    SlaStatus,
     WorkspaceMemberRole,
     WorkspaceMemberStatus,
 )
@@ -45,10 +46,22 @@ async def _create_case(
     *,
     title: str = "Patch test case",
     customer_id: str | None = None,
+    status: str | None = None,
+    priority: str | None = None,
+    source: str | None = None,
+    assigned_to_user_id: str | None = None,
 ) -> str:
     payload: dict[str, object] = {"title": title}
     if customer_id is not None:
         payload["customer_id"] = customer_id
+    if status is not None:
+        payload["status"] = status
+    if priority is not None:
+        payload["priority"] = priority
+    if source is not None:
+        payload["source"] = source
+    if assigned_to_user_id is not None:
+        payload["assigned_to_user_id"] = assigned_to_user_id
     response = await client.post(
         f"/api/v1/workspaces/{workspace_id}/cases",
         json=payload,
@@ -566,6 +579,348 @@ async def test_list_cases_with_customer_id_non_member_returns_404(
     response = await client.get(
         f"/api/v1/workspaces/{workspace_id}/cases",
         params={"customer_id": customer_id},
+        headers=other_headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_list_cases_filter_by_status(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-status-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Status Filter Workspace")
+    open_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Open case",
+        status=CaseStatus.OPEN.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Pending case",
+        status=CaseStatus.PENDING.value,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"status": CaseStatus.OPEN.value},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == open_id
+
+
+async def test_list_cases_filter_by_priority(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-priority-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Priority Filter Workspace")
+    high_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="High priority",
+        priority=CasePriority.HIGH.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Normal priority",
+        priority=CasePriority.NORMAL.value,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"priority": CasePriority.HIGH.value},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == high_id
+
+
+async def test_list_cases_filter_by_source(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-source-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Source Filter Workspace")
+    email_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Email case",
+        source=CaseSource.EMAIL.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Manual case",
+        source=CaseSource.MANUAL.value,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"source": CaseSource.EMAIL.value},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == email_id
+
+
+async def test_list_cases_filter_by_assigned_to_user_id(client: AsyncClient) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-assignee-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Assignee Filter Workspace")
+    user_id = await _get_user_id(client, headers)
+    assigned_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Assigned case",
+        assigned_to_user_id=user_id,
+    )
+    await _create_case(client, headers, workspace_id, title="Unassigned case")
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"assigned_to_user_id": user_id},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == assigned_id
+
+
+async def test_list_cases_filter_by_sla_status(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    suffix = uuid.uuid4().hex[:12]
+    headers = await auth_headers(client, f"case-list-sla-{suffix}@example.com")
+    workspace_id = await _create_workspace(client, headers, "SLA Filter Workspace")
+    user = await db_session.scalar(
+        select(User).where(User.email == f"case-list-sla-{suffix}@example.com")
+    )
+    assert user is not None
+
+    at_risk_case = UniversalCase(
+        workspace_id=UUID(workspace_id),
+        title="At risk case",
+        status=CaseStatus.OPEN,
+        sla_status=SlaStatus.AT_RISK,
+        created_by_user_id=user.id,
+    )
+    on_track_case = UniversalCase(
+        workspace_id=UUID(workspace_id),
+        title="On track case",
+        status=CaseStatus.OPEN,
+        sla_status=SlaStatus.ON_TRACK,
+        created_by_user_id=user.id,
+    )
+    db_session.add_all([at_risk_case, on_track_case])
+    await db_session.flush()
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"sla_status": SlaStatus.AT_RISK.value},
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == str(at_risk_case.id)
+
+
+async def test_list_cases_combine_status_and_priority_filters(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-combo-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Combo Filter Workspace")
+    match_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Open high",
+        status=CaseStatus.OPEN.value,
+        priority=CasePriority.HIGH.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Open normal",
+        status=CaseStatus.OPEN.value,
+        priority=CasePriority.NORMAL.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Pending high",
+        status=CaseStatus.PENDING.value,
+        priority=CasePriority.HIGH.value,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={
+            "status": CaseStatus.OPEN.value,
+            "priority": CasePriority.HIGH.value,
+        },
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == match_id
+
+
+async def test_list_cases_combine_customer_id_and_status_filters(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-customer-status-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        headers,
+        "Customer Status Filter Workspace",
+    )
+    customer_id = await _create_customer(client, headers, workspace_id)
+    match_id = await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked open",
+        customer_id=customer_id,
+        status=CaseStatus.OPEN.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Linked pending",
+        customer_id=customer_id,
+        status=CaseStatus.PENDING.value,
+    )
+    await _create_case(
+        client,
+        headers,
+        workspace_id,
+        title="Unlinked open",
+        status=CaseStatus.OPEN.value,
+    )
+
+    list_response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={
+            "customer_id": customer_id,
+            "status": CaseStatus.OPEN.value,
+        },
+        headers=headers,
+    )
+    assert list_response.status_code == 200
+    items = response_data(list_response)
+    assert len(items) == 1
+    assert items[0]["id"] == match_id
+
+
+async def test_list_cases_assigned_to_user_id_outside_workspace_blocked(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-list-assign-outside-owner-{uuid.uuid4()}@example.com",
+    )
+    other_email = f"case-list-assign-outside-other-{uuid.uuid4()}@example.com"
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Assign Outside List Workspace",
+    )
+    other_headers = await auth_headers(client, other_email)
+    other_user_id = await _get_user_id(client, other_headers)
+    await _create_workspace(client, other_headers, "Other Assign Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"assigned_to_user_id": other_user_id},
+        headers=owner_headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "Assignee must be an active member of this workspace"
+    )
+
+
+async def test_list_cases_invalid_enum_query_values_return_422(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(
+        client,
+        f"case-list-invalid-enum-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(client, headers, "Invalid Enum Workspace")
+
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"status": "not-a-status"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_list_cases_with_filters_unauthenticated_returns_401(
+    client: AsyncClient,
+) -> None:
+    response = await client.get(
+        f"/api/v1/workspaces/{uuid.uuid4()}/cases",
+        params={"status": CaseStatus.OPEN.value},
+    )
+    assert response.status_code == 401
+
+
+async def test_list_cases_with_filters_non_member_returns_404(
+    client: AsyncClient,
+) -> None:
+    owner_headers = await auth_headers(
+        client,
+        f"case-owner-list-filters-{uuid.uuid4()}@example.com",
+    )
+    workspace_id = await _create_workspace(
+        client,
+        owner_headers,
+        "Private Filter List Workspace",
+    )
+
+    other_email = f"case-nonmember-list-filters-{uuid.uuid4()}@example.com"
+    await register_user(client, email=other_email)
+    other_headers = {
+        "Authorization": f"Bearer {await login_user(client, email=other_email)}"
+    }
+    response = await client.get(
+        f"/api/v1/workspaces/{workspace_id}/cases",
+        params={"priority": CasePriority.HIGH.value},
         headers=other_headers,
     )
     assert response.status_code == 404
