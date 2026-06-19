@@ -140,4 +140,13 @@ export type CaseListFilters = {
   assigned_to_user_id?: string;
   customer_id?: string;
   sla_status?: CaseSlaStatus;
+  limit?: number;
+  offset?: number;
+};
+
+export type CaseListResponse = {
+  items: UniversalCaseRead[];
+  total: number;
+  limit: number;
+  offset: number;
 };

@@ -14,6 +14,7 @@ import type {
   UniversalCaseRead,
   UniversalCaseUpdateRequest,
   CaseListFilters,
+  CaseListResponse,
 } from "./types";
 
 export const casePaths = {
@@ -39,7 +40,7 @@ export async function listCases(
   workspaceId: string,
   token: string,
   filters: CaseListFilters = {},
-): Promise<UniversalCaseRead[]> {
+): Promise<CaseListResponse> {
   const params = new URLSearchParams();
   if (filters.status) {
     params.set("status", filters.status);
@@ -59,12 +60,18 @@ export async function listCases(
   if (filters.sla_status) {
     params.set("sla_status", filters.sla_status);
   }
+  if (filters.limit !== undefined) {
+    params.set("limit", String(filters.limit));
+  }
+  if (filters.offset !== undefined) {
+    params.set("offset", String(filters.offset));
+  }
   const query = params.toString();
   const path = query
     ? `${casePaths.list(workspaceId)}?${query}`
     : casePaths.list(workspaceId);
 
-  return apiRequest<UniversalCaseRead[]>(path, { token });
+  return apiRequest<CaseListResponse>(path, { token });
 }
 
 export async function createCase(

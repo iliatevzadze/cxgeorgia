@@ -293,6 +293,10 @@
         "allAssignees": "All assignees",
         "assigneesLoadError": "Failed to load assignees",
         "clearFilters": "Clear filters",
+        "totalCasesLabel": "Total cases",
+        "previousPage": "Previous",
+        "nextPage": "Next",
+        "pageLabel": "Page",
         "create": {
           "title": "New case",
           "description": "Create a Universal Case in this workspace.",

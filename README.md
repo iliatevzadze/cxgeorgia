@@ -10,11 +10,11 @@ The product is **human-agent-first** and **Georgian-first** (`ka` default, `en` 
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 64: Universal Cases list backend pagination)
+**Phase 1 — SaaS Base** (Step 65: Case list frontend pagination compatibility)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` supports `limit` and `offset` pagination, combinable with Step 60 filters. Frontend pagination UI is not implemented yet.
+The Cases list page consumes backend pagination (`data.items`, `total`, `limit`, `offset`) with simple Previous/Next controls.
 
-Phase 1 / Step 65 has **not started**.
+Phase 1 / Step 66 has **not started**.
 
 ## Confirmed stack
 
@@ -343,7 +343,8 @@ Security-critical tests (tenant isolation, RBAC) are **mandatory from Phase 1 on
 - [x] Case list Customer filter (Phase 1 / Step 62)
 - [x] Case list Assigned user filter (Phase 1 / Step 63)
 - [x] Universal Cases list backend pagination (Phase 1 / Step 64)
-- [ ] Phase 1 / Step 65 (not started)
+- [x] Case list frontend pagination compatibility (Phase 1 / Step 65)
+- [ ] Phase 1 / Step 66 (not started)
 
 ## License
 

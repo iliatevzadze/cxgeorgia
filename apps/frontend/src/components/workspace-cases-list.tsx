@@ -148,6 +148,9 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   const locale = useLocale();
 
   const [cases, setCases] = useState<UniversalCaseRead[]>([]);
+  const [listTotal, setListTotal] = useState(0);
+  const [listLimit, setListLimit] = useState(50);
+  const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -283,12 +286,18 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     setErrorMessage(null);
 
     try {
-      const items = await listCases(
+      const page = await listCases(
         workspaceId,
         token,
-        buildCaseListFilters(filters),
+        {
+          ...buildCaseListFilters(filters),
+          offset,
+        },
       );
-      setCases(items);
+      setCases(page.items);
+      setListTotal(page.total);
+      setListLimit(page.limit);
+      setOffset(page.offset);
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 404) {
@@ -304,13 +313,14 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, filters, t, tCommon]);
+  }, [workspaceId, filters, offset, t, tCommon]);
 
   useEffect(() => {
     void loadCases();
   }, [loadCases, refreshToken]);
 
   function handleCaseCreated() {
+    setOffset(0);
     setRefreshToken((current) => current + 1);
   }
 
@@ -318,6 +328,7 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
     field: keyof CaseListFilterState,
     value: string,
   ) {
+    setOffset(0);
     setFilters((current) => ({
       ...current,
       [field]: value,
@@ -325,8 +336,22 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
   }
 
   function handleClearFilters() {
+    setOffset(0);
     setFilters(EMPTY_FILTERS);
   }
+
+  function handlePreviousPage() {
+    setOffset((current) => Math.max(0, current - listLimit));
+  }
+
+  function handleNextPage() {
+    setOffset((current) => current + listLimit);
+  }
+
+  const canGoPrevious = offset > 0;
+  const canGoNext = offset + listLimit < listTotal;
+  const pageNumber =
+    listLimit > 0 ? Math.floor(offset / listLimit) + 1 : 1;
 
   return (
     <div className="workspace-cases-page">
@@ -489,6 +514,10 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
             </button>
           </div>
 
+          <p className="workspace-cases-total">
+            {t("totalCasesLabel")}: {listTotal}
+          </p>
+
           {cases.length === 0 ? (
             <div className="workspace-empty">
               <p>{t("emptyTitle")}</p>
@@ -537,6 +566,31 @@ export function WorkspaceCasesList({ workspaceId }: WorkspaceCasesListProps) {
               ))}
             </ul>
           )}
+
+          <nav
+            className="workspace-cases-pagination"
+            aria-label={t("pageLabel")}
+          >
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={isLoading || !canGoPrevious}
+              onClick={handlePreviousPage}
+            >
+              {t("previousPage")}
+            </button>
+            <span>
+              {t("pageLabel")}: {pageNumber}
+            </span>
+            <button
+              type="button"
+              className="auth-submit"
+              disabled={isLoading || !canGoNext}
+              onClick={handleNextPage}
+            >
+              {t("nextPage")}
+            </button>
+          </nav>
         </section>
       )}
     </div>

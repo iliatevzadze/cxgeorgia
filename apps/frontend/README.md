@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 63: Case list Assigned user filter)
+**Phase 1 — SaaS Base** (Step 65: Case list frontend pagination compatibility)
 
-The Cases list page includes an Assigned user filter using workspace memberships and the backend Step 60 `assigned_to_user_id` query parameter.
+The Cases list page consumes paginated case list responses (`items`, `total`, `limit`, `offset`) with total count and Previous/Next controls.
 
-Phase 1 / Step 64 has **not started**.
+Phase 1 / Step 66 has **not started**.
 
 ## What exists now
 

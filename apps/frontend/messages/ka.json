@@ -293,6 +293,10 @@
         "allAssignees": "ყველა მიმაგრებული",
         "assigneesLoadError": "მიმაგრებულების ჩატვირთვა ვერ მოხერხდა",
         "clearFilters": "ფილტრების გასუფთავება",
+        "totalCasesLabel": "ქეისების რაოდენობა",
+        "previousPage": "წინა",
+        "nextPage": "შემდეგი",
+        "pageLabel": "გვერდი",
         "create": {
           "title": "ახალი ქეისი",
           "description": "შექმენით Universal Case ამ workspace-ში.",

@@ -297,10 +297,10 @@ export function WorkspaceCustomers({ workspaceId }: WorkspaceCustomersProps) {
       setCaseHistoryError(null);
 
       try {
-        const items = await listCases(workspaceId, token, {
+        const page = await listCases(workspaceId, token, {
           customer_id: customerId,
         });
-        setLinkedCases(items);
+        setLinkedCases(page.items);
       } catch (error) {
         setLinkedCases([]);
 

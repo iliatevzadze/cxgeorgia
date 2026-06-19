@@ -1102,6 +1102,18 @@ a {
   font-size: 0.875rem;
 }
 
+.workspace-cases-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.workspace-cases-total {
+  margin: 1rem 0 0;
+}
+
 .workspace-customers-page {
   display: flex;
   flex-direction: column;
