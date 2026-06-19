@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 47: Operations Dashboard frontend UI)
+**Phase 1 — SaaS Base** (Step 49: QA Review frontend UI)
 
-The workspace app dashboard displays read-only operational aggregates from the Step 46 backend API.
+QA reviews can be managed from the case detail page: list, create, score, approve and reject.
 
-Phase 1 / Step 48 has **not started**.
+Phase 1 / Step 50 has **not started**.
 
 ## What exists now
 
@@ -22,7 +22,7 @@ Phase 1 / Step 48 has **not started**.
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
 - Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
-- Case detail update, assignment, comments (list/create/edit/delete), tags, activity timeline and case delete controls
+- Case detail update, assignment, comments (list/create/edit/delete), tags, activity timeline, QA reviews and case delete controls
 - Workspace app placeholder routes: customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
 - JWT access token stored in `localStorage`

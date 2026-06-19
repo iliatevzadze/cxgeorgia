@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { CaseQaReviews } from "@/components/case-qa-reviews";
 import { Link, useRouter } from "@/i18n/navigation";
 
 import { ApiError } from "@/lib/api/errors";
@@ -1973,6 +1974,12 @@ export function WorkspaceCaseDetail({
           </>
         )}
       </section>
+
+      <CaseQaReviews
+        workspaceId={workspaceId}
+        caseId={caseId}
+        memberships={memberships}
+      />
 
       <section className="workspace-panel workspace-case-delete-panel">
         <h2>{t("deleteTitle")}</h2>

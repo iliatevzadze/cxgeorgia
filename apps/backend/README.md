@@ -4,11 +4,11 @@ FastAPI REST API for the Georgian CX Platform.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 48: QA Review backend API)
+**Phase 1 — SaaS Base** (Step 49: QA Review frontend UI)
 
-QA reviews can be created, scored, approved and rejected through the backend API. QA frontend UI is not implemented yet.
+The case detail page includes QA review management UI backed by the Step 48 API.
 
-Phase 1 / Step 49 has **not started**.
+Phase 1 / Step 50 has **not started**.
 
 ## Auth API
 
