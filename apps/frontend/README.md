@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 49: QA Review frontend UI)
+**Phase 1 — SaaS Base** (Step 51: Agent Workforce frontend UI)
 
-QA reviews can be managed from the case detail page: list, create, score, approve and reject.
+Users can clock in/out and view workforce metrics from the workspace app dashboard.
 
-Phase 1 / Step 50 has **not started**.
+Phase 1 / Step 52 has **not started**.
 
 ## What exists now
 
@@ -22,6 +22,7 @@ Phase 1 / Step 50 has **not started**.
 - Workspace app shell: `/workspaces/{id}/app` with internal navigation
 - Workspace app Cases page with create form, list and detail (`/workspaces/{id}/app/cases`)
 - Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
+- Agent Workforce panel on the dashboard: clock in/out, active shifts and case metrics
 - Case detail update, assignment, comments (list/create/edit/delete), tags, activity timeline, QA reviews and case delete controls
 - Workspace app placeholder routes: customers, settings
 - `useWorkspace` hook for loading workspace context with safe error states
@@ -63,7 +64,7 @@ All workspace routes require login.
 | `/ka/workspaces/{id}/app`, `/en/workspaces/{id}/app` | Workspace app home (foundation) |
 | `/ka/workspaces/{id}/app/cases`, `/en/workspaces/{id}/app/cases` | Universal Cases create + list |
 | `/ka/workspaces/{id}/app/cases/{caseId}`, `/en/...` | Universal Case detail with update, assignment, comments, tags, activity timeline and delete |
-| `/ka/workspaces/{id}/app/dashboard`, `/en/...` | Operations dashboard (`GET /api/v1/workspaces/{id}/operations/dashboard`) |
+| `/ka/workspaces/{id}/app/dashboard`, `/en/...` | Operations dashboard and Agent Workforce panel |
 | `/ka/workspaces/{id}/app/customers`, etc. | Placeholder module routes (not implemented) |
 
 ## API integration
@@ -109,6 +110,9 @@ apps/frontend/
 │       │   ├── api.ts
 │       │   └── types.ts
 │       ├── operations/
+│       │   ├── api.ts
+│       │   └── types.ts
+│       ├── agent-workforce/
 │       │   ├── api.ts
 │       │   └── types.ts
 │       └── workspaces/

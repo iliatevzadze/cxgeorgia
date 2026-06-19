@@ -913,3 +913,88 @@ a {
 .workspace-app-error {
   margin: 0;
 }
+
+.workspace-agent-workforce {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.workspace-agent-workforce-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-agent-workforce-section h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.workspace-agent-workforce-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.workspace-agent-workforce-secondary-button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.workspace-agent-workforce-secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workspace-agent-workforce-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.workspace-agent-workforce-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.workspace-agent-workforce-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-agent-workforce-item {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.workspace-agent-workforce-item dl {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem 1rem;
+  grid-template-columns: minmax(8rem, auto) 1fr;
+}
+
+.workspace-agent-workforce-item dt {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.workspace-agent-workforce-item dd {
+  margin: 0;
+  font-size: 0.875rem;
+}
+

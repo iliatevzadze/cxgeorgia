@@ -8,7 +8,7 @@ FastAPI REST API for the Georgian CX Platform.
 
 Agents can clock in/out and workforce metrics can be listed through the Step 44 service layer via new API routes.
 
-Phase 1 / Step 51 has **not started**.
+Phase 1 / Step 52 has **not started**.
 
 ## Auth API
 

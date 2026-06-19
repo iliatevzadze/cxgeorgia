@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 
+import { AgentWorkforcePanel } from "@/components/agent-workforce-panel";
 import { WorkspaceAppSectionPanel } from "@/components/workspace-app-section-panel";
 import { WorkspaceOperationsDashboard } from "@/components/workspace-operations-dashboard";
 
@@ -20,6 +21,7 @@ export default async function WorkspaceAppDashboardPage({
         activeSection="dashboard"
       >
         <WorkspaceOperationsDashboard workspaceId={workspaceId} />
+        <AgentWorkforcePanel workspaceId={workspaceId} />
       </WorkspaceAppSectionPanel>
     </main>
   );

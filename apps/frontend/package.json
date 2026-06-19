@@ -10,7 +10,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:i18n": "tsx tests/i18n.test.ts",
-    "test:unit": "tsx tests/api-config.test.ts && tsx tests/api-errors.test.ts && tsx tests/auth-token-storage.test.ts && tsx tests/workspace-types.test.ts && tsx tests/workspace-api-config.test.ts && tsx tests/workspace-routes.test.ts && tsx tests/cases-types.test.ts && tsx tests/cases-api-config.test.ts && tsx tests/cases-activity-display.test.ts && tsx tests/cases-detail-activity.test.ts && tsx tests/cases-detail-comment-edit.test.ts && tsx tests/cases-detail-tags.test.ts && tsx tests/case-qa-reviews.test.ts && tsx tests/operations-dashboard.test.ts",
+    "test:unit": "tsx tests/api-config.test.ts && tsx tests/api-errors.test.ts && tsx tests/auth-token-storage.test.ts && tsx tests/workspace-types.test.ts && tsx tests/workspace-api-config.test.ts && tsx tests/workspace-routes.test.ts && tsx tests/cases-types.test.ts && tsx tests/cases-api-config.test.ts && tsx tests/cases-activity-display.test.ts && tsx tests/cases-detail-activity.test.ts && tsx tests/cases-detail-comment-edit.test.ts && tsx tests/cases-detail-tags.test.ts && tsx tests/case-qa-reviews.test.ts && tsx tests/agent-workforce.test.ts && tsx tests/operations-dashboard.test.ts",
     "test": "npm run test:i18n && npm run test:unit"
   },
   "dependencies": {
