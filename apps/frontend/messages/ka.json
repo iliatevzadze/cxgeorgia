@@ -250,7 +250,16 @@
         "deleting": "მომხმარებლის წაშლა...",
         "deleteError": "მომხმარებლის წაშლა ვერ მოხერხდა",
         "createdAtLabel": "შექმნის დრო",
-        "noValue": "—"
+        "noValue": "—",
+        "caseHistoryTitle": "ქეისების ისტორია",
+        "linkedCasesTitle": "დაკავშირებული ქეისები",
+        "noLinkedCases": "დაკავშირებული ქეისები ჯერ არ არის",
+        "caseHistoryLoading": "დაკავშირებული ქეისების ჩატვირთვა...",
+        "caseHistoryError": "დაკავშირებული ქეისების ჩატვირთვა ვერ მოხერხდა",
+        "caseStatusLabel": "ქეისის სტატუსი",
+        "casePriorityLabel": "ქეისის პრიორიტეტი",
+        "caseSourceLabel": "ქეისის წყარო",
+        "caseCreatedAtLabel": "შექმნის დრო"
       },
       "cases": {
         "title": "ქეისები",

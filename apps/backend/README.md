@@ -6,9 +6,9 @@ FastAPI REST API for the Georgian CX Platform.
 
 **Phase 1 — SaaS Base** (Step 58: Customer case-history backend filtering)
 
-`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional `customer_id` to list cases linked to a customer. Frontend customer case-history UI is not implemented yet.
+`GET /api/v1/workspaces/{workspace_id}/cases` accepts optional `customer_id` to list cases linked to a customer. Frontend customer case-history UI is available from Step 59.
 
-Phase 1 / Step 59 has **not started**.
+Phase 1 / Step 60 has **not started**.
 
 ## Auth API
 

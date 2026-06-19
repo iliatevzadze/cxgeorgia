@@ -4,7 +4,17 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
+
 import { ApiError } from "@/lib/api/errors";
+import { listCases } from "@/lib/cases/api";
+import type {
+  CasePriority,
+  CaseSlaStatus,
+  CaseSource,
+  CaseStatus,
+  UniversalCaseRead,
+} from "@/lib/cases/types";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import {
   createCustomer,
@@ -14,6 +24,7 @@ import {
   updateCustomer,
 } from "@/lib/customers/api";
 import type { Customer, CustomerStatus } from "@/lib/customers/types";
+import { workspaceRoutes } from "@/lib/workspaces/routes";
 
 type WorkspaceCustomersProps = {
   workspaceId: string;
@@ -128,8 +139,27 @@ function buildUpdatePayload(
   return payload;
 }
 
+function slaBadgeClassName(slaStatus: CaseSlaStatus | null): string {
+  if (!slaStatus) {
+    return "workspace-case-sla-badge workspace-case-sla-badge--not-set";
+  }
+  return `workspace-case-sla-badge workspace-case-sla-badge--${slaStatus.replace(/_/g, "-")}`;
+}
+
+function formatSlaStatusLabel(
+  slaStatus: CaseSlaStatus | null,
+  translate: (key: string) => string,
+): string {
+  if (!slaStatus) {
+    return translate("notSet");
+  }
+  return translate(`slaStatusOptions.${slaStatus}`);
+}
+
 export function WorkspaceCustomers({ workspaceId }: WorkspaceCustomersProps) {
   const t = useTranslations("workspaces.app.customers");
+  const tCases = useTranslations("workspaces.app.cases");
+  const tCaseDetail = useTranslations("workspaces.app.cases.detail");
   const tCommon = useTranslations("workspaces.common");
   const locale = useLocale();
 
@@ -161,6 +191,9 @@ export function WorkspaceCustomers({ workspaceId }: WorkspaceCustomersProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [linkedCases, setLinkedCases] = useState<UniversalCaseRead[]>([]);
+  const [isCaseHistoryLoading, setIsCaseHistoryLoading] = useState(false);
+  const [caseHistoryError, setCaseHistoryError] = useState<string | null>(null);
 
   const noValue = t("noValue");
 
@@ -250,6 +283,55 @@ export function WorkspaceCustomers({ workspaceId }: WorkspaceCustomersProps) {
       setDetailError(null);
     }
   }, [selectedCustomerId, loadCustomerDetail]);
+
+  const loadCaseHistory = useCallback(
+    async (customerId: string) => {
+      const token = getAccessToken();
+      if (!token) {
+        setCaseHistoryError(tCommon("accessDenied"));
+        setLinkedCases([]);
+        return;
+      }
+
+      setIsCaseHistoryLoading(true);
+      setCaseHistoryError(null);
+
+      try {
+        const items = await listCases(workspaceId, token, {
+          customer_id: customerId,
+        });
+        setLinkedCases(items);
+      } catch (error) {
+        setLinkedCases([]);
+
+        if (error instanceof ApiError) {
+          if (error.status === 404) {
+            setCaseHistoryError(tCommon("notFound"));
+          } else if (error.status === 401 || error.status === 403) {
+            setCaseHistoryError(tCommon("accessDenied"));
+          } else {
+            setCaseHistoryError(t("caseHistoryError"));
+          }
+        } else {
+          setCaseHistoryError(t("caseHistoryError"));
+        }
+      } finally {
+        setIsCaseHistoryLoading(false);
+      }
+    },
+    [workspaceId, t, tCommon],
+  );
+
+  useEffect(() => {
+    if (!selectedCustomerId) {
+      setLinkedCases([]);
+      setCaseHistoryError(null);
+      setIsCaseHistoryLoading(false);
+      return;
+    }
+
+    void loadCaseHistory(selectedCustomerId);
+  }, [selectedCustomerId, loadCaseHistory]);
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -772,6 +854,85 @@ export function WorkspaceCustomers({ workspaceId }: WorkspaceCustomersProps) {
                 {isDeleting ? t("deleting") : t("deleteButton")}
               </button>
             </>
+          )}
+        </section>
+      ) : null}
+
+      {selectedCustomerId ? (
+        <section className="workspace-panel workspace-customers-case-history-panel">
+          <h2>{t("caseHistoryTitle")}</h2>
+          <p className="workspace-description">{t("linkedCasesTitle")}</p>
+
+          {caseHistoryError ? (
+            <p className="workspace-error" role="alert">
+              {caseHistoryError}
+            </p>
+          ) : null}
+
+          {isCaseHistoryLoading ? (
+            <p className="workspace-status">{t("caseHistoryLoading")}</p>
+          ) : caseHistoryError ? null : linkedCases.length === 0 ? (
+            <p className="workspace-empty">{t("noLinkedCases")}</p>
+          ) : (
+            <ul className="workspace-customers-case-history">
+              {linkedCases.map((caseItem) => (
+                <li
+                  key={caseItem.id}
+                  className="workspace-customers-case-history-item"
+                >
+                  <h3>
+                    <Link
+                      href={workspaceRoutes.appCaseDetail(
+                        workspaceId,
+                        caseItem.id,
+                      )}
+                    >
+                      {caseItem.title}
+                    </Link>
+                  </h3>
+                  <dl className="account-details">
+                    <div>
+                      <dt>{t("caseStatusLabel")}</dt>
+                      <dd>
+                        {tCaseDetail(
+                          `statusOptions.${caseItem.status as CaseStatus}`,
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t("casePriorityLabel")}</dt>
+                      <dd>
+                        {tCaseDetail(
+                          `priorityOptions.${caseItem.priority as CasePriority}`,
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t("caseSourceLabel")}</dt>
+                      <dd>
+                        {tCaseDetail(
+                          `sourceOptions.${caseItem.source as CaseSource}`,
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{tCases("slaStatusLabel")}</dt>
+                      <dd>
+                        <span className={slaBadgeClassName(caseItem.sla_status)}>
+                          {formatSlaStatusLabel(caseItem.sla_status, tCases)}
+                        </span>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t("caseCreatedAtLabel")}</dt>
+                      <dd>
+                        {formatDateTime(caseItem.created_at, locale, noValue)}
+                      </dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       ) : null}

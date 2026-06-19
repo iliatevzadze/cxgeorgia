@@ -13,6 +13,7 @@ import type {
   UniversalCaseDeleteResponse,
   UniversalCaseRead,
   UniversalCaseUpdateRequest,
+  CaseListFilters,
 } from "./types";
 
 export const casePaths = {
@@ -37,10 +38,18 @@ export const casePaths = {
 export async function listCases(
   workspaceId: string,
   token: string,
+  filters: CaseListFilters = {},
 ): Promise<UniversalCaseRead[]> {
-  return apiRequest<UniversalCaseRead[]>(casePaths.list(workspaceId), {
-    token,
-  });
+  const params = new URLSearchParams();
+  if (filters.customer_id?.trim()) {
+    params.set("customer_id", filters.customer_id.trim());
+  }
+  const query = params.toString();
+  const path = query
+    ? `${casePaths.list(workspaceId)}?${query}`
+    : casePaths.list(workspaceId);
+
+  return apiRequest<UniversalCaseRead[]>(path, { token });
 }
 
 export async function createCase(

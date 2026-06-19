@@ -4,11 +4,11 @@ Next.js App Router application for the Georgian CX Platform workspace UI.
 
 ## Current phase
 
-**Phase 1 — SaaS Base** (Step 57: Read-only SLA frontend visibility)
+**Phase 1 — SaaS Base** (Step 59: Customer case-history frontend visibility)
 
-Case list and case detail show read-only SLA status and timestamps. SLA calculation remains backend-owned.
+The Customer Records page shows read-only linked case history for the selected customer using backend `customer_id` filtering.
 
-Phase 1 / Step 58 has **not started**.
+Phase 1 / Step 60 has **not started**.
 
 ## What exists now
 
@@ -25,7 +25,7 @@ Phase 1 / Step 58 has **not started**.
 - Case list and case detail show read-only SLA status and timestamps
 - Workspace app Operations dashboard (`/workspaces/{id}/app/dashboard`) with case, SLA, agent and QA summaries
 - Agent Workforce panel on the dashboard: clock in/out, active shifts and case metrics
-- Workspace app Customers page with list, search, create, update and delete
+- Workspace app Customers page with list, search, create, update, delete and linked case history
 - Case detail update, assignment, comments (list/create/edit/delete), tags, attachments, activity timeline, QA reviews and case delete controls
 - Workspace app placeholder routes: settings
 - `useWorkspace` hook for loading workspace context with safe error states

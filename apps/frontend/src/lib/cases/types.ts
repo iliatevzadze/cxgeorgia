@@ -132,3 +132,7 @@ export type CaseActivityRead = {
   metadata: Record<string, unknown>;
   created_at: string;
 };
+
+export type CaseListFilters = {
+  customer_id?: string;
+};

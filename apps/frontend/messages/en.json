@@ -250,7 +250,16 @@
         "deleting": "Deleting customer...",
         "deleteError": "Failed to delete customer",
         "createdAtLabel": "Created",
-        "noValue": "—"
+        "noValue": "—",
+        "caseHistoryTitle": "Case history",
+        "linkedCasesTitle": "Linked cases",
+        "noLinkedCases": "No linked cases yet",
+        "caseHistoryLoading": "Loading linked cases...",
+        "caseHistoryError": "Failed to load linked cases",
+        "caseStatusLabel": "Case status",
+        "casePriorityLabel": "Case priority",
+        "caseSourceLabel": "Case source",
+        "caseCreatedAtLabel": "Created at"
       },
       "cases": {
         "title": "Cases",
